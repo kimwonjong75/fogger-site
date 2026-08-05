@@ -1,10 +1,11 @@
 ---
 title: 약제 충전과 사용 전 점검
-description: 연막소독기에 약제를 넣기 전 확인할 항목과 모델별 최대 충전량, 보조주입구를 다루는 방법까지 순서대로 정리했습니다.
+description: 연막소독기에 약제를 넣기 전 확인할 항목과 모델별 최대 충전량, 보조주입구를 안전하게 다루는 방법까지 빠짐없이 순서대로 정리했습니다.
 updatedDate: 2026-07-28
 published: true
 reviewer: 블루가드 기술지원팀
 ctaType: product
+showSpecTable: true
 heroImage: ../../assets/guide-fill.png
 heroImageAlt: 연막소독기 약제 충전 — 깔때기를 끼운 탱크 주입구에 매질을 붓는 장면
 related:

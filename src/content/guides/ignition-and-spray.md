@@ -1,11 +1,10 @@
 ---
 title: 예열·점화·분사 순서대로 하기
-description: 부탄가스를 물리고 예열한 뒤 연막을 내보내기까지, 점화 실패와 물뿜음을 피하는 작업 순서를 단계별로 정리했습니다.
+description: 부탄가스를 물리고 예열한 뒤 연막을 내보내기까지, 점화 실패와 물뿜음을 피하는 작업 순서를 현장 기준으로 단계별로 정리했습니다.
 updatedDate: 2026-07-30
 published: true
 reviewer: 블루가드 기술지원팀
 ctaType: product
-showSpecTable: true
 heroImage: ../../assets/guide-ignite.png
 heroImageAlt: 연막소독기 예열 단계 — 배럴이 데워지는 동안 노즐 앞을 비워둔 작업 현장
 related:
