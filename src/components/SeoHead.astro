@@ -1,5 +1,5 @@
 ---
-import { SITE } from '../data/site';
+import { SITE, SITE_VERIFICATION } from '../data/site';
 import { absoluteUrl, normalizePath } from '../lib/url';
 
 interface Props {
@@ -50,6 +50,10 @@ const ogImageUrl = absoluteUrl(ogImage);
 
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <link rel="icon" href="/favicon.ico" sizes="32x32" />
+
+{SITE_VERIFICATION.naver && <meta name="naver-site-verification" content={SITE_VERIFICATION.naver} />}
+{SITE_VERIFICATION.google && <meta name="google-site-verification" content={SITE_VERIFICATION.google} />}
+{SITE_VERIFICATION.bing && <meta name="msvalidate.01" content={SITE_VERIFICATION.bing} />}
 
 <meta property="og:type" content={ogType} />
 <meta property="og:site_name" content={SITE.name} />

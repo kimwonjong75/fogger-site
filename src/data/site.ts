@@ -51,6 +51,13 @@ export const WEBSITE_ID = `${SITE.url}/#website`;
 /** GA4 측정 ID. 빈 문자열이면 계측 스크립트를 아예 출력하지 않는다. */
 export const GA4_MEASUREMENT_ID = 'G-XXXXXXXXXX';
 
+/** 검색엔진 소유확인 메타. 값이 빈 문자열이면 출력하지 않는다. */
+export const SITE_VERIFICATION = {
+  naver: '763dbf1be51c6b0b2f8fb7feb4f4879dd54a6f47',
+  google: '',
+  bing: 'CECFCC488E32F238626180CFBECCDE2B',
+} as const;
+
 /** 헤더 내비게이션 (구매하기 CTA는 별도) */
 export const NAV = [
   { label: '제품', href: '/products/' },
