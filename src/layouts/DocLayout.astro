@@ -3,6 +3,7 @@ import { render } from 'astro:content';
 import BaseLayout from './BaseLayout.astro';
 import BuyCTA from '../components/BuyCTA.astro';
 import Faq from '../components/Faq.astro';
+import ModelSpecTable from '../components/ModelSpecTable.astro';
 import Pic from '../components/Pic.astro';
 import RelatedGuides from '../components/RelatedGuides.astro';
 import Sources from '../components/Sources.astro';
@@ -77,6 +78,8 @@ const showSticky = data.ctaType === 'product';
     <div class="prose">
       <Content />
     </div>
+
+    {data.showSpecTable && <ModelSpecTable footnote="수치는 제품 데이터에서 자동으로 채워집니다." />}
 
     {data.video && <VideoEmbed video={data.video} />}
 

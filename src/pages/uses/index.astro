@@ -1,0 +1,34 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import DocList from '../../components/DocList.astro';
+import { COLLECTION_META, getPublishedDocs } from '../../lib/content';
+
+const meta = COLLECTION_META.uses;
+const docs = await getPublishedDocs('uses');
+---
+
+<BaseLayout
+  title="연막소독기 활용사례"
+  description={meta.description}
+  canonicalPath={meta.href}
+  ogImage="/og/og-uses.png"
+  crumbs={[{ name: meta.label, href: meta.href }]}
+>
+  <h1>{meta.title}</h1>
+  <p class="lede">{meta.description}</p>
+
+  <DocList docs={docs} />
+
+  <p class="more">
+    기본 작업 순서는 <a href="/guides/">사용법</a>에, 모델 선택 기준은
+    <a href="/compare/">모델비교</a>에 있습니다.
+  </p>
+</BaseLayout>
+
+<style>
+  .more {
+    margin-top: 2rem;
+    font-size: 0.93rem;
+    color: var(--c-text-muted);
+  }
+</style>

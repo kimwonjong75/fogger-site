@@ -1,0 +1,176 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BuyCTA from '../../components/BuyCTA.astro';
+import FactTable from '../../components/FactTable.astro';
+import Pic from '../../components/Pic.astro';
+import RelatedGuides from '../../components/RelatedGuides.astro';
+import SafetyBox from '../../components/SafetyBox.astro';
+import VideoEmbed from '../../components/VideoEmbed.astro';
+import { PRODUCT_IMAGES, PRODUCT_IMAGE_ALT } from '../../data/product-images';
+import {
+  FILL_RATIO_LABEL,
+  HEAT_SOURCE,
+  MEDIA_LABEL,
+  PRODUCTS,
+  SHIPPING,
+  getProduct,
+  maxFillLiters,
+  type Product,
+} from '../../data/products';
+import { getAllPublishedDocs } from '../../lib/content';
+
+export const getStaticPaths = (() =>
+  PRODUCTS.map((product) => ({
+    params: { id: product.id },
+    props: { product },
+  }))) satisfies GetStaticPaths;
+
+interface Props {
+  product: Product;
+}
+
+const { product } = Astro.props;
+const url = `/products/${product.id}/`;
+
+const facts = [
+  { label: '모델', value: product.model },
+  { label: '탱크 용량', value: `${product.tankLiters}L` },
+  {
+    label: '최대 충전량',
+    value: `${maxFillLiters(product.tankLiters)}L`,
+    note: `탱크 용량의 ${FILL_RATIO_LABEL} 상한을 적용한 값입니다.`,
+  },
+  { label: '가열원', value: HEAT_SOURCE },
+  { label: '사용 매질', value: MEDIA_LABEL },
+  { label: '어깨끈', value: product.shoulderStrap ? '포함' : '미포함' },
+  { label: '롱노즐', value: product.longNozzle ? '포함' : '미포함' },
+  { label: '보조주입구', value: '작동 중 사용 금지' },
+  { label: '배송', value: SHIPPING.label },
+];
+
+const base = product.basedOn ? getProduct(product.basedOn) : null;
+const related = (await getAllPublishedDocs()).slice(0, 3);
+---
+
+<BaseLayout
+  title={`${product.model} 사양과 구성`}
+  description={`${product.name}의 탱크 용량과 최대 충전량, 구성품, 사용 매질과 안전 기준을 정리했습니다.`}
+  canonicalPath={url}
+  ogImage="/og/og-products.png"
+  crumbs={[
+    { name: '제품', href: '/products/' },
+    { name: product.model, href: url },
+  ]}
+  stickyBuy={product.id}
+>
+  <article>
+    <h1>{product.name}</h1>
+    <p class="lede">{product.tagline}</p>
+
+    <Pic
+      src={PRODUCT_IMAGES[product.id]}
+      alt={PRODUCT_IMAGE_ALT[product.id]}
+      width={760}
+      height={428}
+      priority
+      class="product-hero"
+    />
+
+    <div class="buy-row">
+      <BuyCTA productId={product.id} content={`product_${product.id}_top`} showShipping />
+      <a class="buy-row__link" href="/compare/">다른 모델과 비교</a>
+    </div>
+
+    {
+      base && (
+        <p class="variant-note">
+          이 구성은 <a href={`/products/${base.id}/`}>{base.model}</a> 에 롱노즐을 더한 것입니다.
+          본체 사양은 동일합니다.
+        </p>
+      )
+    }
+
+    <h2>사양</h2>
+    <FactTable rows={facts} caption={`${product.model} 사양`} />
+
+    <h2>구성품</h2>
+    <ul class="plain">
+      {product.includes.map((item) => <li>{item}</li>)}
+    </ul>
+
+    <h2>이럴 때 적합합니다</h2>
+    <ul class="plain">
+      {product.bestFor.map((item) => <li>{item}</li>)}
+    </ul>
+
+    <SafetyBox />
+
+    <h2>작동 영상</h2>
+    <VideoEmbed
+      placeholderNote={`${product.model} 실제 작동 영상은 촬영 후 이 자리에 추가됩니다.`}
+      caption="영상이 준비되기 전까지는 사용법 문서의 단계별 설명을 참고하세요."
+    />
+
+    <section class="closing">
+      <h2>{product.model}로 결정하셨나요?</h2>
+      <p>사용 전 준비 절차와 안전수칙을 먼저 확인하시길 권합니다.</p>
+      <div class="buy-row">
+        <BuyCTA productId={product.id} content={`product_${product.id}_bottom`} showShipping />
+        <a class="buy-row__link" href="/safety/">안전수칙 보기</a>
+      </div>
+    </section>
+
+    <RelatedGuides docs={related} title="사용 전에 읽어두면 좋은 문서" />
+  </article>
+</BaseLayout>
+
+<style>
+  article :global(.product-hero) {
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    display: block;
+    margin: 0.5rem 0 1.5rem;
+  }
+
+  .buy-row {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    margin: 1.25rem 0;
+  }
+
+  .buy-row__link {
+    font-weight: 600;
+    font-size: 0.94rem;
+  }
+
+  .variant-note {
+    padding: 0.85rem 1rem;
+    border-radius: 8px;
+    background: var(--c-surface-alt);
+    border: 1px solid var(--c-border);
+    font-size: 0.92rem;
+    color: var(--c-text-muted);
+  }
+
+  .plain {
+    padding-left: 1.2rem;
+    display: grid;
+    gap: 0.3rem;
+  }
+
+  .closing {
+    margin-top: 2.5rem;
+    padding: 1.35rem;
+    border: 1px solid var(--c-accent);
+    border-radius: 10px;
+    background: var(--c-accent-soft);
+  }
+
+  .closing h2 {
+    margin-top: 0;
+  }
+</style>

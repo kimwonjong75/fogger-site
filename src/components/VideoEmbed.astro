@@ -149,11 +149,6 @@ const { video, placeholderNote = '실제 작동 영상은 촬영 후 이 자리�
         const title = facade.dataset.videoTitle ?? '';
         if (!id) return;
 
-        window.dataLayer?.push({
-          event: 'video_play',
-          video_id: id,
-          video_title: title,
-        });
         window.gtag?.('event', 'video_play', { video_id: id, video_title: title });
 
         const iframe = document.createElement('iframe');

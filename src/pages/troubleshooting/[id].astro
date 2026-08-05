@@ -1,0 +1,17 @@
+---
+import type { GetStaticPaths } from 'astro';
+import DocLayout from '../../layouts/DocLayout.astro';
+import { docStaticPaths, type DocEntry } from '../../lib/content';
+
+/** published: false 문서는 여기서 걸러지므로 라우트 자체가 생성되지 않는다. */
+export const getStaticPaths = (async () =>
+  docStaticPaths('troubleshooting')) satisfies GetStaticPaths;
+
+interface Props {
+  entry: DocEntry;
+}
+
+const { entry } = Astro.props;
+---
+
+<DocLayout entry={entry} />

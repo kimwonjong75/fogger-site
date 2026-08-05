@@ -1,0 +1,57 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import DocList from '../../components/DocList.astro';
+import SafetyBox from '../../components/SafetyBox.astro';
+import { BUSINESS } from '../../data/site';
+import { COLLECTION_META, getPublishedDocs } from '../../lib/content';
+
+const meta = COLLECTION_META.troubleshooting;
+const docs = await getPublishedDocs('troubleshooting');
+---
+
+<BaseLayout
+  title="연막소독기 문제해결"
+  description={meta.description}
+  canonicalPath={meta.href}
+  ogImage="/og/og-troubleshooting.png"
+  crumbs={[{ name: meta.label, href: meta.href }]}
+>
+  <h1>{meta.title}</h1>
+  <p class="lede">{meta.description}</p>
+
+  <SafetyBox
+    title="점검 전 반드시"
+    compact
+    only={['aux-inlet', 'heat']}
+  />
+
+  <DocList docs={docs} />
+
+  <section class="as">
+    <h2>문서로 해결되지 않는다면</h2>
+    <p>
+      점화·가스 계통은 임의로 분해하지 마세요. 모델명, 증상, 사용한 매질, 이미 시도한 조치를 함께
+      보내주시면 진단이 빨라집니다.
+    </p>
+    <p><a href={`mailto:${BUSINESS.email}`}>{BUSINESS.email}</a> 로 접수해 주세요.</p>
+  </section>
+</BaseLayout>
+
+<style>
+  .as {
+    margin-top: 2.5rem;
+    padding: 1.35rem;
+    border: 1px solid var(--c-border);
+    border-radius: 10px;
+    background: var(--c-surface-alt);
+  }
+
+  .as h2 {
+    margin-top: 0;
+  }
+
+  .as p {
+    font-size: 0.94rem;
+    color: var(--c-text-muted);
+  }
+</style>

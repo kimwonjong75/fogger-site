@@ -1,0 +1,71 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import FactTable from '../../components/FactTable.astro';
+import ModelCard from '../../components/ModelCard.astro';
+import SafetyBox from '../../components/SafetyBox.astro';
+import {
+  DEFAULT_PRODUCT_ID,
+  FILL_RATIO_LABEL,
+  HEAT_SOURCE,
+  MEDIA_LABEL,
+  PRODUCTS,
+  SHIPPING,
+} from '../../data/products';
+
+const commonFacts = [
+  { label: '가열원', value: HEAT_SOURCE },
+  { label: '사용 매질', value: MEDIA_LABEL, note: '지정 외 용제는 사용할 수 없습니다.' },
+  { label: '충전 한도', value: `탱크 용량의 ${FILL_RATIO_LABEL}`, note: '가열 시 팽창을 고려한 상한입니다.' },
+  { label: '보조주입구', value: '작동 중 사용 금지', note: '완전히 끄고 식힌 뒤에만 엽니다.' },
+  { label: '배송', value: SHIPPING.label },
+];
+---
+
+<BaseLayout
+  title="연막소독기 제품 라인업"
+  description="블루가드 휴대용 연막소독기 BF-100S, BF-102, BF-102 롱노즐 구성의 사양과 구성품을 한눈에 비교합니다."
+  canonicalPath="/products/"
+  ogImage="/og/og-products.png"
+  crumbs={[{ name: '제품', href: '/products/' }]}
+  stickyBuy={DEFAULT_PRODUCT_ID}
+>
+  <h1>연막소독기 제품</h1>
+  <p class="lede">
+    본체 구조와 사용 방식은 같습니다. 탱크 용량, 휴대 방식, 노즐 구성에서 갈립니다.
+  </p>
+
+  <div class="grid">
+    {
+      PRODUCTS.map((product) => (
+        <ModelCard product={product} context="products" featured={product.id === DEFAULT_PRODUCT_ID} />
+      ))
+    }
+  </div>
+
+  <h2>전 모델 공통 사양</h2>
+  <FactTable rows={commonFacts} footnote="모델별로 다른 값은 각 제품 페이지와 모델 비교표에서 확인하세요." />
+
+  <SafetyBox />
+
+  <p class="more"><a href="/compare/">모델 비교표에서 나란히 보기</a></p>
+</BaseLayout>
+
+<style>
+  .grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 1.5rem 0 0.5rem;
+  }
+
+  .more {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  @media (max-width: 900px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,136 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import BuyCTA from '../components/BuyCTA.astro';
+import ModelSpecTable from '../components/ModelSpecTable.astro';
+import SafetyBox from '../components/SafetyBox.astro';
+import {
+  DEFAULT_PRODUCT_ID,
+  FILL_RATIO_LABEL,
+  MEDIA_LABEL,
+  PRODUCTS,
+  maxFillLiters,
+} from '../data/products';
+
+const [small, large] = PRODUCTS;
+---
+
+<BaseLayout
+  title="BF-100S와 BF-102 모델비교"
+  description="탱크 용량과 최대 충전량, 어깨끈과 롱노즐 유무를 나란히 두고 현장에 맞는 모델을 고르는 기준을 정리했습니다."
+  canonicalPath="/compare/"
+  ogImage="/og/og-compare.png"
+  crumbs={[{ name: '모델비교', href: '/compare/' }]}
+  stickyBuy={DEFAULT_PRODUCT_ID}
+>
+  <h1>모델 비교표</h1>
+  <p class="lede">
+    본체 구조와 사용 절차는 세 구성 모두 같습니다. 실제로 갈리는 지점은 한 번에 담는 양, 들고
+    다니는 방식, 노즐이 닿는 거리입니다.
+  </p>
+
+  <ModelSpecTable
+    caption="BF-100S · BF-102 · BF-102 롱노즐 구성"
+    footnote={`최대 충전량은 탱크 용량의 ${FILL_RATIO_LABEL}를 적용한 값이며, 매질은 전 모델 공통으로 ${MEDIA_LABEL}만 사용합니다.`}
+  />
+
+  <h2>어떻게 고르나</h2>
+  <div class="picker">
+    {
+      PRODUCTS.map((product) => (
+        <section class="picker__item">
+          <h3>{product.model}</h3>
+          <p class="picker__spec">
+            탱크 {product.tankLiters}L · 최대충전 {maxFillLiters(product.tankLiters)}L
+          </p>
+          <ul>
+            {product.bestFor.map((item) => <li>{item}</li>)}
+          </ul>
+          <div class="picker__actions">
+            <a
+              href={`/products/${product.id}/`}
+              data-ga-event="model_select"
+              data-ga-model={product.model}
+              data-ga-product-id={product.id}
+              data-ga-context="compare"
+            >
+              사양 자세히
+            </a>
+            <BuyCTA productId={product.id} content={`compare_${product.id}`} label="구매하기" variant="secondary" />
+          </div>
+        </section>
+      ))
+    }
+  </div>
+
+  <h2>한 줄 요약</h2>
+  <ul class="summary">
+    <li>
+      한 공간을 짧게 처리한다면 <strong>{small!.model}</strong>. 가볍고 준비가 빠릅니다.
+    </li>
+    <li>
+      이동 거리가 길고 면적이 넓다면 <strong>{large!.model}</strong>. 탱크가 크고 어깨끈이 있어 중간
+      재충전 횟수가 줍니다.
+    </li>
+    <li>
+      천장·배관 뒤처럼 손이 닿지 않는 지점이 있다면 <strong>롱노즐 구성</strong>. 사람이 올라가지
+      않고도 닿습니다.
+    </li>
+  </ul>
+
+  <SafetyBox title="모델과 무관하게 공통 적용" />
+</BaseLayout>
+
+<style>
+  .picker {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    margin: 1.25rem 0 0;
+  }
+
+  .picker__item {
+    padding: 1.15rem;
+    border: 1px solid var(--c-border);
+    border-radius: 10px;
+    background: var(--c-surface);
+  }
+
+  .picker__item h3 {
+    margin: 0 0 0.25rem;
+  }
+
+  .picker__spec {
+    margin: 0 0 0.75rem;
+    font-size: 0.86rem;
+    color: var(--c-text-muted);
+  }
+
+  .picker__item ul {
+    margin: 0 0 1rem;
+    padding-left: 1.1rem;
+    display: grid;
+    gap: 0.25rem;
+    font-size: 0.9rem;
+  }
+
+  .picker__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    flex-wrap: wrap;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .summary {
+    padding-left: 1.2rem;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  @media (max-width: 900px) {
+    .picker {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,5 +1,6 @@
-import { defineCollection, z } from 'astro:content';
+import { defineCollection, type SchemaContext } from 'astro:content';
 import { glob } from 'astro/loaders';
+import { z } from 'zod';
 
 /** CTA 유형 — 문서 하단에 어떤 전환 블록을 붙일지 결정 */
 export const CTA_TYPES = ['product', 'consumable', 'as', 'none'] as const;
@@ -8,7 +9,7 @@ export const CTA_TYPES = ['product', 'consumable', 'as', 'none'] as const;
  * 세 콘텐츠 컬렉션이 공유하는 스키마.
  * `image()`는 컬렉션 컨텍스트에서 주입되므로 팩토리 형태로 정의한다.
  */
-const docSchema = ({ image }: { image: () => z.ZodType }) =>
+const docSchema = ({ image }: SchemaContext) =>
   z
     .object({
       /** 문서 제목 */
@@ -42,7 +43,7 @@ const docSchema = ({ image }: { image: () => z.ZodType }) =>
         .array(
           z.object({
             name: z.string().min(1),
-            url: z.string().url(),
+            url: z.url(),
           }),
         )
         .default([]),

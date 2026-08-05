@@ -1,0 +1,74 @@
+# fogger.blueguard.kr
+# 검색엔진 · 생성형 AI 검색 크롤러는 허용, 상용 SEO 백링크 크롤러는 차단한다.
+
+# ---------- 검색엔진 ----------
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Yeti
+Allow: /
+
+User-agent: Daumoa
+Allow: /
+
+User-agent: bingbot
+Allow: /
+
+# ---------- 생성형 AI 검색 · 학습 ----------
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+# ---------- 차단: 상용 SEO · 백링크 수집기 ----------
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: BLEXBot
+Disallow: /
+
+# ---------- 그 외 ----------
+User-agent: *
+Allow: /
+
+Sitemap: https://fogger.blueguard.kr/sitemap-index.xml

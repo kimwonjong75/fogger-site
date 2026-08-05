@@ -4,23 +4,22 @@
  */
 
 /* ------------------------------------------------------------------ *
- * ⚠️ 사업자 정보 — 실제 값으로 반드시 교체할 것
- *   아래 `TODO_` 로 시작하는 값은 자리표시자이며 그대로 화면에 노출된다.
- *   법적 표기 의무 항목이므로 배포 전 실제 등록 정보로 채워야 한다.
+ * 사업자 정보 — 푸터·개인정보처리방침·이용약관과 Organization 스키마에 노출된다.
+ *   법적 표기 의무 항목이므로 등록 정보가 바뀌면 여기만 고치면 된다.
  * ------------------------------------------------------------------ */
 export const BUSINESS = {
   /** 상호 */
-  name: 'TODO_상호를_입력하세요',
+  name: '(주)제네시스코리아',
   /** 대표자 */
-  ceo: 'TODO_대표자명',
+  ceo: '김원종',
   /** 사업자등록번호 (예: 000-00-00000) */
-  businessNumber: 'TODO_사업자등록번호',
+  businessNumber: '536-88-00185',
   /** 통신판매업신고번호 (예: 제0000-지역0000호) */
-  mailOrderNumber: 'TODO_통신판매업신고번호',
+  mailOrderNumber: '2015-광주광산-0395호',
   /** 사업장 주소 */
-  address: 'TODO_사업장_주소',
+  address: '전남광주 광산구 송도로 257-10, 2F 202호',
   /** 대표 이메일 */
-  email: 'TODO_이메일@example.com',
+  email: 'bearis@naver.com',
   /** 고객문의 전화 (없으면 빈 문자열로 두면 렌더링에서 생략된다) */
   tel: '',
 } as const;
@@ -82,6 +81,9 @@ export const FOOTER_NAV = [
   { label: '문제해결', href: '/troubleshooting/' },
   { label: '안전수칙', href: '/safety/' },
 ] as const;
+
+/** 정책 문서 시행일 — 개인정보처리방침·이용약관 개정 시 함께 갱신 */
+export const POLICY_EFFECTIVE_DATE = '2026-08-05';
 
 /** 기본 UTM 값 — BuyCTA가 자동 부착한다. */
 export const UTM_DEFAULTS = {

@@ -1,19 +1,234 @@
 ---
+import heroImage from '../assets/hero-home.png';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import BuyCTA from '../components/BuyCTA.astro';
+import ModelCard from '../components/ModelCard.astro';
+import Pic from '../components/Pic.astro';
+import SafetyBox from '../components/SafetyBox.astro';
+import {
+  DEFAULT_PRODUCT_ID,
+  FILL_RATIO_LABEL,
+  HEAT_SOURCE,
+  MEDIA_LABEL,
+  PRODUCTS,
+  SHIPPING,
+} from '../data/products';
+import { COLLECTION_META, docHref, getPublishedDocs } from '../lib/content';
+import { organizationSchema, websiteSchema } from '../lib/schema';
 
+const sections = [
+  { key: 'guides' as const, docs: (await getPublishedDocs('guides')).slice(0, 4) },
+  { key: 'uses' as const, docs: (await getPublishedDocs('uses')).slice(0, 3) },
+  { key: 'troubleshooting' as const, docs: (await getPublishedDocs('troubleshooting')).slice(0, 3) },
+];
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<meta name="naver-site-verification" content="763dbf1be51c6b0b2f8fb7feb4f4879dd54a6f47" />
+<BaseLayout
+  title="블루가드 연막소독기 공식 정보"
+  description="휴대용 부탄가스 연막소독기 BF-100S·BF-102의 사양과 사용법, 안전수칙, 문제해결을 한곳에 모았습니다."
+  canonicalPath="/"
+  ogImage="/og/og-default.png"
+  crumbs={[{ name: '홈', href: '/' }]}
+  schemaNodes={[organizationSchema(), websiteSchema()]}
+>
+  <section class="hero">
+    <div>
+      <h1>현장에 맞는 연막소독기를 숫자로 고르세요</h1>
+      <p class="lede">
+        BF-100S와 BF-102는 탱크 용량과 휴대 방식이 다릅니다. 사양과 사용법, 안전수칙을 확인하고
+        현장에 맞는 구성을 고르세요.
+      </p>
+      <ul class="hero__facts">
+        <li><span>가열원</span>{HEAT_SOURCE}</li>
+        <li><span>사용 매질</span>{MEDIA_LABEL}</li>
+        <li><span>충전 한도</span>탱크 용량의 {FILL_RATIO_LABEL}</li>
+        {SHIPPING.free && <li><span>배송</span>{SHIPPING.label}</li>}
+      </ul>
+      <div class="hero__actions">
+        <BuyCTA content="home_hero" productId={DEFAULT_PRODUCT_ID} showShipping />
+        <a class="hero__link" href="/compare/">모델 비교표 보기</a>
+      </div>
+    </div>
+    <Pic
+      src={heroImage}
+      alt="블루가드 연막소독기 — 작업 현장 통로를 따라 연막이 퍼져 나가는 장면"
+      width={520}
+      height={293}
+      priority
+      sizes="(max-width: 900px) 100vw, 520px"
+      class="hero__image"
+    />
+  </section>
 
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+  <SafetyBox title="쓰기 전에 이것만은" compact only={['fill-limit', 'aux-inlet', 'media']} />
+
+  <section>
+    <h2>모델 고르기</h2>
+    <div class="grid">
+      {
+        PRODUCTS.map((product) => (
+          <ModelCard product={product} context="home" featured={product.id === DEFAULT_PRODUCT_ID} />
+        ))
+      }
+    </div>
+    <p class="section-more">
+      <a href="/products/">제품 전체 보기</a> · <a href="/compare/">모델 비교표</a>
+    </p>
+  </section>
+
+  {
+    sections.map(({ key, docs }) => (
+      <section>
+        <h2>{COLLECTION_META[key].title}</h2>
+        <p class="section-desc">{COLLECTION_META[key].description}</p>
+        <ul class="doc-list">
+          {docs.map((doc) => (
+            <li>
+              <a href={docHref(doc.collection, doc.id)}>
+                <strong>{doc.data.title}</strong>
+                <span>{doc.data.description}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+        <p class="section-more">
+          <a href={COLLECTION_META[key].href}>{COLLECTION_META[key].label} 전체 보기</a>
+        </p>
+      </section>
+    ))
+  }
+
+  <section class="closing">
+    <h2>안전하게 쓰는 것이 먼저입니다</h2>
+    <p>
+      연막소독기는 가열 기기입니다. 충전 한도와 보조주입구 취급, 지정 매질 이 세 가지만 지켜도 사고
+      대부분을 막을 수 있습니다.
+    </p>
+    <p><a href="/safety/">전체 안전수칙 보기</a></p>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 2rem;
+    align-items: center;
+    padding: 1.25rem 0 0.5rem;
+  }
+
+  .hero h1 {
+    margin-top: 0;
+  }
+
+  .hero__facts {
+    list-style: none;
+    margin: 0 0 1.5rem;
+    padding: 0;
+    display: grid;
+    gap: 0.35rem;
+    font-size: 0.92rem;
+  }
+
+  .hero__facts li {
+    display: flex;
+    gap: 0.6rem;
+  }
+
+  .hero__facts span {
+    flex: none;
+    width: 5.5rem;
+    color: var(--c-text-muted);
+    font-weight: 600;
+  }
+
+  .hero__actions {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+  }
+
+  .hero__link {
+    font-weight: 600;
+    font-size: 0.94rem;
+  }
+
+  .hero :global(.hero__image) {
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    display: block;
+  }
+
+  .grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .section-desc {
+    margin: 0 0 1rem;
+    color: var(--c-text-muted);
+    font-size: 0.95rem;
+  }
+
+  .section-more {
+    margin: 1rem 0 0;
+    font-size: 0.92rem;
+    font-weight: 600;
+  }
+
+  .doc-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .doc-list a {
+    display: grid;
+    gap: 0.15rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--c-border);
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--c-text);
+    background: var(--c-surface);
+  }
+
+  .doc-list a:hover {
+    border-color: var(--c-accent);
+    background: var(--c-accent-soft);
+  }
+
+  .doc-list strong {
+    font-size: 0.98rem;
+  }
+
+  .doc-list span {
+    font-size: 0.87rem;
+    color: var(--c-text-muted);
+    line-height: 1.6;
+  }
+
+  .closing {
+    margin-top: 3rem;
+    padding: 1.5rem;
+    border-radius: 10px;
+    background: var(--c-surface-alt);
+    border: 1px solid var(--c-border);
+  }
+
+  .closing h2 {
+    margin-top: 0;
+  }
+
+  @media (max-width: 900px) {
+    .hero,
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
