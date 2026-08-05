@@ -1,0 +1,79 @@
+---
+import { SITE } from '../data/site';
+import { absoluteUrl, normalizePath } from '../lib/url';
+
+interface Props {
+  /** 페이지 고유 title — 30자 이내 (사이트명 접미사를 붙이지 않는다) */
+  title: string;
+  description: string;
+  /** canonical 경로. 미지정 시 현재 URL을 자기참조 */
+  canonicalPath?: string;
+  /** 페이지별 og:image (public 기준 절대경로) */
+  ogImage?: string;
+  ogType?: 'website' | 'article';
+  noindex?: boolean;
+  /** JSON-LD 그래프 */
+  jsonLd?: unknown;
+  updatedDate?: Date;
+}
+
+const {
+  title,
+  description,
+  canonicalPath,
+  ogImage = SITE.defaultOgImage,
+  ogType = 'website',
+  noindex = false,
+  jsonLd,
+  updatedDate,
+} = Astro.props;
+
+const TITLE_MAX = 30;
+if ([...title].length > TITLE_MAX) {
+  throw new Error(
+    `[SeoHead] title은 ${TITLE_MAX}자 이내여야 합니다. (${[...title].length}자) "${title}"`,
+  );
+}
+
+const canonical = absoluteUrl(normalizePath(canonicalPath ?? Astro.url.pathname));
+const ogImageUrl = absoluteUrl(ogImage);
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="generator" content={Astro.generator} />
+
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+{noindex && <meta name="robots" content="noindex, follow" />}
+
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="icon" href="/favicon.ico" sizes="32x32" />
+
+<meta property="og:type" content={ogType} />
+<meta property="og:site_name" content={SITE.name} />
+<meta property="og:locale" content={SITE.locale} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={ogImageUrl} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={ogImageUrl} />
+
+{updatedDate && <meta property="article:modified_time" content={updatedDate.toISOString()} />}
+
+{
+  jsonLd && (
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={JSON.stringify(jsonLd)}
+    />
+  )
+}

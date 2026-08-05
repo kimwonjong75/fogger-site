@@ -1,0 +1,108 @@
+---
+import { DEFAULT_PRODUCT_ID, getProduct, maxFillLiters, SHIPPING, type ProductId } from '../data/products';
+import { withUtm } from '../lib/url';
+
+/**
+ * 전환층(제품·모델비교·구매 유도 문서) 전용 하단 고정 바.
+ * 정보성 문서 전반에는 붙이지 않는다.
+ */
+interface Props {
+  productId?: ProductId;
+  /** utm_content 접미사 — 기본 sticky_bar */
+  content?: string;
+}
+
+const { productId = DEFAULT_PRODUCT_ID, content = 'sticky_bar' } = Astro.props;
+
+const product = getProduct(productId);
+const href = withUtm(product.buyUrl, { content });
+---
+
+<div class="sticky-bar" data-sticky-buy-bar>
+  <div class="sticky-bar__inner">
+    <div class="sticky-bar__info">
+      <strong class="sticky-bar__model">{product.model}</strong>
+      <span class="sticky-bar__spec">
+        탱크 {product.tankLiters}L · 최대충전 {maxFillLiters(product.tankLiters)}L
+        {SHIPPING.free && <> · {SHIPPING.label}</>}
+      </span>
+    </div>
+    <a
+      class="sticky-bar__cta"
+      href={href}
+      target="_blank"
+      rel="noopener external"
+      data-ga-event="purchase_cta_click"
+      data-ga-utm-content={content}
+      data-ga-model={product.model}
+      data-ga-product-id={product.id}
+    >
+      구매하기
+    </a>
+  </div>
+</div>
+
+<style>
+  .sticky-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 40;
+    height: 60px;
+    background: var(--c-surface);
+    border-top: 1px solid var(--c-border);
+    box-shadow: 0 -4px 16px rgb(15 23 42 / 0.08);
+  }
+
+  .sticky-bar__inner {
+    height: 100%;
+    max-width: var(--w-page);
+    margin: 0 auto;
+    padding: 0 var(--pad-x);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .sticky-bar__info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .sticky-bar__model {
+    font-size: 0.95rem;
+    line-height: 1.2;
+  }
+
+  .sticky-bar__spec {
+    font-size: 0.8rem;
+    color: var(--c-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .sticky-bar__cta {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    height: 44px;
+    padding: 0 1.25rem;
+    border-radius: 8px;
+    background: var(--c-accent);
+    color: #fff;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .sticky-bar__cta:hover {
+    background: var(--c-accent-dark);
+  }
+
+  @media print {
+    .sticky-bar {
+      display: none;
+    }
+  }
+</style>

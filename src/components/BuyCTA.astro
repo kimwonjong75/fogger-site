@@ -1,0 +1,96 @@
+---
+import { DEFAULT_PRODUCT_ID, getProduct, SHIPPING, type ProductId } from '../data/products';
+import { withUtm } from '../lib/url';
+
+interface Props {
+  /** 어떤 모델을 사는 CTA인지 */
+  productId?: ProductId;
+  /** utm_content — CTA 위치 식별자 (예: hero, doc_footer, sticky_bar) */
+  content: string;
+  label?: string;
+  variant?: 'primary' | 'secondary';
+  /** 무료배송 안내 문구 표시 */
+  showShipping?: boolean;
+  campaign?: string;
+  class?: string;
+}
+
+const {
+  productId = DEFAULT_PRODUCT_ID,
+  content,
+  label,
+  variant = 'primary',
+  showShipping = false,
+  campaign,
+  class: className,
+} = Astro.props;
+
+const product = getProduct(productId);
+const href = withUtm(product.buyUrl, { content, campaign });
+const text = label ?? `${product.model} 구매하기`;
+---
+
+<span class:list={['buy-cta-wrap', className]}>
+  <a
+    class:list={['buy-cta', `buy-cta--${variant}`]}
+    href={href}
+    target="_blank"
+    rel="noopener external"
+    data-ga-event="purchase_cta_click"
+    data-ga-utm-content={content}
+    data-ga-model={product.model}
+    data-ga-product-id={product.id}
+  >
+    {text}
+  </a>
+  {showShipping && SHIPPING.free && <span class="buy-cta__note">{SHIPPING.label}</span>}
+</span>
+
+<style>
+  .buy-cta-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .buy-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 0 1.4rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1.2;
+    text-decoration: none;
+    border: 1.5px solid transparent;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .buy-cta--primary {
+    background: var(--c-accent);
+    color: #fff;
+  }
+
+  .buy-cta--primary:hover {
+    background: var(--c-accent-dark);
+  }
+
+  .buy-cta--secondary {
+    background: transparent;
+    color: var(--c-accent-dark);
+    border-color: var(--c-accent);
+  }
+
+  .buy-cta--secondary:hover {
+    background: var(--c-accent-soft);
+  }
+
+  .buy-cta__note {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--c-accent-dark);
+  }
+</style>

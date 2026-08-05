@@ -1,0 +1,126 @@
+---
+import BuyCTA from './BuyCTA.astro';
+import { NAV, SITE } from '../data/site';
+import { normalizePath } from '../lib/url';
+
+const current = normalizePath(Astro.url.pathname);
+const isActive = (href: string) => current === href || (href !== '/' && current.startsWith(href));
+---
+
+<header class="site-header">
+  <div class="site-header__top">
+    <a class="site-header__brand" href="/">
+      <span class="site-header__mark" aria-hidden="true"></span>
+      <span class="site-header__name">{SITE.name}</span>
+    </a>
+    <BuyCTA content="header" label="구매하기" class="site-header__buy" />
+  </div>
+
+  <nav class="site-header__nav" aria-label="주요 메뉴">
+    <ul>
+      {
+        NAV.map((item) => (
+          <li>
+            <a href={item.href} aria-current={isActive(item.href) ? 'page' : undefined}>
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+</header>
+
+<style>
+  .site-header {
+    border-bottom: 1px solid var(--c-border);
+    background: var(--c-surface);
+  }
+
+  .site-header__top,
+  .site-header__nav > ul {
+    max-width: var(--w-page);
+    margin: 0 auto;
+    padding: 0 var(--pad-x);
+  }
+
+  .site-header__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 62px;
+  }
+
+  .site-header__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    text-decoration: none;
+    color: var(--c-text);
+    font-weight: 800;
+    font-size: 1.02rem;
+    letter-spacing: -0.01em;
+  }
+
+  .site-header__mark {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, var(--c-accent), var(--c-accent-dark));
+    flex: none;
+  }
+
+  .site-header__nav {
+    border-top: 1px solid var(--c-border);
+  }
+
+  .site-header__nav > ul {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    list-style: none;
+    margin: 0 auto;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .site-header__nav > ul::-webkit-scrollbar {
+    display: none;
+  }
+
+  .site-header__nav a {
+    display: inline-flex;
+    align-items: center;
+    height: 44px;
+    padding: 0 0.85rem;
+    white-space: nowrap;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--c-text-muted);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+  }
+
+  .site-header__nav a:hover {
+    color: var(--c-text);
+  }
+
+  .site-header__nav a[aria-current='page'] {
+    color: var(--c-accent-dark);
+    border-bottom-color: var(--c-accent);
+  }
+
+  @media (max-width: 560px) {
+    .site-header__name {
+      font-size: 0.95rem;
+    }
+  }
+
+  @media print {
+    .site-header__nav,
+    :global(.site-header__buy) {
+      display: none;
+    }
+  }
+</style>

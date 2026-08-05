@@ -1,0 +1,91 @@
+---
+import { SAFETY_RULES } from '../data/products';
+
+interface Props {
+  /** 표시할 규칙 id. 미지정 시 전체 */
+  only?: readonly string[];
+  title?: string;
+  /** 컴팩트 모드 — 본문 중간 삽입용 */
+  compact?: boolean;
+}
+
+const { only, title = '작업 전 반드시 확인', compact = false } = Astro.props;
+
+const rules = only ? SAFETY_RULES.filter((r) => only.includes(r.id)) : SAFETY_RULES;
+---
+
+<aside class:list={['safety-box', compact && 'safety-box--compact']} aria-label={title}>
+  <p class="safety-box__title">{title}</p>
+  <ul class="safety-box__list">
+    {
+      rules.map((rule) => (
+        <li class:list={['safety-box__item', `is-${rule.level}`]}>
+          <strong>{rule.title}</strong>
+          {!compact && <span>{rule.body}</span>}
+        </li>
+      ))
+    }
+  </ul>
+</aside>
+
+<style>
+  .safety-box {
+    margin: 1.75rem 0;
+    padding: 1.1rem 1.25rem;
+    border: 1px solid var(--c-warn-border);
+    border-left: 4px solid var(--c-warn);
+    border-radius: 6px;
+    background: var(--c-warn-soft);
+  }
+
+  .safety-box__title {
+    margin: 0 0 0.75rem;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--c-warn-text);
+  }
+
+  .safety-box__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .safety-box--compact .safety-box__list {
+    gap: 0.4rem;
+  }
+
+  .safety-box__item {
+    display: grid;
+    gap: 0.2rem;
+    padding-left: 1.1rem;
+    position: relative;
+    font-size: 0.92rem;
+    line-height: 1.6;
+  }
+
+  .safety-box__item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--c-warn);
+  }
+
+  .safety-box__item.is-critical::before {
+    background: var(--c-danger);
+  }
+
+  .safety-box__item strong {
+    color: var(--c-text);
+  }
+
+  .safety-box__item span {
+    color: var(--c-text-muted);
+  }
+</style>

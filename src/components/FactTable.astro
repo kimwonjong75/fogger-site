@@ -1,0 +1,83 @@
+---
+export interface Fact {
+  label: string;
+  value: string;
+  note?: string;
+}
+
+interface Props {
+  caption?: string;
+  rows: Fact[];
+  /** 표 아래 각주 */
+  footnote?: string;
+}
+
+const { caption, rows, footnote } = Astro.props;
+---
+
+<div class="fact-table">
+  <table>
+    {caption && <caption>{caption}</caption>}
+    <tbody>
+      {
+        rows.map((row) => (
+          <tr>
+            <th scope="row">{row.label}</th>
+            <td>
+              {row.value}
+              {row.note && <span class="fact-table__note">{row.note}</span>}
+            </td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+  {footnote && <p class="fact-table__footnote">{footnote}</p>}
+</div>
+
+<style>
+  .fact-table {
+    margin: 1.5rem 0;
+  }
+
+  .fact-table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+  }
+
+  caption {
+    text-align: left;
+    font-weight: 700;
+    padding-bottom: 0.6rem;
+    color: var(--c-text);
+  }
+
+  th,
+  td {
+    border: 1px solid var(--c-border);
+    padding: 0.7rem 0.9rem;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    width: 34%;
+    background: var(--c-surface-alt);
+    font-weight: 600;
+    color: var(--c-text-muted);
+  }
+
+  .fact-table__note {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.85rem;
+    color: var(--c-text-muted);
+  }
+
+  .fact-table__footnote {
+    margin: 0.6rem 0 0;
+    font-size: 0.85rem;
+    color: var(--c-text-muted);
+  }
+</style>

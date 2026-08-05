@@ -1,0 +1,196 @@
+---
+import BuyCTA from './BuyCTA.astro';
+import { FILL_RATIO_LABEL, maxFillLiters, SHIPPING, type Product } from '../data/products';
+
+interface Props {
+  product: Product;
+  /** GA model_select 이벤트의 발생 위치 (home, products, compare …) */
+  context: string;
+  /** 카드 안에 구매 버튼까지 노출할지 */
+  withBuy?: boolean;
+  featured?: boolean;
+}
+
+const { product, context, withBuy = true, featured = false } = Astro.props;
+const href = `/products/${product.id}/`;
+---
+
+<article class:list={['model-card', featured && 'model-card--featured']}>
+  <header class="model-card__head">
+    <h3 class="model-card__title">
+      <a
+        href={href}
+        data-ga-event="model_select"
+        data-ga-model={product.model}
+        data-ga-product-id={product.id}
+        data-ga-context={context}
+      >
+        {product.model}
+      </a>
+    </h3>
+    {featured && <span class="model-card__badge">추천</span>}
+  </header>
+
+  <p class="model-card__tagline">{product.tagline}</p>
+
+  <dl class="model-card__specs">
+    <div>
+      <dt>탱크 용량</dt>
+      <dd>{product.tankLiters}L</dd>
+    </div>
+    <div>
+      <dt>최대 충전량</dt>
+      <dd>{maxFillLiters(product.tankLiters)}L</dd>
+    </div>
+    <div>
+      <dt>충전 한도</dt>
+      <dd>{FILL_RATIO_LABEL}</dd>
+    </div>
+    <div>
+      <dt>어깨끈</dt>
+      <dd>{product.shoulderStrap ? '포함' : '미포함'}</dd>
+    </div>
+    <div>
+      <dt>롱노즐</dt>
+      <dd>{product.longNozzle ? '포함' : '미포함'}</dd>
+    </div>
+    <div>
+      <dt>배송</dt>
+      <dd>{SHIPPING.label}</dd>
+    </div>
+  </dl>
+
+  <p class="model-card__best">
+    <span>이럴 때</span>
+    {product.bestFor.slice(0, 3).join(' · ')}
+  </p>
+
+  <footer class="model-card__foot">
+    <a
+      class="model-card__more"
+      href={href}
+      data-ga-event="model_select"
+      data-ga-model={product.model}
+      data-ga-product-id={product.id}
+      data-ga-context={`${context}_detail`}
+    >
+      상세 사양 보기
+    </a>
+    {withBuy && <BuyCTA productId={product.id} content={`${context}_card_${product.id}`} label="구매하기" />}
+  </footer>
+</article>
+
+<style>
+  .model-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    padding: 1.25rem;
+    border: 1px solid var(--c-border);
+    border-radius: 10px;
+    background: var(--c-surface);
+  }
+
+  .model-card--featured {
+    border-color: var(--c-accent);
+    box-shadow: 0 0 0 1px var(--c-accent);
+  }
+
+  .model-card__head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .model-card__title {
+    margin: 0;
+    font-size: 1.2rem;
+  }
+
+  .model-card__title a {
+    color: var(--c-text);
+    text-decoration: none;
+  }
+
+  .model-card__title a:hover {
+    text-decoration: underline;
+  }
+
+  .model-card__badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    background: var(--c-accent-soft);
+    color: var(--c-accent-dark);
+  }
+
+  .model-card__tagline {
+    margin: 0;
+    color: var(--c-text-muted);
+    font-size: 0.92rem;
+    line-height: 1.6;
+  }
+
+  .model-card__specs {
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem 1rem;
+    font-size: 0.88rem;
+  }
+
+  .model-card__specs div {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    border-bottom: 1px dotted var(--c-border);
+    padding-bottom: 0.35rem;
+  }
+
+  .model-card__specs dt {
+    color: var(--c-text-muted);
+  }
+
+  .model-card__specs dd {
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .model-card__best {
+    margin: 0;
+    font-size: 0.86rem;
+    color: var(--c-text-muted);
+    line-height: 1.6;
+  }
+
+  .model-card__best span {
+    display: inline-block;
+    margin-right: 0.4rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    background: var(--c-surface-alt);
+    font-weight: 600;
+    color: var(--c-text);
+  }
+
+  .model-card__foot {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding-top: 0.4rem;
+  }
+
+  .model-card__more {
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  @media (max-width: 480px) {
+    .model-card__specs {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

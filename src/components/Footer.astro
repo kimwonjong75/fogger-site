@@ -1,0 +1,132 @@
+---
+import { BUSINESS, EXTERNAL, FOOTER_NAV, POLICY_NAV, SITE } from '../data/site';
+
+const year = new Date().getFullYear();
+
+/** 값이 있는 항목만 노출 (전화번호처럼 비워둘 수 있는 항목 대응) */
+const businessRows = [
+  { label: '상호', value: BUSINESS.name },
+  { label: '대표자', value: BUSINESS.ceo },
+  { label: '사업자등록번호', value: BUSINESS.businessNumber },
+  { label: '통신판매업신고', value: BUSINESS.mailOrderNumber },
+  { label: '주소', value: BUSINESS.address },
+  { label: '전화', value: BUSINESS.tel },
+].filter((row) => row.value);
+---
+
+<footer class="site-footer">
+  <div class="site-footer__inner">
+    <nav class="site-footer__nav" aria-label="사이트 메뉴">
+      <ul>
+        {FOOTER_NAV.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+      </ul>
+    </nav>
+
+    <dl class="site-footer__business">
+      {
+        businessRows.map((row) => (
+          <div>
+            <dt>{row.label}</dt>
+            <dd>{row.value}</dd>
+          </div>
+        ))
+      }
+      <div>
+        <dt>이메일</dt>
+        <dd><a href={`mailto:${BUSINESS.email}`}>{BUSINESS.email}</a></dd>
+      </div>
+    </dl>
+
+    <nav class="site-footer__policy" aria-label="정책">
+      <ul>
+        {POLICY_NAV.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+        <li>
+          <a href={EXTERNAL.corporate} target="_blank" rel="noopener external">블루가드 홈페이지</a>
+        </li>
+        <li>
+          <a href={EXTERNAL.smartstore} target="_blank" rel="noopener external">공식 스마트스토어</a>
+        </li>
+      </ul>
+    </nav>
+
+    <p class="site-footer__copy">© {year} {SITE.name}. 제품 사양은 공지 없이 변경될 수 있습니다.</p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: 3.5rem;
+    border-top: 1px solid var(--c-border);
+    background: var(--c-surface-alt);
+  }
+
+  .site-footer__inner {
+    max-width: var(--w-page);
+    margin: 0 auto;
+    padding: 2rem var(--pad-x) 2.5rem;
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.1rem;
+  }
+
+  .site-footer__nav a {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--c-text);
+    text-decoration: none;
+  }
+
+  .site-footer__nav a:hover {
+    text-decoration: underline;
+  }
+
+  .site-footer__business {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1.25rem;
+    font-size: 0.82rem;
+    color: var(--c-text-muted);
+    line-height: 1.6;
+  }
+
+  .site-footer__business div {
+    display: flex;
+    gap: 0.4rem;
+  }
+
+  .site-footer__business dt::after {
+    content: '';
+  }
+
+  .site-footer__business dt {
+    font-weight: 600;
+  }
+
+  .site-footer__business dd {
+    margin: 0;
+  }
+
+  .site-footer__business a {
+    color: var(--c-text-muted);
+  }
+
+  .site-footer__policy a {
+    font-size: 0.82rem;
+    color: var(--c-text-muted);
+  }
+
+  .site-footer__copy {
+    margin: 0;
+    font-size: 0.78rem;
+    color: var(--c-text-muted);
+  }
+</style>

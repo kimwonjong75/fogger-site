@@ -1,0 +1,66 @@
+---
+import type { Crumb } from '../lib/schema';
+
+interface Props {
+  /** BreadcrumbList JSON-LD와 항목·순서가 반드시 동일해야 한다 */
+  crumbs: Crumb[];
+}
+
+const { crumbs } = Astro.props;
+const last = crumbs.length - 1;
+---
+
+<nav class="crumbs" aria-label="현재 위치">
+  <ol>
+    {
+      crumbs.map((crumb, i) => (
+        <li>
+          {i === last ? (
+            <span aria-current="page">{crumb.name}</span>
+          ) : (
+            <a href={crumb.href}>{crumb.name}</a>
+          )}
+        </li>
+      ))
+    }
+  </ol>
+</nav>
+
+<style>
+  .crumbs {
+    padding: 0.9rem 0 0.2rem;
+  }
+
+  ol {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.83rem;
+    color: var(--c-text-muted);
+  }
+
+  li + li::before {
+    content: '›';
+    margin-right: 0.4rem;
+    color: var(--c-border-strong);
+  }
+
+  a {
+    color: var(--c-text-muted);
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: var(--c-text);
+    text-decoration: underline;
+  }
+
+  [aria-current='page'] {
+    color: var(--c-text);
+    font-weight: 600;
+  }
+</style>

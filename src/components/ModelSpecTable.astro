@@ -1,0 +1,92 @@
+---
+import { PRODUCTS, SPEC_ROWS } from '../data/products';
+
+/**
+ * 모델 × 사양 비교표.
+ * 모든 값은 products.ts에서 계산되며 이 파일에는 숫자를 쓰지 않는다.
+ */
+interface Props {
+  caption?: string;
+  /** 전 모델 동일한 공통 사양 행까지 포함할지 */
+  includeShared?: boolean;
+  footnote?: string;
+}
+
+const {
+  caption = '모델별 핵심 수치',
+  includeShared = true,
+  footnote,
+} = Astro.props;
+
+const rows = includeShared ? SPEC_ROWS : SPEC_ROWS.filter((row) => !row.shared);
+---
+
+<div class="spec-table">
+  <table>
+    <caption>{caption}</caption>
+    <thead>
+      <tr>
+        <th scope="col">항목</th>
+        {PRODUCTS.map((product) => <th scope="col">{product.model}</th>)}
+      </tr>
+    </thead>
+    <tbody>
+      {
+        rows.map((row) => (
+          <tr>
+            <th scope="row">{row.label}</th>
+            {PRODUCTS.map((product) => <td>{row.value(product)}</td>)}
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+  {footnote && <p class="spec-table__footnote">{footnote}</p>}
+</div>
+
+<style>
+  .spec-table {
+    margin: 1.75rem 0;
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    min-width: 520px;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+
+  caption {
+    text-align: left;
+    font-weight: 700;
+    padding-bottom: 0.6rem;
+  }
+
+  th,
+  td {
+    border: 1px solid var(--c-border);
+    padding: 0.65rem 0.8rem;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  thead th {
+    background: var(--c-accent-soft);
+    color: var(--c-accent-dark);
+    white-space: nowrap;
+  }
+
+  tbody th {
+    background: var(--c-surface-alt);
+    color: var(--c-text-muted);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .spec-table__footnote {
+    margin: 0.6rem 0 0;
+    font-size: 0.85rem;
+    color: var(--c-text-muted);
+  }
+</style>

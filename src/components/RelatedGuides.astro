@@ -1,0 +1,80 @@
+---
+import { COLLECTION_META, docHref, type DocEntry } from '../lib/content';
+
+interface Props {
+  /** 이미 published 필터를 통과한 문서만 넘길 것 */
+  docs: DocEntry[];
+  title?: string;
+}
+
+const { docs, title = '함께 보면 좋은 문서' } = Astro.props;
+---
+
+{
+  docs.length > 0 && (
+    <nav class="related" aria-label={title}>
+      <h2 class="related__title">{title}</h2>
+      <ul class="related__list">
+        {docs.map((doc) => (
+          <li>
+            <a href={docHref(doc.collection, doc.id)}>
+              <span class="related__kind">{COLLECTION_META[doc.collection].label}</span>
+              <span class="related__name">{doc.data.title}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
+<style>
+  .related {
+    margin: 2.5rem 0 0;
+    padding: 1.25rem;
+    border: 1px solid var(--c-border);
+    border-radius: 10px;
+    background: var(--c-surface-alt);
+  }
+
+  .related__title {
+    margin: 0 0 0.85rem;
+    font-size: 1rem;
+  }
+
+  .related__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  .related__list a {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    text-decoration: none;
+    color: var(--c-text);
+  }
+
+  .related__list a:hover .related__name {
+    text-decoration: underline;
+  }
+
+  .related__kind {
+    flex: none;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    color: var(--c-text-muted);
+  }
+
+  .related__name {
+    font-size: 0.94rem;
+    line-height: 1.5;
+  }
+</style>

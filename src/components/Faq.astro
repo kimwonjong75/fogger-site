@@ -1,0 +1,93 @@
+---
+/**
+ * 화면 표시용 FAQ.
+ * 정책상 FAQPage 구조화데이터는 출력하지 않는다.
+ */
+interface Props {
+  items: { q: string; a: string }[];
+  title?: string;
+}
+
+const { items, title = '자주 묻는 질문' } = Astro.props;
+---
+
+{
+  items.length > 0 && (
+    <section class="faq" aria-labelledby="faq-heading">
+      <h2 id="faq-heading" class="faq__title">
+        {title}
+      </h2>
+      <div class="faq__list">
+        {items.map((item) => (
+          <details class="faq__item">
+            <summary>{item.q}</summary>
+            <div class="faq__answer">
+              <p>{item.a}</p>
+            </div>
+          </details>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .faq {
+    margin: 2.5rem 0 0;
+  }
+
+  .faq__title {
+    font-size: 1.25rem;
+    margin: 0 0 1rem;
+  }
+
+  .faq__list {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .faq__item {
+    border: 1px solid var(--c-border);
+    border-radius: 8px;
+    background: var(--c-surface);
+  }
+
+  summary {
+    cursor: pointer;
+    padding: 0.85rem 1rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  summary::after {
+    content: '+';
+    flex: none;
+    color: var(--c-text-muted);
+    font-weight: 400;
+  }
+
+  details[open] summary::after {
+    content: '−';
+  }
+
+  .faq__answer {
+    padding: 0 1rem 0.95rem;
+    border-top: 1px solid var(--c-border);
+  }
+
+  .faq__answer p {
+    margin: 0.8rem 0 0;
+    font-size: 0.93rem;
+    line-height: 1.75;
+    color: var(--c-text-muted);
+  }
+</style>

@@ -1,0 +1,93 @@
+---
+interface Props {
+  sources: { name: string; url: string }[];
+  reviewer: string;
+  updatedDate: Date;
+}
+
+const { sources, reviewer, updatedDate } = Astro.props;
+
+const formatted = new Intl.DateTimeFormat('ko-KR', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  timeZone: 'Asia/Seoul',
+}).format(updatedDate);
+---
+
+<footer class="doc-meta">
+  <dl>
+    <div>
+      <dt>최종 수정</dt>
+      <dd><time datetime={updatedDate.toISOString().slice(0, 10)}>{formatted}</time></dd>
+    </div>
+    <div>
+      <dt>검수</dt>
+      <dd>{reviewer}</dd>
+    </div>
+  </dl>
+
+  {
+    sources.length > 0 && (
+      <section>
+        <h2 class="doc-meta__title">참고 자료</h2>
+        <ul>
+          {sources.map((source) => (
+            <li>
+              <a href={source.url} target="_blank" rel="noopener nofollow external">
+                {source.name}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+</footer>
+
+<style>
+  .doc-meta {
+    margin-top: 2.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--c-border);
+    font-size: 0.87rem;
+    color: var(--c-text-muted);
+  }
+
+  dl {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.5rem;
+    margin: 0;
+  }
+
+  dl div {
+    display: flex;
+    gap: 0.4rem;
+  }
+
+  dt {
+    font-weight: 600;
+  }
+
+  dd {
+    margin: 0;
+  }
+
+  .doc-meta__title {
+    font-size: 0.9rem;
+    margin: 1.25rem 0 0.5rem;
+    color: var(--c-text);
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 1.1rem;
+    display: grid;
+    gap: 0.3rem;
+  }
+
+  li {
+    line-height: 1.6;
+  }
+</style>

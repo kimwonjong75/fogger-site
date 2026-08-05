@@ -1,0 +1,93 @@
+---
+import { GA4_MEASUREMENT_ID } from '../data/site';
+
+/**
+ * GA4 계측.
+ *
+ * 측정 ID가 실제 값일 때만 gtag.js를 불러온다(자리표시자면 외부 요청 0).
+ * 이벤트 바인딩은 항상 출력되므로 ID만 바꾸면 즉시 수집이 시작된다.
+ *
+ * 수집 이벤트
+ *  - purchase_cta_click : utm_content, model, product_id
+ *  - model_select       : model, product_id, context
+ *  - video_play         : video_id, video_title   (VideoEmbed에서 발생)
+ *  - manual_download    : manual_name, file_type
+ *  - scroll_75          : page_path (페이지당 1회)
+ */
+const isRealId = /^G-[A-Z0-9]{6,}$/.test(GA4_MEASUREMENT_ID) && !/^G-X+$/.test(GA4_MEASUREMENT_ID);
+---
+
+{
+  isRealId && (
+    <script
+      is:inline
+      async
+      src={`https://www.googletagmanager.com/gtag/js?id=${GA4_MEASUREMENT_ID}`}
+    />
+  )
+}
+
+<script is:inline define:vars={{ GA4_MEASUREMENT_ID, isRealId }}>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() {
+    window.dataLayer.push(arguments);
+  }
+  window.gtag = window.gtag || gtag;
+
+  if (isRealId) {
+    gtag('js', new Date());
+    gtag('config', GA4_MEASUREMENT_ID, { send_page_view: true });
+  }
+</script>
+
+<script>
+  type GaParams = Record<string, string | number | undefined>;
+
+  function track(name: string, params: GaParams): void {
+    const clean: GaParams = {};
+    for (const [key, value] of Object.entries(params)) {
+      if (value !== undefined && value !== '') clean[key] = value;
+    }
+    window.dataLayer?.push({ event: name, ...clean });
+    window.gtag?.('event', name, clean);
+  }
+
+  /* 클릭 이벤트 위임 — data-ga-event 를 가진 요소 전부 */
+  document.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement | null;
+    const el = target?.closest<HTMLElement>('[data-ga-event]');
+    if (!el) return;
+
+    const name = el.dataset.gaEvent;
+    if (!name) return;
+
+    track(name, {
+      utm_content: el.dataset.gaUtmContent,
+      model: el.dataset.gaModel,
+      product_id: el.dataset.gaProductId,
+      context: el.dataset.gaContext,
+      manual_name: el.dataset.gaManualName,
+      file_type: el.dataset.gaFileType,
+      link_url: el instanceof HTMLAnchorElement ? el.href : undefined,
+      page_path: location.pathname,
+    });
+  });
+
+  /* scroll_75 — 페이지당 1회 */
+  let scroll75Sent = false;
+  function checkScrollDepth(): void {
+    if (scroll75Sent) return;
+    const doc = document.documentElement;
+    const scrollable = doc.scrollHeight - window.innerHeight;
+    if (scrollable <= 0) return;
+    const depth = (window.scrollY / scrollable) * 100;
+    if (depth < 75) return;
+
+    scroll75Sent = true;
+    window.removeEventListener('scroll', checkScrollDepth);
+    track('scroll_75', { page_path: location.pathname, percent_scrolled: 75 });
+  }
+
+  window.addEventListener('scroll', checkScrollDepth, { passive: true });
+  checkScrollDepth();
+</script>

@@ -1,0 +1,224 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from './BaseLayout.astro';
+import BuyCTA from '../components/BuyCTA.astro';
+import Faq from '../components/Faq.astro';
+import Pic from '../components/Pic.astro';
+import RelatedGuides from '../components/RelatedGuides.astro';
+import Sources from '../components/Sources.astro';
+import VideoEmbed from '../components/VideoEmbed.astro';
+import { BUSINESS } from '../data/site';
+import { HAS_PUBLISHED_CHEMICALS } from '../data/chemicals';
+import { DEFAULT_PRODUCT_ID } from '../data/products';
+import { COLLECTION_META, docHref, resolveRelated, type DocEntry } from '../lib/content';
+import { articleSchema, type Crumb } from '../lib/schema';
+import { absoluteUrl } from '../lib/url';
+
+interface Props {
+  entry: DocEntry;
+}
+
+const { entry } = Astro.props;
+const { data, collection, id } = entry;
+
+const meta = COLLECTION_META[collection];
+const url = docHref(collection, id);
+const { Content } = await render(entry);
+const related = await resolveRelated(entry);
+
+const crumbs: Crumb[] = [
+  { name: meta.label, href: meta.href },
+  { name: data.title, href: url },
+];
+
+const article = articleSchema({
+  title: data.title,
+  description: data.description,
+  url,
+  updatedDate: data.updatedDate,
+  reviewer: data.reviewer,
+  imageUrl: data.heroImage ? absoluteUrl(data.heroImage.src) : undefined,
+});
+
+/** 30자 제한을 넘지 않도록 문서 제목을 그대로 title로 사용 */
+const pageTitle = data.title;
+const showSticky = data.ctaType === 'product';
+---
+
+<BaseLayout
+  title={pageTitle}
+  description={data.description}
+  canonicalPath={url}
+  ogType="article"
+  ogImage={`/og/og-${collection}.png`}
+  updatedDate={data.updatedDate}
+  crumbs={crumbs}
+  schemaNodes={[article]}
+  stickyBuy={showSticky ? DEFAULT_PRODUCT_ID : false}
+  width="narrow"
+>
+  <article class="doc">
+    <h1>{data.title}</h1>
+    <p class="lede">{data.description}</p>
+
+    {
+      data.heroImage && data.heroImageAlt && (
+        <Pic
+          src={data.heroImage}
+          alt={data.heroImageAlt}
+          width={760}
+          height={428}
+          priority
+          class="doc__hero"
+        />
+      )
+    }
+
+    <div class="prose">
+      <Content />
+    </div>
+
+    {data.video && <VideoEmbed video={data.video} />}
+
+    <Faq items={data.faq} />
+
+    {
+      data.ctaType === 'product' && (
+        <section class="doc-cta">
+          <h2 class="doc-cta__title">모델을 고르셨나요?</h2>
+          <p class="doc-cta__body">
+            사용 면적과 이동 거리에 따라 모델이 갈립니다. 사양을 나란히 두고 비교해 보세요.
+          </p>
+          <div class="doc-cta__actions">
+            <BuyCTA content={`doc_${collection}_${id}`} showShipping />
+            <a class="doc-cta__link" href="/compare/">
+              모델 비교표 보기
+            </a>
+          </div>
+        </section>
+      )
+    }
+
+    {
+      data.ctaType === 'consumable' && HAS_PUBLISHED_CHEMICALS && (
+        <section class="doc-cta">
+          <h2 class="doc-cta__title">소모품 다시 채우기</h2>
+          <p class="doc-cta__body">사용 매질과 소모품은 공식몰에서 확인할 수 있습니다.</p>
+          <div class="doc-cta__actions">
+            <BuyCTA content={`doc_consumable_${id}`} label="공식몰에서 보기" showShipping />
+          </div>
+        </section>
+      )
+    }
+
+    {
+      data.ctaType === 'as' && (
+        <section class="doc-cta">
+          <h2 class="doc-cta__title">해결되지 않나요?</h2>
+          <p class="doc-cta__body">
+            위 점검으로도 증상이 남으면 무리해서 분해하지 마시고 A/S로 접수해 주세요. 모델명과 증상,
+            사용한 매질을 함께 알려주시면 진단이 빨라집니다.
+          </p>
+          <div class="doc-cta__actions">
+            <a class="doc-cta__mail" href={`mailto:${BUSINESS.email}`}>
+              {BUSINESS.email} 로 문의
+            </a>
+            {BUSINESS.tel && <span class="doc-cta__tel">전화 {BUSINESS.tel}</span>}
+          </div>
+        </section>
+      )
+    }
+
+    <Sources sources={data.sources} reviewer={data.reviewer} updatedDate={data.updatedDate} />
+    <RelatedGuides docs={related} />
+  </article>
+</BaseLayout>
+
+<style>
+  .doc :global(.doc__hero) {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    margin: 0.5rem 0 1.75rem;
+    display: block;
+  }
+
+  .prose :global(h2) {
+    scroll-margin-top: 1rem;
+  }
+
+  .prose :global(ul),
+  .prose :global(ol) {
+    padding-left: 1.3rem;
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .prose :global(li) {
+    line-height: 1.75;
+  }
+
+  .prose :global(blockquote) {
+    margin: 1.5rem 0;
+    padding: 0.6rem 1rem;
+    border-left: 3px solid var(--c-border-strong);
+    color: var(--c-text-muted);
+    background: var(--c-surface-alt);
+    border-radius: 0 6px 6px 0;
+  }
+
+  .prose :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.93rem;
+    margin: 1.5rem 0;
+  }
+
+  .prose :global(th),
+  .prose :global(td) {
+    border: 1px solid var(--c-border);
+    padding: 0.6rem 0.8rem;
+    text-align: left;
+  }
+
+  .prose :global(th) {
+    background: var(--c-surface-alt);
+  }
+
+  .doc-cta {
+    margin: 2.5rem 0 0;
+    padding: 1.35rem;
+    border: 1px solid var(--c-accent);
+    border-radius: 10px;
+    background: var(--c-accent-soft);
+  }
+
+  .doc-cta__title {
+    margin: 0 0 0.5rem;
+    font-size: 1.12rem;
+  }
+
+  .doc-cta__body {
+    margin: 0 0 1rem;
+    font-size: 0.93rem;
+    color: var(--c-text-muted);
+  }
+
+  .doc-cta__actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .doc-cta__link,
+  .doc-cta__mail {
+    font-weight: 600;
+    font-size: 0.93rem;
+  }
+
+  .doc-cta__tel {
+    font-size: 0.9rem;
+    color: var(--c-text-muted);
+  }
+</style>
