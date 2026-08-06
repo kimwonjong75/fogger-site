@@ -7,7 +7,9 @@ import Pic from '../components/Pic.astro';
 import SafetyBox from '../components/SafetyBox.astro';
 import ShippingNote from '../components/ShippingNote.astro';
 import StatRow from '../components/StatRow.astro';
+import ManualDownload from '../components/ManualDownload.astro';
 import TrustBar from '../components/TrustBar.astro';
+import VideoEmbed from '../components/VideoEmbed.astro';
 import { MEDIA_LABEL, PRODUCTS } from '../data/products';
 import { COLLECTION_META, docHref, getPublishedDocs } from '../lib/content';
 import { organizationSchema, websiteSchema } from '../lib/schema';
@@ -69,6 +71,16 @@ const sections = [
       <a href="/products/">제품 전체 보기</a> · <a href="/compare/">모델 비교표</a>
     </p>
     <ShippingNote />
+  </section>
+
+  <section aria-labelledby="howto">
+    <h2 id="howto">공식 사용방법</h2>
+    <p class="section-desc">
+      제조사가 만든 안내 영상입니다. 작업 전 준비부터 약제 충전, 점화, 펌핑, 사용 후 세척까지
+      순서대로 보여줍니다.
+    </p>
+    <VideoEmbed />
+    <ManualDownload />
   </section>
 
   <TrustBar />

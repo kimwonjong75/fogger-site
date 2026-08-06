@@ -6,6 +6,7 @@ import FactTable from '../../components/FactTable.astro';
 import Pic from '../../components/Pic.astro';
 import RelatedGuides from '../../components/RelatedGuides.astro';
 import SafetyBox from '../../components/SafetyBox.astro';
+import ManualDownload from '../../components/ManualDownload.astro';
 import VideoEmbed from '../../components/VideoEmbed.astro';
 import { PRODUCT_IMAGES, PRODUCT_IMAGE_ALT } from '../../data/product-images';
 import {
@@ -138,11 +139,14 @@ const related = (await getAllPublishedDocs()).slice(0, 3);
 
     <SafetyBox />
 
-    <h2>작동 영상</h2>
-    <VideoEmbed
-      placeholderNote={`${product.model} 실제 작동 영상은 촬영 후 이 자리에 추가됩니다.`}
-      caption="영상이 준비되기 전까지는 사용법 문서의 단계별 설명을 참고하세요."
-    />
+    <h2>공식 사용방법 영상</h2>
+    <VideoEmbed />
+
+    <h2>사용설명서</h2>
+    <p class="manual-lead">
+      BF-100S와 BF-102 공용 책자입니다. 사이트 안내와 설명서 표기가 다를 경우 설명서를 우선합니다.
+    </p>
+    <ManualDownload />
 
     <section class="closing">
       <h2>{product.model}로 결정하셨나요?</h2>

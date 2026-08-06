@@ -116,23 +116,16 @@ export const SAFETY_RULES = [
 export type ProductId = 'bf-100s' | 'bf-102' | 'bf-102-long-nozzle';
 
 /**
- * ⚠️ 탱크 용량 확인 필요 — 배포 차단 사항
+ * 탱크 용량 확인 완료 (2026-08-06).
  *
- * 사이트가 쓰는 값(아래 tankLiters)과 공식 상세페이지 표기가 서로 다르다.
+ *   BF-100S 기본형  탱크 1.8L  → 90% 미만 권장이므로 최대 1.62L
+ *   BF-102  대용량  탱크 2.5L  → 90% 미만 권장이므로 최대 2.25L
  *
- *   구분      | 이 파일 | 공식 상세페이지
- *   기본형    | 1.7L    | 1.8L (연료통 최대 1800ml)
- *   대용량    | 2.8L    | 2.5L (연료통 최대 2500ml)
- *
- * 충전 한도는 넘침·역류에 직결되는 안전 수치이므로 임의로 고르지 않는다.
- * 확인 후 값을 확정하고 이 플래그를 true로 바꾸면 배포 차단이 풀린다.
- * (verify-build.mjs가 이 플래그를 검사한다)
- *
- * 확인해야 할 것
- *   1. 1800ml / 2500ml 이 탱크 총용량인가, 이미 90%를 적용한 최대 충전량인가
- *   2. BF-100S / BF-102 라는 모델명과 기본형 / 대용량 표기의 대응 관계
+ * 근거: 공식 상세페이지 사양표("기본형 연료통 최대 1800ml / 대용량 최대 2500ml"),
+ *       모델별 비교표("용량 1.8L / 2.5L"), 사용설명서 책자 파일명(BF-100S_102_사용설명서).
+ * 값을 바꿀 때는 근거 문서를 함께 갱신한다.
  */
-export const TANK_SPEC_CONFIRMED = false;
+export const TANK_SPEC_CONFIRMED = true;
 
 export interface Product {
   id: ProductId;
@@ -189,7 +182,7 @@ export const PRODUCTS: Product[] = [
     officialLabel: '기본형',
     name: '블루가드 연막소독기 BF-100S 기본형',
     tagline: '탱크가 가장 작은 기본형. 세척용 받침대가 함께 들어 있습니다.',
-    tankLiters: 1.7,
+    tankLiters: 1.8,
     dimensionsMm: '465×265×180',
     nozzle: '기본 노즐',
     sprayMode: '일반 분사',
@@ -205,7 +198,7 @@ export const PRODUCTS: Product[] = [
     officialLabel: '대용량',
     name: '블루가드 연막소독기 BF-102 대용량',
     tagline: '탱크가 크고 전용 어깨스트랩이 들어 있어 오래 들고 작업합니다.',
-    tankLiters: 2.8,
+    tankLiters: 2.5,
     dimensionsMm: '465×360×170',
     nozzle: '기본 노즐',
     sprayMode: '일반 분사',
@@ -221,7 +214,7 @@ export const PRODUCTS: Product[] = [
     officialLabel: '대용량+롱노즐',
     name: '블루가드 연막소독기 BF-102 롱노즐 구성',
     tagline: '대용량 본체에 50cm 롱노즐을 더해 아래에서 위로 침투 분사합니다.',
-    tankLiters: 2.8,
+    tankLiters: 2.5,
     dimensionsMm: '465×360×170',
     nozzle: '기본 노즐 + 롱노즐 50cm',
     sprayMode: '하부침투분사 (아래에서 위로 확산)',

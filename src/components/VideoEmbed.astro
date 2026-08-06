@@ -1,44 +1,69 @@
 ---
+import { Image } from 'astro:assets';
+import poster from '../assets/video-poster-howto.jpg';
+import { HOWTO_VIDEO } from '../data/media';
+
 /**
- * 영상 자리(placeholder).
+ * 공식 사용법 영상.
  *
- * - `video`가 없으면 "촬영 예정" 자리표시 박스만 렌더링한다.
- * - `video`가 있으면 클릭 전에는 어떤 외부 요청도 하지 않는 파사드로 두고,
- *   클릭 시점에 iframe을 주입하면서 GA4 `video_play`를 보낸다.
+ * 자체 호스팅이라 외부 요청이 없고, 클릭 전에는 <video>를 만들지 않으므로
+ * 초기 페이지 전송량에 영향을 주지 않는다(포스터 이미지만 lazy 로드).
+ * 재생 시 GA4 `video_play`를 보낸다.
  */
 interface Props {
-  video?: { provider: 'youtube'; id: string; title: string };
-  /** 자리표시 상태에서 보여줄 설명 */
-  placeholderNote?: string;
   caption?: string;
+  /** 영상이 준비되지 않은 자리에 쓰는 안내 (영상을 넘기지 않을 때만) */
+  placeholderNote?: string;
+  /** true면 영상 대신 자리표시 박스를 렌더링 */
+  placeholder?: boolean;
 }
 
-const { video, placeholderNote = '실제 작동 영상은 촬영 후 이 자리에 추가됩니다.', caption } =
-  Astro.props;
+const {
+  caption = '블루가드 공식 사용방법 안내 영상입니다. 재생을 누르면 영상이 내려받아집니다.',
+  placeholderNote = '실제 작동 영상은 촬영 후 이 자리에 추가됩니다.',
+  placeholder = false,
+} = Astro.props;
+
+const minutes = Math.floor(HOWTO_VIDEO.durationSec / 60);
+const seconds = String(HOWTO_VIDEO.durationSec % 60).padStart(2, '0');
 ---
 
 <figure class="video">
   {
-    video ? (
-      <div
-        class="video__facade"
-        data-video-facade
-        data-video-id={video.id}
-        data-video-title={video.title}
-      >
-        <button type="button" class="video__play" aria-label={`${video.title} 재생`}>
-          <span class="video__play-icon" aria-hidden="true" />
-          <span class="video__play-label">{video.title}</span>
-        </button>
-      </div>
-    ) : (
+    placeholder ? (
       <div class="video__placeholder">
         <span class="video__placeholder-badge">영상 자리</span>
         <p class="video__placeholder-note">{placeholderNote}</p>
       </div>
+    ) : (
+      <div
+        class="video__facade"
+        data-video-facade
+        data-video-src={HOWTO_VIDEO.src}
+        data-video-title={HOWTO_VIDEO.title}
+      >
+        <Image
+          src={poster}
+          alt={`${HOWTO_VIDEO.title} — 작업 전 준비 단계를 설명하는 영상 첫 장면`}
+          width={HOWTO_VIDEO.width}
+          height={HOWTO_VIDEO.height}
+          loading="lazy"
+          decoding="async"
+          class="video__poster"
+        />
+        <button type="button" class="video__play">
+          <span class="video__play-icon" aria-hidden="true" />
+          <span class="video__play-label">
+            {HOWTO_VIDEO.title} 재생
+            <span class="video__play-meta">
+              {minutes}분 {seconds}초 · 소리 있음
+            </span>
+          </span>
+        </button>
+      </div>
     )
   }
-  {caption && <figcaption>{caption}</figcaption>}
+  {caption && !placeholder && <figcaption>{caption}</figcaption>}
 </figure>
 
 <style>
@@ -51,37 +76,52 @@ const { video, placeholderNote = '실제 작동 영상은 촬영 후 이 자리�
     position: relative;
     aspect-ratio: 16 / 9;
     width: 100%;
-    border-radius: 10px;
+    border-radius: 12px;
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
+    background: var(--c-ink);
   }
 
-  .video__facade {
-    background: linear-gradient(135deg, #1e293b, #0f172a);
+  .video :global(.video__poster) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   .video__play {
+    position: absolute;
+    inset: 0;
+    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: 0.75rem;
-    background: none;
+    background: rgb(11 37 69 / 0.45);
     border: 0;
     color: #fff;
     cursor: pointer;
     padding: 1rem;
     font: inherit;
+    transition: background-color 0.15s ease;
+  }
+
+  .video__play:hover {
+    background: rgb(11 37 69 / 0.3);
   }
 
   .video__play-icon {
-    width: 64px;
-    height: 64px;
+    width: 68px;
+    height: 68px;
     border-radius: 50%;
-    background: rgb(255 255 255 / 0.16);
-    border: 2px solid rgb(255 255 255 / 0.7);
+    background: rgb(255 255 255 / 0.18);
+    border: 2px solid rgb(255 255 255 / 0.85);
     position: relative;
+    backdrop-filter: blur(2px);
   }
 
   .video__play-icon::after {
@@ -91,13 +131,22 @@ const { video, placeholderNote = '실제 작동 영상은 촬영 후 이 자리�
     left: 54%;
     transform: translate(-50%, -50%);
     border-style: solid;
-    border-width: 11px 0 11px 18px;
+    border-width: 12px 0 12px 19px;
     border-color: transparent transparent transparent #fff;
   }
 
   .video__play-label {
-    font-size: 0.95rem;
-    font-weight: 600;
+    display: grid;
+    gap: 0.2rem;
+    font-size: 1rem;
+    font-weight: 700;
+    text-shadow: 0 1px 3px rgb(0 0 0 / 0.5);
+  }
+
+  .video__play-meta {
+    font-size: 0.8rem;
+    font-weight: 500;
+    opacity: 0.9;
   }
 
   .video__placeholder {
@@ -131,12 +180,12 @@ const { video, placeholderNote = '실제 작동 영상은 촬영 후 이 자리�
     color: var(--c-text-muted);
   }
 
-  .video :global(iframe) {
+  .video :global(video) {
     width: 100%;
     aspect-ratio: 16 / 9;
-    border: 0;
-    border-radius: 10px;
+    border-radius: 12px;
     display: block;
+    background: #000;
   }
 </style>
 
@@ -145,20 +194,21 @@ const { video, placeholderNote = '실제 작동 영상은 촬영 후 이 자리�
     facade.addEventListener(
       'click',
       () => {
-        const id = facade.dataset.videoId;
+        const src = facade.dataset.videoSrc;
         const title = facade.dataset.videoTitle ?? '';
-        if (!id) return;
+        if (!src) return;
 
-        window.gtag?.('event', 'video_play', { video_id: id, video_title: title });
+        window.gtag?.('event', 'video_play', { video_title: title, video_src: src });
 
-        const iframe = document.createElement('iframe');
-        iframe.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`;
-        iframe.title = title;
-        iframe.loading = 'lazy';
-        iframe.allow =
-          'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-        iframe.allowFullscreen = true;
-        facade.replaceWith(iframe);
+        const video = document.createElement('video');
+        video.src = src;
+        video.controls = true;
+        video.autoplay = true;
+        video.playsInline = true;
+        video.preload = 'auto';
+        video.setAttribute('title', title);
+        facade.replaceWith(video);
+        video.focus();
       },
       { once: true },
     );
