@@ -19,6 +19,7 @@ export function organizationSchema() {
     name: SITE.name,
     legalName: real(BUSINESS.name),
     url: SITE.url,
+    logo: absoluteUrl('/favicon-512.png'),
     email: real(BUSINESS.email),
     telephone: real(BUSINESS.tel),
     address: address

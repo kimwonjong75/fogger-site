@@ -1,25 +1,33 @@
 ---
-import { BUSINESS, EXTERNAL } from '../data/site';
+import { BUSINESS, EXTERNAL, REVIEWER_NAME } from '../data/site';
+import { getLatestReviewDate } from '../lib/content';
 
 /**
  * 신뢰 블록.
  *
- * 검증 가능한 사실만 노출한다 — 등록번호, 신고번호, 연락처, 공식몰.
- * 실적·만족도 같은 수치는 근거가 확보되기 전까지 넣지 않는다.
- * 사업자 정보를 푸터에만 두지 않고 본문에 올리는 것은 E-E-A-T 신호를 눈에 보이게 하기 위함이다.
+ * 사업자등록번호·통신판매업신고번호는 법적 표기이며 이미 푸터에 있으므로 여기서 반복하지 않는다.
+ * 이 블록은 대신 검수 주체·검수일처럼 "이 정보를 믿어도 되는 이유"를 보여준다.
+ * 실적·만족도·후기 평점처럼 근거가 확보되지 않은 수치는 넣지 않는다.
  */
+const latestReview = await getLatestReviewDate();
+const reviewDateLabel = latestReview
+  ? new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }).format(
+      latestReview,
+    )
+  : '검수 중';
+
 const items = [
   {
-    icon: 'building',
-    label: '사업자등록',
-    value: BUSINESS.businessNumber,
-    sub: BUSINESS.name,
+    icon: 'check',
+    label: '콘텐츠 검수',
+    value: REVIEWER_NAME,
+    sub: '기술지원 담당',
   },
   {
-    icon: 'doc',
-    label: '통신판매업신고',
-    value: BUSINESS.mailOrderNumber,
-    sub: '광주광산구청 신고',
+    icon: 'calendar',
+    label: '최종 검수일',
+    value: reviewDateLabel,
+    sub: '문서별 수정일은 각 페이지 하단 참고',
   },
   {
     icon: 'store',
@@ -29,20 +37,20 @@ const items = [
     href: EXTERNAL.corporate,
   },
   BUSINESS.tel
-    ? { icon: 'phone', label: '고객문의', value: BUSINESS.tel, sub: '기술지원·A/S 접수', href: `tel:${BUSINESS.tel.replace(/-/g, '')}` }
-    : { icon: 'mail', label: '고객문의', value: BUSINESS.email, sub: '기술지원·A/S 접수', href: `mailto:${BUSINESS.email}` },
+    ? { icon: 'phone', label: '기술지원 문의', value: BUSINESS.tel, sub: 'A/S·사용법 접수', href: `tel:${BUSINESS.tel.replace(/-/g, '')}` }
+    : { icon: 'mail', label: '기술지원 문의', value: BUSINESS.email, sub: 'A/S·사용법 접수', href: `mailto:${BUSINESS.email}` },
 ];
 
 const PATHS: Record<string, string> = {
-  building: 'M3 21h18M5 21V4a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v17M15 21V9h3a1 1 0 0 1 1 1v11M8 7h2M8 11h2M8 15h2',
-  doc: 'M14 3H7a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V7zM14 3v4h4M9 12h6M9 16h4',
+  check: 'M20 6 9 17l-5-5M9 21h6a2 2 0 0 0 2-2V9M5 9V5a2 2 0 0 1 2-2h4',
+  calendar: 'M8 2v4M16 2v4M3.5 9h17M4 4h16a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z',
   store: 'M4 9h16l-1 11a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1zM4 9l1.5-5h13L20 9M9 13a3 3 0 0 0 6 0',
   phone: 'M6 3h3l2 5-2.5 1.5a12 12 0 0 0 6 6L16 13l5 2v3a2 2 0 0 1-2 2A16 16 0 0 1 4 5a2 2 0 0 1 2-2',
   mail: 'M3 6h18v12H3zM3 6l9 7 9-7',
 };
 ---
 
-<section class="trust" aria-label="사업자 정보">
+<section class="trust" aria-label="콘텐츠 신뢰 정보">
   <ul>
     {
       items.map((item) => (
@@ -53,11 +61,11 @@ const PATHS: Record<string, string> = {
           <div class="trust__body">
             <span class="trust__label">{item.label}</span>
             {item.href ? (
-              <a class="trust__value num" href={item.href} rel={item.href.startsWith('http') ? 'noopener external' : undefined}>
+              <a class="trust__value" href={item.href} rel={item.href.startsWith('http') ? 'noopener external' : undefined}>
                 {item.value}
               </a>
             ) : (
-              <span class="trust__value num">{item.value}</span>
+              <span class="trust__value">{item.value}</span>
             )}
             <span class="trust__sub">{item.sub}</span>
           </div>

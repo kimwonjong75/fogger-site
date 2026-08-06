@@ -28,6 +28,9 @@ export const BUSINESS = {
   tel: '070-4147-1894',
 } as const;
 
+/** 콘텐츠 검수자 — 문서 frontmatter의 reviewer 값과 일치시킨다 */
+export const REVIEWER_NAME = '김원종';
+
 export const SITE = {
   url: 'https://fogger.blueguard.kr',
   /** 사이트 이름 — <title> 접미사와 WebSite 스키마에 사용 */
@@ -68,7 +71,7 @@ export const ORG_ID = `${SITE.url}/#organization`;
 export const WEBSITE_ID = `${SITE.url}/#website`;
 
 /** GA4 측정 ID. 빈 문자열이면 계측 스크립트를 아예 출력하지 않는다. */
-export const GA4_MEASUREMENT_ID = 'G-XXXXXXXXXX';
+export const GA4_MEASUREMENT_ID = 'G-0MQD99WG0W';
 
 /** 검색엔진 소유확인 메타. 값이 빈 문자열이면 출력하지 않는다. */
 export const SITE_VERIFICATION = {
@@ -82,22 +85,6 @@ export const NAV = [
   { label: '제품', href: '/products/' },
   { label: '모델비교', href: '/compare/' },
   { label: '사용법', href: '/guides/' },
-  { label: '문제해결', href: '/troubleshooting/' },
-  { label: '안전수칙', href: '/safety/' },
-] as const;
-
-/** 푸터 정책 페이지 (실제 라우트가 존재해야 한다) */
-export const POLICY_NAV = [
-  { label: '개인정보처리방침', href: '/privacy/' },
-  { label: '이용약관', href: '/terms/' },
-] as const;
-
-/** 푸터 콘텐츠 링크 */
-export const FOOTER_NAV = [
-  { label: '제품', href: '/products/' },
-  { label: '모델비교', href: '/compare/' },
-  { label: '사용법', href: '/guides/' },
-  { label: '활용사례', href: '/uses/' },
   { label: '문제해결', href: '/troubleshooting/' },
   { label: '안전수칙', href: '/safety/' },
 ] as const;

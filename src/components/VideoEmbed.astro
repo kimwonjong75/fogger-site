@@ -1,36 +1,36 @@
 ---
 import { Image } from 'astro:assets';
-import poster from '../assets/video-poster-howto.jpg';
-import { HOWTO_VIDEO } from '../data/media';
+import type { VideoAsset } from '../data/media';
 
 /**
- * 공식 사용법 영상.
+ * 자체 호스팅 영상 플레이어.
  *
- * 자체 호스팅이라 외부 요청이 없고, 클릭 전에는 <video>를 만들지 않으므로
- * 초기 페이지 전송량에 영향을 주지 않는다(포스터 이미지만 lazy 로드).
- * 재생 시 GA4 `video_play`를 보낸다.
+ * 클릭 전에는 <video>를 만들지 않으므로 초기 페이지 전송량에 영향이 없다
+ * (포스터 이미지만 lazy 로드). 재생 시 GA4 `video_play`를 보낸다.
+ * 세로 영상(9:16)과 가로 영상(16:9) 모두 비율을 유지해 표시한다.
  */
 interface Props {
-  caption?: string;
-  /** 영상이 준비되지 않은 자리에 쓰는 안내 (영상을 넘기지 않을 때만) */
-  placeholderNote?: string;
+  video?: VideoAsset;
   /** true면 영상 대신 자리표시 박스를 렌더링 */
   placeholder?: boolean;
+  placeholderNote?: string;
 }
 
 const {
-  caption = '블루가드 공식 사용방법 안내 영상입니다. 재생을 누르면 영상이 내려받아집니다.',
+  video,
+  placeholder = !video,
   placeholderNote = '실제 작동 영상은 촬영 후 이 자리에 추가됩니다.',
-  placeholder = false,
 } = Astro.props;
 
-const minutes = Math.floor(HOWTO_VIDEO.durationSec / 60);
-const seconds = String(HOWTO_VIDEO.durationSec % 60).padStart(2, '0');
+const isPortrait = video ? video.height > video.width : false;
+const minutes = video ? Math.floor(video.durationSec / 60) : 0;
+const seconds = video ? String(video.durationSec % 60).padStart(2, '0') : '00';
+const aspect = video ? `${video.width} / ${video.height}` : '16 / 9';
 ---
 
-<figure class="video">
+<figure class:list={['video', isPortrait && 'video--portrait']}>
   {
-    placeholder ? (
+    placeholder || !video ? (
       <div class="video__placeholder">
         <span class="video__placeholder-badge">영상 자리</span>
         <p class="video__placeholder-note">{placeholderNote}</p>
@@ -38,15 +38,16 @@ const seconds = String(HOWTO_VIDEO.durationSec % 60).padStart(2, '0');
     ) : (
       <div
         class="video__facade"
+        style={`--video-aspect:${aspect}`}
         data-video-facade
-        data-video-src={HOWTO_VIDEO.src}
-        data-video-title={HOWTO_VIDEO.title}
+        data-video-src={video.src}
+        data-video-title={video.title}
       >
         <Image
-          src={poster}
-          alt={`${HOWTO_VIDEO.title} — 작업 전 준비 단계를 설명하는 영상 첫 장면`}
-          width={HOWTO_VIDEO.width}
-          height={HOWTO_VIDEO.height}
+          src={video.poster}
+          alt={`${video.title} — 재생 전 첫 장면`}
+          width={video.width}
+          height={video.height}
           loading="lazy"
           decoding="async"
           class="video__poster"
@@ -54,7 +55,7 @@ const seconds = String(HOWTO_VIDEO.durationSec % 60).padStart(2, '0');
         <button type="button" class="video__play">
           <span class="video__play-icon" aria-hidden="true" />
           <span class="video__play-label">
-            {HOWTO_VIDEO.title} 재생
+            {video.title} 재생
             <span class="video__play-meta">
               {minutes}분 {seconds}초 · 소리 있음
             </span>
@@ -63,18 +64,23 @@ const seconds = String(HOWTO_VIDEO.durationSec % 60).padStart(2, '0');
       </div>
     )
   }
-  {caption && !placeholder && <figcaption>{caption}</figcaption>}
+  {video && !placeholder && <figcaption>{video.caption}</figcaption>}
 </figure>
 
 <style>
   .video {
-    margin: 1.75rem 0;
+    margin: 0;
+  }
+
+  .video--portrait {
+    max-width: 320px;
+    margin-inline: auto;
   }
 
   .video__facade,
   .video__placeholder {
     position: relative;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: var(--video-aspect, 16 / 9);
     width: 100%;
     border-radius: 12px;
     overflow: hidden;
@@ -115,8 +121,8 @@ const seconds = String(HOWTO_VIDEO.durationSec % 60).padStart(2, '0');
   }
 
   .video__play-icon {
-    width: 68px;
-    height: 68px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     background: rgb(255 255 255 / 0.18);
     border: 2px solid rgb(255 255 255 / 0.85);
@@ -131,20 +137,21 @@ const seconds = String(HOWTO_VIDEO.durationSec % 60).padStart(2, '0');
     left: 54%;
     transform: translate(-50%, -50%);
     border-style: solid;
-    border-width: 12px 0 12px 19px;
+    border-width: 11px 0 11px 17px;
     border-color: transparent transparent transparent #fff;
   }
 
   .video__play-label {
     display: grid;
     gap: 0.2rem;
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 700;
+    text-align: center;
     text-shadow: 0 1px 3px rgb(0 0 0 / 0.5);
   }
 
   .video__play-meta {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     font-weight: 500;
     opacity: 0.9;
   }
@@ -178,11 +185,12 @@ const seconds = String(HOWTO_VIDEO.durationSec % 60).padStart(2, '0');
     margin-top: 0.6rem;
     font-size: 0.85rem;
     color: var(--c-text-muted);
+    text-align: center;
   }
 
   .video :global(video) {
     width: 100%;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: var(--video-aspect, 16 / 9);
     border-radius: 12px;
     display: block;
     background: #000;
@@ -206,6 +214,7 @@ const seconds = String(HOWTO_VIDEO.durationSec % 60).padStart(2, '0');
         video.autoplay = true;
         video.playsInline = true;
         video.preload = 'auto';
+        video.style.setProperty('--video-aspect', facade.style.getPropertyValue('--video-aspect'));
         video.setAttribute('title', title);
         facade.replaceWith(video);
         video.focus();

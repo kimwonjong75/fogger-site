@@ -1,9 +1,10 @@
 ---
-import { BUSINESS, EXTERNAL, FOOTER_NAV, POLICY_NAV, SITE } from '../data/site';
+import { Image } from 'astro:assets';
+import wordmark from '../assets/brand/wordmark.png';
+import { BUSINESS, EXTERNAL, SITE } from '../data/site';
 
 const year = new Date().getFullYear();
 
-/** 값이 있는 항목만 노출 (전화번호처럼 비워둘 수 있는 항목 대응) */
 const businessRows = [
   { label: '상호', value: BUSINESS.name },
   { label: '대표자', value: BUSINESS.ceo },
@@ -12,15 +13,70 @@ const businessRows = [
   { label: '주소', value: BUSINESS.address },
   { label: '전화', value: BUSINESS.tel },
 ].filter((row) => row.value);
+
+const columns = [
+  {
+    title: '제품',
+    links: [
+      { label: '제품 라인업', href: '/products/' },
+      { label: '모델 비교표', href: '/compare/' },
+    ],
+  },
+  {
+    title: '기술문서',
+    links: [
+      { label: '사용법', href: '/guides/' },
+      { label: '문제해결', href: '/troubleshooting/' },
+      { label: '안전수칙', href: '/safety/' },
+    ],
+  },
+  {
+    title: '고객지원',
+    links: [
+      { label: '기술지원 문의', href: `mailto:${BUSINESS.email}` },
+      { label: '블루가드 공식몰', href: EXTERNAL.corporate, external: true },
+    ],
+  },
+  {
+    title: '정책',
+    links: [
+      { label: '개인정보처리방침', href: '/privacy/' },
+      { label: '이용약관', href: '/terms/' },
+    ],
+  },
+];
 ---
 
 <footer class="site-footer">
   <div class="site-footer__inner">
-    <nav class="site-footer__nav" aria-label="사이트 메뉴">
-      <ul>
-        {FOOTER_NAV.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
-      </ul>
-    </nav>
+    <div class="site-footer__grid">
+      <div class="site-footer__brand">
+        <Image src={wordmark} width={280} height={66} alt={SITE.name} class="site-footer__logo" />
+        <p class="site-footer__blurb">
+          휴대용 부탄가스 연막소독기 BF-100S·BF-102의 사양, 사용법, 안전수칙을 정리한 공식 기술정보
+          사이트입니다.
+        </p>
+      </div>
+
+      {
+        columns.map((col) => (
+          <nav class="site-footer__col" aria-label={col.title}>
+            <h2>{col.title}</h2>
+            <ul>
+              {col.links.map((link) => (
+                <li>
+                  <a href={link.href} {...(link.external ? { target: '_blank', rel: 'noopener external' } : {})}>
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        ))
+      }
+    </div>
+
+    <hr class="site-footer__rule" />
 
     <dl class="site-footer__business">
       {
@@ -37,18 +93,6 @@ const businessRows = [
       </div>
     </dl>
 
-    <nav class="site-footer__policy" aria-label="정책">
-      <ul>
-        {POLICY_NAV.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
-        <li>
-          <a href={EXTERNAL.corporate} target="_blank" rel="noopener external">블루가드 홈페이지</a>
-        </li>
-        <li>
-          <a href={EXTERNAL.smartstore} target="_blank" rel="noopener external">공식 스마트스토어</a>
-        </li>
-      </ul>
-    </nav>
-
     <p class="site-footer__copy">© {year} {SITE.name}. 제품 사양은 공지 없이 변경될 수 있습니다.</p>
   </div>
 </footer>
@@ -56,45 +100,79 @@ const businessRows = [
 <style>
   .site-footer {
     margin-top: 3.5rem;
-    border-top: 1px solid var(--c-border);
-    background: var(--c-surface-alt);
+    background: var(--c-ink);
+    color: var(--c-on-ink);
   }
 
   .site-footer__inner {
     max-width: var(--w-page);
     margin: 0 auto;
-    padding: 2rem var(--pad-x) 2.5rem;
-    display: grid;
-    gap: 1.25rem;
+    padding: 2.75rem var(--pad-x) 2rem;
   }
 
-  ul {
+  .site-footer__grid {
+    display: grid;
+    grid-template-columns: 1.4fr repeat(4, 1fr);
+    gap: 2rem;
+  }
+
+  .site-footer__logo {
+    height: 30px;
+    width: auto;
+    display: block;
+    /* 워드마크가 진한 네이비 계열이라 어두운 배경에서는 밝게 반전한다 */
+    filter: brightness(0) invert(1);
+    opacity: 0.95;
+  }
+
+  .site-footer__blurb {
+    margin: 0.9rem 0 0;
+    font-size: 0.85rem;
+    line-height: 1.7;
+    color: var(--c-on-ink-dim);
+    max-width: 32ch;
+  }
+
+  .site-footer__col h2 {
+    margin: 0 0 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--c-on-ink-dim);
+  }
+
+  .site-footer__col ul {
     list-style: none;
     margin: 0;
     padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem 1.1rem;
+    display: grid;
+    gap: 0.55rem;
   }
 
-  .site-footer__nav a {
-    font-size: 0.9rem;
+  .site-footer__col a {
+    font-size: 0.88rem;
     font-weight: 600;
-    color: var(--c-text);
+    color: var(--c-on-ink);
     text-decoration: none;
   }
 
-  .site-footer__nav a:hover {
+  .site-footer__col a:hover {
     text-decoration: underline;
+  }
+
+  .site-footer__rule {
+    margin: 2.25rem 0 1.5rem;
+    border: 0;
+    border-top: 1px solid rgb(255 255 255 / 0.14);
   }
 
   .site-footer__business {
     margin: 0;
     display: flex;
     flex-wrap: wrap;
-    gap: 0.35rem 1.25rem;
-    font-size: 0.82rem;
-    color: var(--c-text-muted);
+    gap: 0.35rem 1.5rem;
+    font-size: 0.8rem;
+    color: var(--c-on-ink-dim);
     line-height: 1.6;
   }
 
@@ -103,12 +181,9 @@ const businessRows = [
     gap: 0.4rem;
   }
 
-  .site-footer__business dt::after {
-    content: '';
-  }
-
   .site-footer__business dt {
     font-weight: 600;
+    color: var(--c-on-ink);
   }
 
   .site-footer__business dd {
@@ -116,17 +191,30 @@ const businessRows = [
   }
 
   .site-footer__business a {
-    color: var(--c-text-muted);
-  }
-
-  .site-footer__policy a {
-    font-size: 0.82rem;
-    color: var(--c-text-muted);
+    color: var(--c-on-ink-dim);
   }
 
   .site-footer__copy {
-    margin: 0;
-    font-size: 0.78rem;
-    color: var(--c-text-muted);
+    margin: 1.5rem 0 0;
+    font-size: 0.76rem;
+    color: var(--c-on-ink-dim);
+    opacity: 0.85;
+  }
+
+  @media (max-width: 860px) {
+    .site-footer__grid {
+      grid-template-columns: repeat(2, 1fr);
+      row-gap: 2rem;
+    }
+
+    .site-footer__brand {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .site-footer__grid {
+      grid-template-columns: 1fr;
+    }
   }
 </style>

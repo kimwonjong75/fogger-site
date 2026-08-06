@@ -48,6 +48,12 @@ export async function getAllPublishedDocs(): Promise<DocEntry[]> {
   return groups.flat().sort((a, b) => b.data.updatedDate.valueOf() - a.data.updatedDate.valueOf());
 }
 
+/** 공개 문서 중 가장 최근 수정일 — 신뢰 블록의 "최종 검수일" 표기에 쓴다 */
+export async function getLatestReviewDate(): Promise<Date | null> {
+  const docs = await getAllPublishedDocs();
+  return docs[0]?.data.updatedDate ?? null;
+}
+
 /** 전 컬렉션 문서 (비공개 포함) — related 참조 검증용 */
 async function getAllDocs(): Promise<DocEntry[]> {
   const groups = await Promise.all(DOC_COLLECTIONS.map((c) => getCollection(c)));

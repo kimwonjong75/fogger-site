@@ -69,14 +69,11 @@ const docSchema = ({ image }: SchemaContext) =>
        */
       showSpecTable: z.boolean().default(false),
 
-      /** 본문 영상 자리 (VideoEmbed) */
-      video: z
-        .object({
-          provider: z.literal('youtube'),
-          id: z.string().min(1),
-          title: z.string().min(1),
-        })
-        .optional(),
+      /**
+       * 본문에 자체 호스팅 영상을 붙일 때 media.ts의 VIDEO_BY_KEY 키를 지정한다.
+       * 문서 내용과 실제로 관련된 촬영본이 있을 때만 지정할 것.
+       */
+      videoKey: z.enum(['sprayTest', 'longNozzle']).optional(),
     })
     .refine((data) => !data.heroImage || !!data.heroImageAlt, {
       message: 'heroImage를 지정하면 heroImageAlt도 필요합니다.',

@@ -69,8 +69,10 @@ const jsonLd = graph([breadcrumbSchema(allCrumbs), ...schemaNodes]);
     <a class="skip-link" href="#main">본문 바로가기</a>
     <Header />
 
+    <slot name="hero" />
+
     <div class:list={['shell', `shell--${width}`]}>
-      <Breadcrumbs crumbs={allCrumbs} />
+      {allCrumbs.length > 1 && <Breadcrumbs crumbs={allCrumbs} />}
       <main id="main">
         <slot />
       </main>
@@ -97,6 +99,9 @@ const jsonLd = graph([breadcrumbSchema(allCrumbs), ...schemaNodes]);
     --c-ink-2: #143a6b;
     --c-on-ink: #eaf1fb;
     --c-on-ink-dim: #a8c1e2;
+    /* 제품 본체 색에서 추출한 브랜드 옐로. 안전경고(--c-warn)와는 명도·용도를 분리해서 쓴다. */
+    --c-yellow: #f2b705;
+    --c-yellow-dark: #c99a0a;
     --c-warn: #d97706;
     --c-warn-soft: #fffbeb;
     --c-warn-border: #fcd9a4;
@@ -156,6 +161,20 @@ const jsonLd = graph([breadcrumbSchema(allCrumbs), ...schemaNodes]);
 
   .shell--narrow {
     max-width: var(--w-narrow);
+  }
+
+  /*
+   * 풀블리드 밴드 — 뷰포트 전체 폭 배경 위에 .shell과 같은 최대폭 안쪽 콘텐츠를 올린다.
+   * 히어로처럼 섹션 배경만 화면 끝까지 채우고 싶을 때 쓴다.
+   */
+  .full-bleed {
+    width: 100%;
+  }
+
+  .full-bleed__inner {
+    max-width: var(--w-page);
+    margin: 0 auto;
+    padding: 0 var(--pad-x);
   }
 
   /*

@@ -7,6 +7,7 @@ import ModelSpecTable from '../components/ModelSpecTable.astro';
 import Pic from '../components/Pic.astro';
 import RelatedGuides from '../components/RelatedGuides.astro';
 import ShippingNote from '../components/ShippingNote.astro';
+import { VIDEO_BY_KEY } from '../data/media';
 import Sources from '../components/Sources.astro';
 import VideoEmbed from '../components/VideoEmbed.astro';
 import { BUSINESS } from '../data/site';
@@ -94,7 +95,7 @@ const showSticky = data.ctaType === 'product';
 
     {data.showSpecTable && <ModelSpecTable footnote="수치는 제품 데이터에서 자동으로 채워집니다." />}
 
-    {data.video && <VideoEmbed />}
+    {data.videoKey && <VideoEmbed video={VIDEO_BY_KEY[data.videoKey]} />}
 
     <Faq items={data.faq} />
 

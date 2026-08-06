@@ -6,7 +6,6 @@ import FactTable from '../../components/FactTable.astro';
 import Pic from '../../components/Pic.astro';
 import RelatedGuides from '../../components/RelatedGuides.astro';
 import SafetyBox from '../../components/SafetyBox.astro';
-import ManualDownload from '../../components/ManualDownload.astro';
 import VideoEmbed from '../../components/VideoEmbed.astro';
 import { PRODUCT_IMAGES, PRODUCT_IMAGE_ALT } from '../../data/product-images';
 import {
@@ -24,6 +23,7 @@ import {
   type Product,
 } from '../../data/products';
 import { getAllPublishedDocs } from '../../lib/content';
+import { HOWTO_VIDEO, LONG_NOZZLE_VIDEO } from '../../data/media';
 
 export const getStaticPaths = (() =>
   PRODUCTS.map((product) => ({
@@ -140,13 +140,16 @@ const related = (await getAllPublishedDocs()).slice(0, 3);
     <SafetyBox />
 
     <h2>공식 사용방법 영상</h2>
-    <VideoEmbed />
+    <VideoEmbed video={HOWTO_VIDEO} />
 
-    <h2>사용설명서</h2>
-    <p class="manual-lead">
-      BF-100S와 BF-102 공용 책자입니다. 사이트 안내와 설명서 표기가 다를 경우 설명서를 우선합니다.
-    </p>
-    <ManualDownload />
+    {
+      product.id === 'bf-102-long-nozzle' && (
+        <>
+          <h2>롱노즐 분사 촬영</h2>
+          <VideoEmbed video={LONG_NOZZLE_VIDEO} />
+        </>
+      )
+    }
 
     <section class="closing">
       <h2>{product.model}로 결정하셨나요?</h2>

@@ -37,10 +37,13 @@
 
 필수 frontmatter: `title`, `description`(70~80자), `updatedDate`, `published`,
 `faq`(4~6), `sources`, `reviewer`, `ctaType`(`product|consumable|as|none`).
-선택: `heroImage`+`heroImageAlt`, `related`, `video`, `showSpecTable`.
+선택: `related`, `showSpecTable`, `videoKey`(`sprayTest|longNozzle` — `src/data/media.ts`의
+`VIDEO_BY_KEY` 참조).
 
 `published: false` 문서는 라우트가 생성되지 않으므로 사이트맵·RSS·llms.txt·
-내부링크 어디에도 나타나지 않는다. (`winter-operation`, `greenhouse` 가 그 예시)
+내부링크 어디에도 나타나지 않는다.
+(`winter-operation`, `greenhouse`, `livestock-barn`, `underground-parking`, `warehouse` —
+공식 사양이 "사용 장소: 실외"라 실내·반개방 작업 문서는 비공개 상태다)
 
 ## 구조화데이터 정책
 
@@ -67,12 +70,12 @@
 
 | 위치 | 항목 | 상태 |
 | :--- | :--- | :--- |
-| `src/data/products.ts` → `TANK_SPEC_CONFIRMED` | 탱크 용량이 공식 상세페이지(1.8L/2.5L)와 다름 | **확인 필요 — 검증 실패로 배포 차단 중** |
-| `src/data/site.ts` → `GA4_MEASUREMENT_ID` | 실제 GA4 측정 ID | **미입력 — 검증 실패로 배포 차단 중** |
-| 각 문서 `sources` | 기관 홈이 아닌 직접 문서 URL | 개선 필요 |
+| 각 문서 `sources` | 기관 홈이 아닌 직접 문서 URL | 개선 필요 (공식 영상은 이미 1차 출처로 추가됨) |
 | `src/data/chemicals.ts` → `approvalNumber` | 약제 승인·신고 번호 | 미확보 (전 품목 비공개 유지) |
+| `src/data/photo-requests.ts` | 실물 크기·부위 상세 사진 | `PhotoRequest` 컴포넌트가 자리표시 타일로 노출 중 |
 
-사업자 정보, 구매 URL, 제품 실사, 구성품·크기·노즐 사양은 반영 완료.
+사업자 정보, 탱크 용량(1.8L/2.5L, 공식 상세페이지 확인 완료), GA4 ID, 구매 URL, 제품 실사,
+공식 로고, 사용법·촬영 영상, 구성품·크기·노즐 사양은 반영 완료.
 
 ## 제품 실사
 
@@ -86,6 +89,21 @@ FOGGER_PHOTO_SOURCE=... npm run photos   # 다른 경로에서 가져오기
 원본 폴더가 없으면 스크립트는 조용히 종료한다(다른 PC에서도 빌드가 깨지지 않게).
 검증기는 제품 실사 3종이 없으면 **실패**시킨다 — 임시 그래픽으로 대체되는 것을 막기 위함이다.
 `public/og/*.png` 는 SNS 카드용 브랜드 그래픽이며 제품 사진이 아니다.
+
+아직 없는 실물 크기·부위 상세 사진은 `src/data/photo-requests.ts` 에 목록으로 남겨 두었고
+홈/제품 페이지의 `PhotoRequest` 컴포넌트가 점선 자리표시 타일로 보여준다. 촬영본이 생기면
+사진을 넣고 배열에서 항목을 지우면 된다 — 목록이 비면 섹션 자체가 사라진다.
+
+## 영상
+
+`src/data/media.ts` 가 자체 호스팅 영상(공식 사용법·분사테스트·롱노즐 촬영·제조 현장·실사용
+현장)의 단일 소스다. `VideoEmbed` 는 클릭 전까지 `<video>`를 만들지 않으므로 초기 페이지
+전송량에 영향이 없다. 새 영상을 추가하려면:
+
+1. `ffmpeg`으로 `public/video/`에 웹용으로 재인코딩 (`scale=540:-2`, `crf 26~30`, `+faststart`)
+2. 포스터 프레임을 `src/assets/`에 추출
+3. `media.ts`에 `VideoAsset` 항목 추가
+4. 문서에서 쓰려면 `content.config.ts`의 `videoKey` enum에 키를 추가하고 frontmatter에 지정
 
 ## 검증
 

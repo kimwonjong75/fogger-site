@@ -212,10 +212,14 @@ for (const file of pages) {
     const w = attr(img, 'width');
     const h = attr(img, 'height');
     const loading = attr(img, 'loading');
+    // 로고는 "{주제} — {구체 장면}" 형식이 적용되지 않는 예외 — 콘텐츠 사진이 아니라 브랜드 마크다
+    const isLogo = /logo/i.test(attr(img, 'class') ?? '');
 
     if (!w || !h) fail(`${where} img에 width/height 없음 → ${src}`);
     if (alt === null) fail(`${where} img에 alt 없음 → ${src}`);
-    else if (!alt.includes(' — ')) fail(`${where} alt 형식 위반("{주제} — {구체 장면}") → "${alt}"`);
+    else if (!isLogo && !alt.includes(' — ')) {
+      fail(`${where} alt 형식 위반("{주제} — {구체 장면}") → "${alt}"`);
+    }
     if (loading !== 'lazy' && loading !== 'eager') fail(`${where} img loading 속성 없음 → ${src}`);
     if (src) addAsset(src, '이미지');
   }
@@ -346,7 +350,8 @@ for (const file of pages) {
     if (!isDoc && types.includes('Article')) fail(`${where} 문서가 아닌데 Article 출력됨`);
 
     // 화면 브레드크럼과 대조
-    if (breadcrumb) {
+    // 홈은 크럼이 "홈" 하나뿐이라 화면에서 의도적으로 숨기므로(스키마는 유지) 비교 대상에서 뺀다
+    if (breadcrumb && !isHome) {
       const navBlock = html.match(/<nav[^>]*aria-label="현재 위치"[\s\S]*?<\/nav>/i)?.[0] ?? '';
       const visible = all(navBlock, /<(?:a|span)\b[^>]*>([^<]+)<\/(?:a|span)>/gi).map((m) =>
         m[1].trim(),

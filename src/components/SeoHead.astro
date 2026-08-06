@@ -48,8 +48,12 @@ const ogImageUrl = absoluteUrl(ogImage);
 <link rel="canonical" href={canonical} />
 {noindex && <meta name="robots" content="noindex, follow" />}
 
-<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <link rel="icon" href="/favicon.ico" sizes="32x32" />
+<link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32" />
+<link rel="icon" type="image/png" href="/favicon-16.png" sizes="16x16" />
+<link rel="apple-touch-icon" href="/favicon-180.png" />
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0b2545" />
 
 {SITE_VERIFICATION.naver && <meta name="naver-site-verification" content={SITE_VERIFICATION.naver} />}
 {SITE_VERIFICATION.google && <meta name="google-site-verification" content={SITE_VERIFICATION.google} />}

@@ -1,0 +1,91 @@
+---
+import type { PhotoRequest } from '../data/photo-requests';
+
+/**
+ * 아직 없는 실사 사진 자리를 명시적으로 비워 둔다.
+ *
+ * AI로 채운 가짜 사진을 넣는 대신, 어떤 사진이 왜 필요한지 라벨로 남겨
+ * 촬영 목록으로도 쓸 수 있게 한다. items가 비면 아무것도 렌더링하지 않는다.
+ */
+interface Props {
+  items: PhotoRequest[];
+  title?: string;
+}
+
+const { items, title = '추가로 필요한 사진' } = Astro.props;
+---
+
+{
+  items.length > 0 && (
+    <section class="photo-request" aria-label={title}>
+      <p class="photo-request__title">{title}</p>
+      <div class="photo-request__grid">
+        {items.map((item) => (
+          <div class="photo-request__tile">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" />
+              <circle cx="12" cy="13.5" r="3.2" />
+            </svg>
+            <strong>{item.label}</strong>
+            <span>{item.note}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .photo-request {
+    margin: 2rem 0;
+  }
+
+  .photo-request__title {
+    margin: 0 0 0.75rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--c-text-muted);
+  }
+
+  .photo-request__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.9rem;
+  }
+
+  .photo-request__tile {
+    aspect-ratio: 4 / 3;
+    border: 1.5px dashed var(--c-border-strong);
+    border-radius: 12px;
+    background: var(--c-surface-alt);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 0.4rem;
+    color: var(--c-text-muted);
+  }
+
+  .photo-request__tile svg {
+    width: 30px;
+    height: 30px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.6;
+  }
+
+  .photo-request__tile strong {
+    font-size: 0.85rem;
+    color: var(--c-text);
+  }
+
+  .photo-request__tile span {
+    font-size: 0.76rem;
+    line-height: 1.5;
+  }
+</style>

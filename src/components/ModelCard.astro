@@ -1,7 +1,7 @@
 ---
 import BuyCTA from './BuyCTA.astro';
 import Pic from './Pic.astro';
-import { FILL_RATIO_LABEL, maxFillLiters, SHIPPING, type Product } from '../data/products';
+import { maxFillLiters, type Product } from '../data/products';
 import { PRODUCT_IMAGES, PRODUCT_IMAGE_ALT } from '../data/product-images';
 import { BUY_CTA_LABEL_SHORT } from '../data/site';
 
@@ -55,10 +55,6 @@ const href = `/products/${product.id}/`;
 
   <dl class="model-card__specs">
     <div>
-      <dt>충전 한도</dt>
-      <dd>{FILL_RATIO_LABEL}</dd>
-    </div>
-    <div>
       <dt>어깨끈</dt>
       <dd>{product.shoulderStrap ? '포함' : '미포함'}</dd>
     </div>
@@ -66,17 +62,13 @@ const href = `/products/${product.id}/`;
       <dt>롱노즐</dt>
       <dd>{product.longNozzle ? '포함' : '미포함'}</dd>
     </div>
-    <div>
-      <dt>배송</dt>
-      <dd>{SHIPPING.label}</dd>
-    </div>
   </dl>
 
   {
     product.bestFor.length > 0 && (
       <p class="model-card__best">
         <span>이럴 때</span>
-        {product.bestFor.slice(0, 3).join(' · ')}
+        {product.bestFor.slice(0, 2).join(' · ')}
       </p>
     )
   }
@@ -162,13 +154,18 @@ const href = `/products/${product.id}/`;
     line-height: 1.6;
   }
 
-  /* 두 핵심 수치는 표에서 빼내 카드의 시각 앵커로 세운다 */
+  /*
+   * 두 핵심 수치는 표에서 빼내 카드의 시각 앵커로 세운다.
+   * 배경은 제품 본체 색에서 뽑은 옐로 틴트 + 왼쪽 액센트 바로, 브랜드 블루가 아니라
+   * 실제 제품과 시각적으로 연결되게 한다.
+   */
   .model-card__headline {
     margin: 0;
-    padding: 0.7rem 0.9rem;
-    border-radius: 10px;
-    background: var(--c-accent-soft);
-    color: var(--c-accent-dark);
+    padding: 0.7rem 0.9rem 0.7rem 0.8rem;
+    border-radius: 8px;
+    border-left: 4px solid var(--c-yellow);
+    background: #fdf6e3;
+    color: var(--c-ink);
     display: flex;
     align-items: baseline;
     flex-wrap: wrap;
