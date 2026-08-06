@@ -1,0 +1,12 @@
+{
+  "note": "og:image 카드 해시. 브랜드 카드이며 제품 사진이 아니다.",
+  "files": {
+    "public/og/og-default.png": "d42b96b49c8365e5e1f4c36a834d3237f08171729563f98fd8fb6ef9710a2a4a",
+    "public/og/og-products.png": "ebb2b7203835a6c0cdf79acd00475f724e785dd60a16b3cb311885497e000d18",
+    "public/og/og-compare.png": "c89a10d89e0587dd870fd64e319ba529a75e0a38329917db3e7b91d7e949afdf",
+    "public/og/og-guides.png": "3e505d0680e1cf4c02e1aad7f1986d79d864333999fe38ba4dbabd8e47795260",
+    "public/og/og-uses.png": "c890027663c53464529c6dd7a6cbf77d9c7b1245b6c17b2ae8aa8a911030a7c3",
+    "public/og/og-troubleshooting.png": "58317e08acc7c309e43b54ea9191b1f8d029e618e5848cbc05d6fff85903528e",
+    "public/og/og-safety.png": "c64522786d6410263bfe363b433be9eecc9cd582ce338fced698c9aba0d0a480"
+  }
+}

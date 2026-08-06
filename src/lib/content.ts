@@ -20,7 +20,7 @@ export const COLLECTION_META: Record<
     href: '/uses/',
     title: '연막소독기 활용사례',
     description:
-      '축사·창고·지하주차장 등 현장별로 연막소독기를 어떻게 운용하는지 조건과 주의점을 정리했습니다.',
+      '현장 조건별로 연막소독기를 어떻게 운용하는지 작업 순서와 주의점을 정리했습니다. 사용 가능한 장소는 약제 표시사항을 따릅니다.',
   },
   troubleshooting: {
     label: '문제해결',
@@ -48,22 +48,36 @@ export async function getAllPublishedDocs(): Promise<DocEntry[]> {
   return groups.flat().sort((a, b) => b.data.updatedDate.valueOf() - a.data.updatedDate.valueOf());
 }
 
+/** 전 컬렉션 문서 (비공개 포함) — related 참조 검증용 */
+async function getAllDocs(): Promise<DocEntry[]> {
+  const groups = await Promise.all(DOC_COLLECTIONS.map((c) => getCollection(c)));
+  return groups.flat();
+}
+
 /**
  * frontmatter의 `related`("컬렉션/문서id")를 실제 문서로 해석한다.
  * 지정이 없으면 같은 컬렉션 → 사용법 순으로 자동 보충한다.
- * 존재하지 않거나 비공개인 문서를 지정하면 빌드를 실패시켜 깨진 링크를 막는다.
+ *
+ * - 존재하지 않는 id를 참조하면 오타이므로 빌드를 실패시킨다.
+ * - 존재하지만 비공개인 문서는 조용히 건너뛴다.
+ *   (published를 토글하는 것만으로 다른 문서 빌드가 깨지지 않도록)
  */
 export async function resolveRelated(entry: DocEntry, limit = 3): Promise<DocEntry[]> {
   const all = await getAllPublishedDocs();
   const byKey = new Map(all.map((d) => [`${d.collection}/${d.id}`, d]));
   const picked: DocEntry[] = [];
 
+  const knownKeys = new Set((await getAllDocs()).map((d) => `${d.collection}/${d.id}`));
+
   for (const ref of entry.data.related) {
     const found = byKey.get(ref);
     if (!found) {
-      throw new Error(
-        `[related] ${entry.collection}/${entry.id} 가 참조한 "${ref}" 를 찾을 수 없거나 비공개 문서입니다.`,
-      );
+      if (!knownKeys.has(ref)) {
+        throw new Error(
+          `[related] ${entry.collection}/${entry.id} 가 참조한 "${ref}" 문서가 존재하지 않습니다. id를 확인하세요.`,
+        );
+      }
+      continue; // 존재하지만 비공개 → 건너뛴다
     }
     if (found.id !== entry.id || found.collection !== entry.collection) picked.push(found);
   }

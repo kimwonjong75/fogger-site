@@ -6,11 +6,11 @@ import Faq from '../components/Faq.astro';
 import ModelSpecTable from '../components/ModelSpecTable.astro';
 import Pic from '../components/Pic.astro';
 import RelatedGuides from '../components/RelatedGuides.astro';
+import ShippingNote from '../components/ShippingNote.astro';
 import Sources from '../components/Sources.astro';
 import VideoEmbed from '../components/VideoEmbed.astro';
 import { BUSINESS } from '../data/site';
 import { HAS_PUBLISHED_CHEMICALS } from '../data/chemicals';
-import { DEFAULT_PRODUCT_ID } from '../data/products';
 import { COLLECTION_META, docHref, resolveRelated, type DocEntry } from '../lib/content';
 import { articleSchema, type Crumb } from '../lib/schema';
 import { absoluteUrl } from '../lib/url';
@@ -55,7 +55,7 @@ const showSticky = data.ctaType === 'product';
   updatedDate={data.updatedDate}
   crumbs={crumbs}
   schemaNodes={[article]}
-  stickyBuy={showSticky ? DEFAULT_PRODUCT_ID : false}
+  stickyBuy={showSticky ? 'generic' : false}
   width="narrow"
 >
   <article class="doc">
@@ -72,6 +72,19 @@ const showSticky = data.ctaType === 'product';
           priority
           class="doc__hero"
         />
+      )
+    }
+
+    {
+      collection === 'uses' && (
+        <aside class="venue-notice">
+          <strong>사용 장소는 약제 표시사항이 정합니다</strong>
+          <p>
+            이 문서는 해당 장소에서의 사용을 권장하는 것이 아니라, 작업을 하게 될 경우의 안전 절차를
+            정리한 것입니다. 실내·밀폐공간을 포함해 사용 가능한 장소와 조건은 함께 쓰는 약제의 라벨과
+            표시사항을 먼저 확인하세요.
+          </p>
+        </aside>
       )
     }
 
@@ -98,6 +111,7 @@ const showSticky = data.ctaType === 'product';
               모델 비교표 보기
             </a>
           </div>
+          <ShippingNote />
         </section>
       )
     }
@@ -144,6 +158,29 @@ const showSticky = data.ctaType === 'product';
     border-radius: 10px;
     margin: 0.5rem 0 1.75rem;
     display: block;
+  }
+
+  .venue-notice {
+    margin: 0 0 1.75rem;
+    padding: 1rem 1.15rem;
+    border: 1px solid var(--c-warn-border);
+    border-left: 4px solid var(--c-warn);
+    border-radius: 6px;
+    background: var(--c-warn-soft);
+  }
+
+  .venue-notice strong {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.95rem;
+    color: var(--c-warn-text);
+  }
+
+  .venue-notice p {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: var(--c-text-muted);
   }
 
   .prose :global(h2) {

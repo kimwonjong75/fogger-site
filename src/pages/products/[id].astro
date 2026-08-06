@@ -9,11 +9,15 @@ import SafetyBox from '../../components/SafetyBox.astro';
 import VideoEmbed from '../../components/VideoEmbed.astro';
 import { PRODUCT_IMAGES, PRODUCT_IMAGE_ALT } from '../../data/product-images';
 import {
+  EFFICACY,
   FILL_RATIO_LABEL,
   HEAT_SOURCE,
   MEDIA_LABEL,
   PRODUCTS,
+  PRODUCT_TYPE,
   SHIPPING,
+  STORAGE,
+  USE_LOCATION,
   getProduct,
   maxFillLiters,
   type Product,
@@ -34,19 +38,26 @@ const { product } = Astro.props;
 const url = `/products/${product.id}/`;
 
 const facts = [
-  { label: '모델', value: product.model },
+  { label: '제품명', value: '블루가드 연막소독기' },
+  { label: '형식', value: PRODUCT_TYPE },
+  { label: '공식 옵션명', value: product.officialLabel },
   { label: '탱크 용량', value: `${product.tankLiters}L` },
   {
     label: '최대 충전량',
     value: `${maxFillLiters(product.tankLiters)}L`,
     note: `탱크 용량의 ${FILL_RATIO_LABEL} 상한을 적용한 값입니다.`,
   },
-  { label: '가열원', value: HEAT_SOURCE },
-  { label: '사용 매질', value: MEDIA_LABEL },
+  { label: '크기', value: `${product.dimensionsMm} (mm)` },
+  { label: '노즐', value: product.nozzle },
+  { label: '분사 방식', value: product.sprayMode },
   { label: '어깨끈', value: product.shoulderStrap ? '포함' : '미포함' },
-  { label: '롱노즐', value: product.longNozzle ? '포함' : '미포함' },
+  { label: '작동 방식', value: HEAT_SOURCE },
+  { label: '사용 매질', value: MEDIA_LABEL },
+  { label: '효능', value: EFFICACY },
+  { label: '사용 장소', value: USE_LOCATION, note: '공식 상세페이지 사양 표기입니다.' },
+  { label: '보관 방법', value: STORAGE },
   { label: '보조주입구', value: '작동 중 사용 금지' },
-  { label: '배송', value: SHIPPING.label },
+  { label: '배송', value: SHIPPING.label, note: SHIPPING.note },
 ];
 
 const base = product.basedOn ? getProduct(product.basedOn) : null;
@@ -71,9 +82,10 @@ const related = (await getAllPublishedDocs()).slice(0, 3);
     <Pic
       src={PRODUCT_IMAGES[product.id]}
       alt={PRODUCT_IMAGE_ALT[product.id]}
-      width={760}
-      height={428}
+      width={560}
+      height={560}
       priority
+      sizes="(max-width: 640px) 100vw, 560px"
       class="product-hero"
     />
 
@@ -94,15 +106,35 @@ const related = (await getAllPublishedDocs()).slice(0, 3);
     <h2>사양</h2>
     <FactTable rows={facts} caption={`${product.model} 사양`} />
 
-    <h2>구성품</h2>
-    <ul class="plain">
-      {product.includes.map((item) => <li>{item}</li>)}
-    </ul>
+    {
+      product.includes.length > 0 && (
+        <>
+          <h2>구성품</h2>
+          <ul class="plain">
+            {product.includes.map((item) => (
+              <li>{item}</li>
+            ))}
+          </ul>
+        </>
+      )
+    }
 
-    <h2>이럴 때 적합합니다</h2>
-    <ul class="plain">
-      {product.bestFor.map((item) => <li>{item}</li>)}
-    </ul>
+    {
+      product.bestFor.length > 0 && (
+        <>
+          <h2>주요 사용처</h2>
+          <ul class="plain">
+            {product.bestFor.map((item) => (
+              <li>{item}</li>
+            ))}
+          </ul>
+          <p class="venue-note">
+            공식 사양의 사용 장소는 <strong>{USE_LOCATION}</strong>입니다. 함께 쓰는 약제의
+            표시사항에 적힌 허용 장소와 사용 조건을 반드시 먼저 확인하세요.
+          </p>
+        </>
+      )
+    }
 
     <SafetyBox />
 
@@ -128,10 +160,12 @@ const related = (await getAllPublishedDocs()).slice(0, 3);
 <style>
   article :global(.product-hero) {
     width: 100%;
+    max-width: 560px;
     height: auto;
-    border-radius: 12px;
+    border-radius: 14px;
     display: block;
-    margin: 0.5rem 0 1.5rem;
+    margin: 0.5rem auto 1.5rem;
+    background: var(--c-surface-alt);
   }
 
   .buy-row {
@@ -160,6 +194,12 @@ const related = (await getAllPublishedDocs()).slice(0, 3);
     padding-left: 1.2rem;
     display: grid;
     gap: 0.3rem;
+  }
+
+  .venue-note {
+    margin: 0.75rem 0 0;
+    font-size: 0.87rem;
+    color: var(--c-text-muted);
   }
 
   .closing {

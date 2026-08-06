@@ -1,9 +1,9 @@
 ---
-title: 비닐하우스 작물 방역
+title: 비닐하우스 연막소독 작업 절차
 description: 비닐하우스는 온도와 습도 때문에 연막 거동이 크게 달라집니다. 작물별 주의사항과 환기 시점을 확인 중인 검수 전 초안 문서입니다.
 updatedDate: 2026-08-03
 published: false
-reviewer: 블루가드 기술지원팀
+reviewer: 김원종
 ctaType: none
 faq:
   - q: 작물에 직접 닿아도 되나요?

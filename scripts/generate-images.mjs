@@ -1,21 +1,28 @@
 /**
- * 플레이스홀더 이미지 생성기.
+ * og:image 카드 생성기.
  *
- * ⚠️ 여기서 만드는 이미지는 실제 제품 사진이 준비되기 전까지 쓰는 임시 그래픽이다.
- *    실사 촬영본이 나오면 같은 파일명·같은 해상도로 덮어쓰면 코드 수정 없이 교체된다.
+ * 여기서 만드는 것은 SNS·검색 카드용 브랜드 그래픽이며 제품 사진이 아니다.
+ * 제품 실사는 scripts/import-photos.mjs 가 공식 자산 폴더에서 가져온다.
  *
  *   node scripts/generate-images.mjs
  *
  * 산출물
- *   public/og/*.png      1200x630  (og:image)
- *   src/assets/*.png     문서 히어로 / 제품 이미지
+ *   public/og/*.png      1200x630
  */
+import { createHash } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+
+/**
+ * 생성한 파일의 해시 기록.
+ * verify-build.mjs가 이 값과 대조해 "아직 임시 이미지인지"를 판별한다.
+ * 같은 파일명으로 실사를 덮어쓰면 해시가 달라져 자동으로 해제된다.
+ */
+const manifest = { note: 'og:image 카드 해시. 브랜드 카드이며 제품 사진이 아니다.', files: {} };
 const FONT = "'Malgun Gothic','Apple SD Gothic Neo',system-ui,sans-serif";
 
 const THEMES = {
@@ -98,6 +105,7 @@ async function render(svg, outPath) {
   await mkdir(dirname(abs), { recursive: true });
   const png = await sharp(Buffer.from(svg)).png({ compressionLevel: 9, palette: true }).toBuffer();
   await writeFile(abs, png);
+  manifest.files[outPath] = createHash('sha256').update(png).digest('hex');
   console.log(`  ${outPath}  ${(png.length / 1024).toFixed(0)}KB`);
 }
 
@@ -109,32 +117,9 @@ const OG = [
   ['og-products', 'product', '제품', ['BF-100S · BF-102', '모델별 사양 정리']],
   ['og-compare', 'product', '모델비교', ['BF-100S와 BF-102', '무엇이 다른가']],
   ['og-guides', 'guides', '사용법', ['충전부터 세척까지', '단계별 사용 순서']],
-  ['og-uses', 'uses', '활용사례', ['축사·창고·주차장', '현장별 운용 방법']],
+  ['og-uses', 'uses', '활용사례', ['현장별 작업 순서', '동선과 주의점']],
   ['og-troubleshooting', 'troubleshooting', '문제해결', ['점화·연막·노즐', '증상별 점검 순서']],
   ['og-safety', 'safety', '안전수칙', ['사고를 막는', '기본 안전 수칙']],
-];
-
-/* ------------------------------------------------------------------ *
- * 히어로 / 제품 이미지 (표시 크기의 2배 해상도)
- * ------------------------------------------------------------------ */
-const HERO_W = 1520;
-const HERO_H = 856;
-
-const HEROES = [
-  ['hero-home', 'brand', '블루가드 연막소독기', ['현장에 맞는 모델을', '숫자로 고르세요']],
-  ['product-bf-100s', 'product', 'BF-100S', ['가정·소규모 매장용', '기본형 연막소독기']],
-  ['product-bf-102', 'product', 'BF-102', ['넓은 면적을 위한', '어깨끈 현장형']],
-  ['product-bf-102-long-nozzle', 'product', 'BF-102 + 롱노즐', ['천장·배관 뒤까지', '닿는 롱노즐 구성']],
-  ['guide-fill', 'guides', '사용법', ['약제 충전과', '사용 전 점검']],
-  ['guide-ignite', 'guides', '사용법', ['예열·점화·분사', '순서대로 하기']],
-  ['guide-clean', 'guides', '사용법', ['사용 후 세척과', '보관 방법']],
-  ['guide-media', 'guides', '사용법', ['경유와 확산제', '무엇을 쓸까']],
-  ['use-livestock', 'uses', '활용사례', ['축사 방역', '동선과 시간 잡기']],
-  ['use-warehouse', 'uses', '활용사례', ['창고·물류센터', '적재물 사이 방역']],
-  ['use-parking', 'uses', '활용사례', ['지하주차장', '환기 확보가 먼저']],
-  ['ts-ignition', 'troubleshooting', '문제해결', ['점화가 안 될 때', '점검 순서']],
-  ['ts-smoke', 'troubleshooting', '문제해결', ['연막이 약할 때', '원인 찾기']],
-  ['ts-nozzle', 'troubleshooting', '문제해결', ['노즐 막힘', '뚫고 예방하기']],
 ];
 
 console.log('og:image');
@@ -154,21 +139,9 @@ for (const [name, theme, chip, lines] of OG) {
   );
 }
 
-console.log('hero / product');
-for (const [name, theme, chip, lines] of HEROES) {
-  await render(
-    card({
-      width: HERO_W,
-      height: HERO_H,
-      theme,
-      chip,
-      lines,
-      footer: '실제 제품 사진으로 교체 예정',
-      titleSize: 88,
-      chipSize: 30,
-    }),
-    `src/assets/${name}.png`,
-  );
-}
-
+await writeFile(
+  resolve(ROOT, 'src/assets/generated-manifest.json'),
+  JSON.stringify(manifest, null, 2) + '\n',
+);
+console.log(`\nmanifest: src/assets/generated-manifest.json (${Object.keys(manifest.files).length}개)`);
 console.log('done');

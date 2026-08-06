@@ -1,13 +1,11 @@
 ---
-title: 축사 방역 동선과 시간 잡기
+title: 축사 연막소독 작업 순서와 동선
 description: 축사에서 연막소독기를 쓸 때 가축 이동과 환기 차단, 분사 동선과 작업 시간을 어떤 순서로 잡아야 하는지 현장 기준으로 정리했습니다.
 updatedDate: 2026-07-26
-published: true
-reviewer: 블루가드 기술지원팀
+published: false
+reviewer: 김원종
 ctaType: product
 showSpecTable: true
-heroImage: ../../assets/use-livestock.png
-heroImageAlt: 축사 연막 방역 — 우사 통로 안쪽에서 출입구 쪽으로 물러나며 분사하는 장면
 related:
   - guides/choose-media
   - uses/warehouse

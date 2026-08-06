@@ -3,8 +3,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import FactTable from '../../components/FactTable.astro';
 import ModelCard from '../../components/ModelCard.astro';
 import SafetyBox from '../../components/SafetyBox.astro';
+import ShippingNote from '../../components/ShippingNote.astro';
+import StatRow from '../../components/StatRow.astro';
+import TrustBar from '../../components/TrustBar.astro';
 import {
-  DEFAULT_PRODUCT_ID,
   FILL_RATIO_LABEL,
   HEAT_SOURCE,
   MEDIA_LABEL,
@@ -17,7 +19,7 @@ const commonFacts = [
   { label: '사용 매질', value: MEDIA_LABEL, note: '지정 외 용제는 사용할 수 없습니다.' },
   { label: '충전 한도', value: `탱크 용량의 ${FILL_RATIO_LABEL}`, note: '가열 시 팽창을 고려한 상한입니다.' },
   { label: '보조주입구', value: '작동 중 사용 금지', note: '완전히 끄고 식힌 뒤에만 엽니다.' },
-  { label: '배송', value: SHIPPING.label },
+  { label: '배송', value: SHIPPING.label, note: SHIPPING.note },
 ];
 ---
 
@@ -27,17 +29,21 @@ const commonFacts = [
   canonicalPath="/products/"
   ogImage="/og/og-products.png"
   crumbs={[{ name: '제품', href: '/products/' }]}
-  stickyBuy={DEFAULT_PRODUCT_ID}
+  stickyBuy="generic"
 >
-  <h1>연막소독기 제품</h1>
+  <p class="eyebrow">제품</p>
+  <h1>연막소독기 제품 라인업</h1>
   <p class="lede">
-    본체 구조와 사용 방식은 같습니다. 탱크 용량, 휴대 방식, 노즐 구성에서 갈립니다.
+    BF-100S, BF-102, BF-102 롱노즐 구성. 본체 구조와 사용 절차는 같고 탱크 용량, 휴대 방식,
+    분사구 도달 거리에서 갈립니다.
   </p>
+
+  <StatRow />
 
   <div class="grid">
     {
       PRODUCTS.map((product) => (
-        <ModelCard product={product} context="products" featured={product.id === DEFAULT_PRODUCT_ID} />
+        <ModelCard product={product} context="products" />
       ))
     }
   </div>
@@ -45,9 +51,13 @@ const commonFacts = [
   <h2>전 모델 공통 사양</h2>
   <FactTable rows={commonFacts} footnote="모델별로 다른 값은 각 제품 페이지와 모델 비교표에서 확인하세요." />
 
+  <ShippingNote />
+
   <SafetyBox />
 
-  <p class="more"><a href="/compare/">모델 비교표에서 나란히 보기</a></p>
+  <TrustBar />
+
+  <p class="more"><a href="/compare/">모델 비교표에서 나란히 보기 →</a></p>
 </BaseLayout>
 
 <style>

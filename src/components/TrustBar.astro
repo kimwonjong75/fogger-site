@@ -1,0 +1,150 @@
+---
+import { BUSINESS, EXTERNAL } from '../data/site';
+
+/**
+ * 신뢰 블록.
+ *
+ * 검증 가능한 사실만 노출한다 — 등록번호, 신고번호, 연락처, 공식몰.
+ * 실적·만족도 같은 수치는 근거가 확보되기 전까지 넣지 않는다.
+ * 사업자 정보를 푸터에만 두지 않고 본문에 올리는 것은 E-E-A-T 신호를 눈에 보이게 하기 위함이다.
+ */
+const items = [
+  {
+    icon: 'building',
+    label: '사업자등록',
+    value: BUSINESS.businessNumber,
+    sub: BUSINESS.name,
+  },
+  {
+    icon: 'doc',
+    label: '통신판매업신고',
+    value: BUSINESS.mailOrderNumber,
+    sub: '광주광산구청 신고',
+  },
+  {
+    icon: 'store',
+    label: '공식몰 직영',
+    value: 'blueguard.kr',
+    sub: '제품 문의·구매 채널',
+    href: EXTERNAL.corporate,
+  },
+  BUSINESS.tel
+    ? { icon: 'phone', label: '고객문의', value: BUSINESS.tel, sub: '기술지원·A/S 접수', href: `tel:${BUSINESS.tel.replace(/-/g, '')}` }
+    : { icon: 'mail', label: '고객문의', value: BUSINESS.email, sub: '기술지원·A/S 접수', href: `mailto:${BUSINESS.email}` },
+];
+
+const PATHS: Record<string, string> = {
+  building: 'M3 21h18M5 21V4a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v17M15 21V9h3a1 1 0 0 1 1 1v11M8 7h2M8 11h2M8 15h2',
+  doc: 'M14 3H7a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V7zM14 3v4h4M9 12h6M9 16h4',
+  store: 'M4 9h16l-1 11a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1zM4 9l1.5-5h13L20 9M9 13a3 3 0 0 0 6 0',
+  phone: 'M6 3h3l2 5-2.5 1.5a12 12 0 0 0 6 6L16 13l5 2v3a2 2 0 0 1-2 2A16 16 0 0 1 4 5a2 2 0 0 1 2-2',
+  mail: 'M3 6h18v12H3zM3 6l9 7 9-7',
+};
+---
+
+<section class="trust" aria-label="사업자 정보">
+  <ul>
+    {
+      items.map((item) => (
+        <li>
+          <svg class="trust__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d={PATHS[item.icon]} />
+          </svg>
+          <div class="trust__body">
+            <span class="trust__label">{item.label}</span>
+            {item.href ? (
+              <a class="trust__value num" href={item.href} rel={item.href.startsWith('http') ? 'noopener external' : undefined}>
+                {item.value}
+              </a>
+            ) : (
+              <span class="trust__value num">{item.value}</span>
+            )}
+            <span class="trust__sub">{item.sub}</span>
+          </div>
+        </li>
+      ))
+    }
+  </ul>
+</section>
+
+<style>
+  .trust {
+    margin: 2.5rem 0;
+    padding: 1.25rem clamp(1rem, 3vw, 1.5rem);
+    border: 1px solid var(--c-border);
+    border-radius: 14px;
+    background: var(--c-surface);
+    box-shadow: var(--shadow-sm);
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.1rem;
+  }
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    min-width: 0;
+  }
+
+  .trust__icon {
+    flex: none;
+    width: 22px;
+    height: 22px;
+    margin-top: 0.15rem;
+    fill: none;
+    stroke: var(--c-accent);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .trust__body {
+    display: grid;
+    gap: 0.1rem;
+    min-width: 0;
+  }
+
+  .trust__label {
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: var(--c-text-muted);
+    letter-spacing: 0.02em;
+  }
+
+  .trust__value {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--c-text);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+
+  a.trust__value:hover {
+    color: var(--c-accent-dark);
+    text-decoration: underline;
+  }
+
+  .trust__sub {
+    font-size: 0.75rem;
+    color: var(--c-text-muted);
+  }
+
+  @media (max-width: 860px) {
+    ul {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 460px) {
+    ul {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

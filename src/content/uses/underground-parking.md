@@ -1,12 +1,10 @@
 ---
-title: 지하주차장 환기가 먼저
+title: 지하주차장 연막소독 작업 절차
 description: 지하주차장은 배기가 느려 작업 순서가 곧 안전입니다. 환기 확보와 구역 통제, 분사 동선과 재진입 시점을 순서대로 정리했습니다.
 updatedDate: 2026-07-20
-published: true
-reviewer: 블루가드 기술지원팀
+published: false
+reviewer: 김원종
 ctaType: as
-heroImage: ../../assets/use-parking.png
-heroImageAlt: 지하주차장 연막 방역 — 통제선을 친 램프 입구에서 안쪽을 향해 분사를 준비하는 장면
 related:
   - uses/warehouse
   - guides/ignition-and-spray

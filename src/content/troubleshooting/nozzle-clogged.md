@@ -1,12 +1,10 @@
 ---
-title: 노즐 막힘 뚫고 예방하기
+title: 연막소독기 노즐 막힘 해결과 예방
 description: 노즐이 막혀 연막이 가늘어졌을 때 기기를 충분히 식힌 뒤 안전하게 뚫는 방법과, 애초에 막히지 않게 하는 관리 습관을 정리했습니다.
 updatedDate: 2026-07-18
 published: true
-reviewer: 블루가드 기술지원팀
+reviewer: 김원종
 ctaType: as
-heroImage: ../../assets/ts-nozzle.png
-heroImageAlt: 노즐 막힘 점검 — 식힌 기기에서 분리한 노즐 내부의 잔여물을 살펴보는 장면
 related:
   - guides/after-use-cleaning
   - troubleshooting/weak-smoke

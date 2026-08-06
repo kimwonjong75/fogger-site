@@ -1,6 +1,9 @@
 ---
 import BuyCTA from './BuyCTA.astro';
+import Pic from './Pic.astro';
 import { FILL_RATIO_LABEL, maxFillLiters, SHIPPING, type Product } from '../data/products';
+import { PRODUCT_IMAGES, PRODUCT_IMAGE_ALT } from '../data/product-images';
+import { BUY_CTA_LABEL_SHORT } from '../data/site';
 
 interface Props {
   product: Product;
@@ -8,14 +11,24 @@ interface Props {
   context: string;
   /** 카드 안에 구매 버튼까지 노출할지 */
   withBuy?: boolean;
-  featured?: boolean;
 }
 
-const { product, context, withBuy = true, featured = false } = Astro.props;
+const { product, context, withBuy = true } = Astro.props;
 const href = `/products/${product.id}/`;
 ---
 
-<article class:list={['model-card', featured && 'model-card--featured']}>
+<article class="model-card">
+  <a class="model-card__figure" href={href} tabindex="-1" aria-hidden="true">
+    <Pic
+      src={PRODUCT_IMAGES[product.id]}
+      alt={PRODUCT_IMAGE_ALT[product.id]}
+      width={320}
+      height={320}
+      sizes="(max-width: 900px) 90vw, 320px"
+      class="model-card__photo"
+    />
+  </a>
+
   <header class="model-card__head">
     <h3 class="model-card__title">
       <a
@@ -28,20 +41,19 @@ const href = `/products/${product.id}/`;
         {product.model}
       </a>
     </h3>
-    {featured && <span class="model-card__badge">추천</span>}
   </header>
 
   <p class="model-card__tagline">{product.tagline}</p>
 
+  <p class="model-card__headline">
+    <span class="num">{product.tankLiters}</span><span class="model-card__unit">L</span>
+    <span class="model-card__headline-label">탱크</span>
+    <span class="model-card__sep" aria-hidden="true"></span>
+    <span class="num">{maxFillLiters(product.tankLiters)}</span><span class="model-card__unit">L</span>
+    <span class="model-card__headline-label">최대 충전</span>
+  </p>
+
   <dl class="model-card__specs">
-    <div>
-      <dt>탱크 용량</dt>
-      <dd>{product.tankLiters}L</dd>
-    </div>
-    <div>
-      <dt>최대 충전량</dt>
-      <dd>{maxFillLiters(product.tankLiters)}L</dd>
-    </div>
     <div>
       <dt>충전 한도</dt>
       <dd>{FILL_RATIO_LABEL}</dd>
@@ -60,10 +72,14 @@ const href = `/products/${product.id}/`;
     </div>
   </dl>
 
-  <p class="model-card__best">
-    <span>이럴 때</span>
-    {product.bestFor.slice(0, 3).join(' · ')}
-  </p>
+  {
+    product.bestFor.length > 0 && (
+      <p class="model-card__best">
+        <span>이럴 때</span>
+        {product.bestFor.slice(0, 3).join(' · ')}
+      </p>
+    )
+  }
 
   <footer class="model-card__foot">
     <a
@@ -76,7 +92,7 @@ const href = `/products/${product.id}/`;
     >
       상세 사양 보기
     </a>
-    {withBuy && <BuyCTA productId={product.id} content={`${context}_card_${product.id}`} label="구매하기" />}
+    {withBuy && <BuyCTA productId={product.id} content={`${context}_card_${product.id}`} label={BUY_CTA_LABEL_SHORT} />}
   </footer>
 </article>
 
@@ -91,9 +107,32 @@ const href = `/products/${product.id}/`;
     background: var(--c-surface);
   }
 
-  .model-card--featured {
-    border-color: var(--c-accent);
-    box-shadow: 0 0 0 1px var(--c-accent);
+  /* 사진은 제목 링크와 목적지가 같아 스크린리더에는 중복이므로 숨긴다 */
+  .model-card__figure {
+    display: block;
+    margin: -0.25rem 0 0.25rem;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--c-surface-alt);
+  }
+
+  .model-card :global(.model-card__photo) {
+    width: 100%;
+    height: auto;
+    display: block;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+    transition: transform 0.2s ease;
+  }
+
+  .model-card:hover :global(.model-card__photo) {
+    transform: scale(1.03);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .model-card:hover :global(.model-card__photo) {
+      transform: none;
+    }
   }
 
   .model-card__head {
@@ -116,20 +155,47 @@ const href = `/products/${product.id}/`;
     text-decoration: underline;
   }
 
-  .model-card__badge {
-    font-size: 0.72rem;
-    font-weight: 700;
-    padding: 0.15rem 0.45rem;
-    border-radius: 4px;
-    background: var(--c-accent-soft);
-    color: var(--c-accent-dark);
-  }
-
   .model-card__tagline {
     margin: 0;
     color: var(--c-text-muted);
     font-size: 0.92rem;
     line-height: 1.6;
+  }
+
+  /* 두 핵심 수치는 표에서 빼내 카드의 시각 앵커로 세운다 */
+  .model-card__headline {
+    margin: 0;
+    padding: 0.7rem 0.9rem;
+    border-radius: 10px;
+    background: var(--c-accent-soft);
+    color: var(--c-accent-dark);
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.1rem 0.35rem;
+    font-size: 1.45rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.2;
+  }
+
+  .model-card__unit {
+    font-size: 0.6em;
+    font-weight: 700;
+  }
+
+  .model-card__headline-label {
+    font-size: 0.5em;
+    font-weight: 600;
+    color: var(--c-text-muted);
+    margin-right: 0.35rem;
+  }
+
+  .model-card__sep {
+    width: 1px;
+    align-self: stretch;
+    background: var(--c-border-strong);
+    margin: 0 0.35rem;
   }
 
   .model-card__specs {

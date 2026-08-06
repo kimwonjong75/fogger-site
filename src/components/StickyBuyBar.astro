@@ -1,5 +1,6 @@
 ---
-import { DEFAULT_PRODUCT_ID, getProduct, maxFillLiters, SHIPPING, type ProductId } from '../data/products';
+import { getProduct, maxFillLiters, type ProductId } from '../data/products';
+import { BUY_CTA_LABEL, BUY_CTA_LABEL_SHORT, OFFICIAL_STORE_PRODUCT_URL, SITE } from '../data/site';
 import { withUtm } from '../lib/url';
 
 /**
@@ -7,24 +8,28 @@ import { withUtm } from '../lib/url';
  * 정보성 문서 전반에는 붙이지 않는다.
  */
 interface Props {
+  /** 모델이 특정된 페이지에서만 지정. 생략하면 모델 미지정 바 */
   productId?: ProductId;
   /** utm_content 접미사 — 기본 sticky_bar */
   content?: string;
 }
 
-const { productId = DEFAULT_PRODUCT_ID, content = 'sticky_bar' } = Astro.props;
+const { productId, content = 'sticky_bar' } = Astro.props;
 
-const product = getProduct(productId);
-const href = withUtm(product.buyUrl, { content });
+const product = productId ? getProduct(productId) : null;
+const href = withUtm(product?.buyUrl ?? OFFICIAL_STORE_PRODUCT_URL, { content });
 ---
 
 <div class="sticky-bar" data-sticky-buy-bar>
   <div class="sticky-bar__inner">
     <div class="sticky-bar__info">
-      <strong class="sticky-bar__model">{product.model}</strong>
+      <strong class="sticky-bar__model">{product?.model ?? SITE.name}</strong>
       <span class="sticky-bar__spec">
-        탱크 {product.tankLiters}L · 최대충전 {maxFillLiters(product.tankLiters)}L
-        {SHIPPING.free && <> · {SHIPPING.label}</>}
+        {
+          product
+            ? `탱크 ${product.tankLiters}L · 최대충전 ${maxFillLiters(product.tankLiters)}L`
+            : '공식몰에서 모델 옵션을 선택합니다'
+        }
       </span>
     </div>
     <a
@@ -34,10 +39,10 @@ const href = withUtm(product.buyUrl, { content });
       rel="noopener external"
       data-ga-event="purchase_cta_click"
       data-ga-utm-content={content}
-      data-ga-model={product.model}
-      data-ga-product-id={product.id}
+      data-ga-model={product?.model}
+      data-ga-product-id={product?.id}
     >
-      구매하기
+      {product ? BUY_CTA_LABEL_SHORT : BUY_CTA_LABEL}
     </a>
   </div>
 </div>

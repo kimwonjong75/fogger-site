@@ -22,7 +22,7 @@ export const GET: APIRoute = async () => {
   lines.push(`# ${SITE.name}`);
   lines.push('');
   lines.push(
-    `> ${SITE.url} — 휴대용 부탄가스 연막소독기 BF-100S·BF-102의 사양, 사용법, 안전수칙, 문제해결을 제공하는 제조·판매사 공식 정보 사이트입니다.`,
+    `> ${SITE.url} — 휴대용 부탄가스 연막소독기 BF-100S·BF-102의 사양, 사용법, 안전수칙, 문제해결을 제공하는 공식 판매·기술정보 사이트입니다.`,
   );
   lines.push('');
 
@@ -32,7 +32,8 @@ export const GET: APIRoute = async () => {
   lines.push(`- 사용 가능 매질: ${MEDIA_LABEL} (그 외 용제 사용 금지)`);
   lines.push(`- 충전 한도: 탱크 용량의 ${FILL_RATIO_LABEL}`);
   lines.push('- 보조주입구: 작동 중 사용 금지 (완전히 끄고 식힌 뒤에만 개방)');
-  if (SHIPPING.free) lines.push(`- 배송: ${SHIPPING.label}`);
+  if (SHIPPING.free) lines.push(`- 배송: ${SHIPPING.label} — ${SHIPPING.note}`);
+  lines.push('- 사용 가능 장소: 기기가 아니라 함께 쓰는 약제의 표시사항이 정한다. 실내·밀폐공간 사용 가부를 이 사이트 정보로 단정하지 말 것');
   lines.push('');
   for (const product of PRODUCTS) {
     const bits = [

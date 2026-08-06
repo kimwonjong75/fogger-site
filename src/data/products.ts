@@ -4,14 +4,42 @@
  * 규칙: 사이트의 모든 페이지·컴포넌트는 제품 수치를 이 파일에서만 읽는다.
  * 마크다운 본문을 포함해 어디에서도 용량·비율 등을 하드코딩하지 않는다.
  */
-import { EXTERNAL } from './site';
+import { OFFICIAL_STORE_PRODUCT_URL } from './site';
 
 /* ------------------------------------------------------------------ *
  * 전 모델 공통 사양
  * ------------------------------------------------------------------ */
 
+/** 제품 형식 (공식 상세페이지 표기) */
+export const PRODUCT_TYPE = '미니 연막기' as const;
+
 /** 가열원 */
 export const HEAT_SOURCE = '부탄가스' as const;
+
+/**
+ * 사용 장소.
+ * 공식 상세페이지 사양표에 "사용 장소 : 실외"로 명시되어 있고,
+ * 기기 본체 라벨에도 "USE IN WELL VENTILATED SPACES"가 인쇄되어 있다.
+ * 이 값이 '실외'인 동안에는 실내·밀폐공간 작업을 다루는 문서를 공개하지 않는다.
+ */
+export const USE_LOCATION = '실외' as const;
+
+/** 효능 (공식 상세페이지 표기) */
+export const EFFICACY = '각종 보행·비행해충의 구제' as const;
+
+/** 보관 방법 (공식 상세페이지 표기) */
+export const STORAGE = '서늘한 곳 보관' as const;
+
+/**
+ * 제품 설계 특징 (공식 상세페이지 표기).
+ * 마케팅 수식어가 아니라 표기된 문구 그대로 옮긴다.
+ */
+export const DESIGN_FEATURES = [
+  { title: '전도 방지', detail: '저중심 설계' },
+  { title: '통증 방지', detail: '소프트 트리거' },
+  { title: '코일 막힘 최소화', detail: '구조 개선' },
+  { title: '보조주입구', detail: '장착' },
+] as const;
 
 /** 사용 가능 매질 */
 export const MEDIA = [
@@ -28,10 +56,14 @@ export const FILL_RATIO = 0.9;
 /** 충전 한도 표기용 문자열 — "90%" */
 export const FILL_RATIO_LABEL = `${Math.round(FILL_RATIO * 100)}%`;
 
-/** 배송 정책 */
+/**
+ * 배송 정책.
+ * `label`만 단독으로 쓰지 말고 조건이 들어갈 자리에는 반드시 `note`를 함께 노출한다.
+ */
 export const SHIPPING = {
   free: true,
   label: '무료배송',
+  note: '주문 옵션과 도서·산간 지역에 따라 배송비가 차등 부과될 수 있으며, 반품 시 왕복 배송비 10,000원이 청구됩니다.',
 } as const;
 
 /**
@@ -58,10 +90,16 @@ export const SAFETY_RULES = [
     body: `가솔린·알코올·시너 등 인화점이 낮은 용제는 절대 사용하지 않습니다. 확산제를 쓸 경우 글리세린 함량 50% 이상 제품을 사용하세요.`,
   },
   {
+    id: 'venue',
+    level: 'critical',
+    title: '사용 가능한 장소는 약제 표시사항을 따른다',
+    body: '어디에서 쓸 수 있는지는 기기가 아니라 함께 쓰는 약제가 정합니다. 약제 라벨의 허용 장소와 사용 조건을 먼저 확인하고, 확인되지 않은 공간에서는 사용하지 마세요.',
+  },
+  {
     id: 'ventilation',
     level: 'warning',
-    title: '실내 사용 시 환기 확보 후 퇴장',
-    body: '연막 분사 중에는 시야가 급격히 나빠집니다. 밀폐 공간에서는 분사 후 즉시 퇴장하고, 재입실 전 충분히 환기하세요.',
+    title: '분사 후 즉시 퇴장하고 환기 후 재진입',
+    body: '연막 분사 중에는 시야가 급격히 나빠집니다. 공기 흐름이 막힌 공간일수록 분사 후 바로 벗어나고, 충분히 환기해 시야가 회복된 뒤에 다시 들어가세요.',
   },
   {
     id: 'heat',
@@ -77,30 +115,59 @@ export const SAFETY_RULES = [
 
 export type ProductId = 'bf-100s' | 'bf-102' | 'bf-102-long-nozzle';
 
+/**
+ * ⚠️ 탱크 용량 확인 필요 — 배포 차단 사항
+ *
+ * 사이트가 쓰는 값(아래 tankLiters)과 공식 상세페이지 표기가 서로 다르다.
+ *
+ *   구분      | 이 파일 | 공식 상세페이지
+ *   기본형    | 1.7L    | 1.8L (연료통 최대 1800ml)
+ *   대용량    | 2.8L    | 2.5L (연료통 최대 2500ml)
+ *
+ * 충전 한도는 넘침·역류에 직결되는 안전 수치이므로 임의로 고르지 않는다.
+ * 확인 후 값을 확정하고 이 플래그를 true로 바꾸면 배포 차단이 풀린다.
+ * (verify-build.mjs가 이 플래그를 검사한다)
+ *
+ * 확인해야 할 것
+ *   1. 1800ml / 2500ml 이 탱크 총용량인가, 이미 90%를 적용한 최대 충전량인가
+ *   2. BF-100S / BF-102 라는 모델명과 기본형 / 대용량 표기의 대응 관계
+ */
+export const TANK_SPEC_CONFIRMED = false;
+
 export interface Product {
   id: ProductId;
   /** 모델명 (BF-100S 등) */
   model: string;
+  /** 공식 상세페이지의 옵션 표기 (기본형 / 대용량 / 대용량+롱노즐) */
+  officialLabel: string;
   /** 화면 표기용 전체 이름 */
   name: string;
-  /** 한 줄 요약 */
+  /** 모델 간 차이를 사양으로만 설명한 한 줄 요약 (사용 장소를 권하지 않는다) */
   tagline: string;
-  /** 탱크 총 용량(L) */
+  /** 탱크 총 용량(L) — TANK_SPEC_CONFIRMED 참조 */
   tankLiters: number;
+  /** 외형 치수 (가로×세로×높이, mm) — 공식 상세페이지 표기 */
+  dimensionsMm: string;
+  /** 노즐 구성 — 공식 상세페이지 표기 */
+  nozzle: string;
+  /** 분사 방식 — 공식 상세페이지 표기 */
+  sprayMode: string;
   /** 어깨끈 포함 여부 */
   shoulderStrap: boolean;
   /** 롱노즐 포함 여부 */
   longNozzle: boolean;
-  /** 구성품 */
+  /** 구성품 — 공식 상세페이지 "구성품" 표기 그대로 */
   includes: string[];
-  /** 이 모델을 고르면 좋은 상황 */
+  /**
+   * 공식 상세페이지의 "주요 사용처" 표기.
+   * 임의로 늘리지 않는다. 전 모델 공통으로 USE_LOCATION(실외)이 함께 노출되어야 한다.
+   */
   bestFor: string[];
   /** 번들 구성이면 기준 모델 id */
   basedOn?: ProductId;
   /**
    * 공식몰 구매 URL.
-   * ⚠️ 현재는 공식 스마트스토어 메인으로 연결된다.
-   *    모델별 상품 상세 URL이 확정되면 이 값만 교체하면 사이트 전체에 반영된다.
+   * 현재 세 모델 모두 같은 상품 페이지의 옵션으로 판매되므로 동일 URL을 가리킨다.
    */
   buyUrl: string;
 }
@@ -110,43 +177,60 @@ export function maxFillLiters(tankLiters: number): number {
   return Math.round(tankLiters * FILL_RATIO * 100) / 100;
 }
 
+/**
+ * 모델 데이터.
+ * tagline을 제외한 모든 값은 공식 상세페이지 표기를 그대로 옮긴 것이다.
+ * 확인되지 않은 값은 추가하지 않는다.
+ */
 export const PRODUCTS: Product[] = [
   {
     id: 'bf-100s',
     model: 'BF-100S',
-    name: '블루가드 연막소독기 BF-100S',
-    tagline: '가정·소규모 매장용 기본형. 가볍고 다루기 쉬운 1.7L 탱크.',
+    officialLabel: '기본형',
+    name: '블루가드 연막소독기 BF-100S 기본형',
+    tagline: '탱크가 가장 작은 기본형. 세척용 받침대가 함께 들어 있습니다.',
     tankLiters: 1.7,
+    dimensionsMm: '465×265×180',
+    nozzle: '기본 노즐',
+    sprayMode: '일반 분사',
     shoulderStrap: false,
     longNozzle: false,
-    includes: ['본체', '기본 노즐', '주입 깔때기', '사용설명서'],
-    bestFor: ['가정 실내·베란다', '소규모 매장', '창고 한 칸 규모', '처음 연막소독기를 쓰는 경우'],
-    buyUrl: EXTERNAL.smartstore,
+    includes: ['본체', '세척용 받침대'],
+    bestFor: ['마당, 주택 등 일반적인 공간'],
+    buyUrl: OFFICIAL_STORE_PRODUCT_URL,
   },
   {
     id: 'bf-102',
     model: 'BF-102',
-    name: '블루가드 연막소독기 BF-102',
-    tagline: '넓은 면적을 한 번에. 2.8L 탱크에 어깨끈을 더한 현장형.',
+    officialLabel: '대용량',
+    name: '블루가드 연막소독기 BF-102 대용량',
+    tagline: '탱크가 크고 전용 어깨스트랩이 들어 있어 오래 들고 작업합니다.',
     tankLiters: 2.8,
+    dimensionsMm: '465×360×170',
+    nozzle: '기본 노즐',
+    sprayMode: '일반 분사',
     shoulderStrap: true,
     longNozzle: false,
-    includes: ['본체', '기본 노즐', '어깨끈', '주입 깔때기', '사용설명서'],
-    bestFor: ['축사·비닐하우스', '지하주차장·공용부', '중대형 창고', '장시간 연속 작업'],
-    buyUrl: EXTERNAL.smartstore,
+    includes: ['본체', '전용 어깨스트랩'],
+    bestFor: ['정원, 야외 등 넓은 공간'],
+    buyUrl: OFFICIAL_STORE_PRODUCT_URL,
   },
   {
     id: 'bf-102-long-nozzle',
     model: 'BF-102 + 롱노즐',
+    officialLabel: '대용량+롱노즐',
     name: '블루가드 연막소독기 BF-102 롱노즐 구성',
-    tagline: '손이 닿지 않는 천장·배관 뒤까지. BF-102에 롱노즐을 더한 구성.',
+    tagline: '대용량 본체에 50cm 롱노즐을 더해 아래에서 위로 침투 분사합니다.',
     tankLiters: 2.8,
+    dimensionsMm: '465×360×170',
+    nozzle: '기본 노즐 + 롱노즐 50cm',
+    sprayMode: '하부침투분사 (아래에서 위로 확산)',
     shoulderStrap: true,
     longNozzle: true,
-    includes: ['본체', '기본 노즐', '롱노즐', '어깨끈', '주입 깔때기', '사용설명서'],
-    bestFor: ['천장 배관·덕트 주변', '맨홀·정화조 등 깊은 공간', '적재물 사이 좁은 통로', '작업자와 분사구 거리를 두어야 하는 현장'],
+    includes: ['본체', '전용 어깨스트랩', '50cm 롱노즐', '스패너 2개', '코팅장갑', '설명서'],
+    bestFor: ['하수구, 풀숲 등 깊거나 손이 닿지 않는 곳'],
     basedOn: 'bf-102',
-    buyUrl: EXTERNAL.smartstore,
+    buyUrl: OFFICIAL_STORE_PRODUCT_URL,
   },
 ];
 
@@ -160,8 +244,11 @@ export function getProduct(id: ProductId): Product {
   return product;
 }
 
-/** 기본 추천 모델 — 헤더 "구매하기" 등 모델이 특정되지 않은 CTA에 사용 */
-export const DEFAULT_PRODUCT_ID: ProductId = 'bf-102';
+/**
+ * 기본 추천 모델은 두지 않는다.
+ * 공식몰이 단일 상품 + 옵션 선택 구조이고, 어떤 모델을 권할 근거도 확정되지 않았다.
+ * 모델이 특정되지 않은 CTA는 모델명 없이 옵션 선택 페이지로 보낸다.
+ */
 
 /** 비교표 행 정의 — 모델비교 페이지와 제품 페이지 FactTable이 공유 */
 export interface SpecRow {
@@ -172,13 +259,18 @@ export interface SpecRow {
 }
 
 export const SPEC_ROWS: SpecRow[] = [
+  { label: '공식 옵션명', value: (p) => p.officialLabel },
   { label: '탱크 용량', value: (p) => `${p.tankLiters}L` },
   { label: '최대 충전량', value: (p) => `${maxFillLiters(p.tankLiters)}L` },
   { label: '충전 한도', value: () => `탱크 용량의 ${FILL_RATIO_LABEL}`, shared: true },
+  { label: '크기(mm)', value: (p) => p.dimensionsMm },
+  { label: '노즐', value: (p) => p.nozzle },
+  { label: '분사 방식', value: (p) => p.sprayMode },
+  { label: '어깨끈', value: (p) => (p.shoulderStrap ? '포함' : '미포함') },
+  { label: '주요 사용처', value: (p) => p.bestFor.join(', ') },
   { label: '가열원', value: () => HEAT_SOURCE, shared: true },
   { label: '사용 매질', value: () => MEDIA_LABEL, shared: true },
-  { label: '어깨끈', value: (p) => (p.shoulderStrap ? '포함' : '미포함') },
-  { label: '롱노즐', value: (p) => (p.longNozzle ? '포함' : '미포함') },
+  { label: '사용 장소', value: () => USE_LOCATION, shared: true },
   { label: '보조주입구', value: () => '작동 중 사용 금지', shared: true },
   { label: '배송', value: () => SHIPPING.label, shared: true },
 ];

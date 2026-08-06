@@ -1,5 +1,5 @@
 ---
-import { PRODUCTS, SPEC_ROWS } from '../data/products';
+import { PRODUCTS, SHIPPING, SPEC_ROWS } from '../data/products';
 
 /**
  * 모델 × 사양 비교표.
@@ -19,6 +19,9 @@ const {
 } = Astro.props;
 
 const rows = includeShared ? SPEC_ROWS : SPEC_ROWS.filter((row) => !row.shared);
+
+/** 공통 사양 행에는 배송이 포함되므로, 표가 "무료배송"을 말하면 조건도 함께 말한다 */
+const notes = [footnote, includeShared ? SHIPPING.note : null].filter(Boolean);
 ---
 
 <div class="spec-table">
@@ -41,7 +44,7 @@ const rows = includeShared ? SPEC_ROWS : SPEC_ROWS.filter((row) => !row.shared);
       }
     </tbody>
   </table>
-  {footnote && <p class="spec-table__footnote">{footnote}</p>}
+  {notes.map((note) => <p class="spec-table__footnote">{note}</p>)}
 </div>
 
 <style>

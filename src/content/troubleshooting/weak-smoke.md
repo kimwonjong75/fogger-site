@@ -1,13 +1,11 @@
 ---
-title: 연막이 약할 때 원인 찾기
+title: 연막소독기 연막량 부족 원인 찾기
 description: 연막이 묽거나 끊기고 액체가 그대로 튄다면 원인은 예열, 매질, 노즐 중 하나입니다. 어디부터 순서대로 좁혀가야 하는지 정리했습니다.
 updatedDate: 2026-07-29
 published: true
-reviewer: 블루가드 기술지원팀
+reviewer: 김원종
 ctaType: product
 showSpecTable: true
-heroImage: ../../assets/ts-smoke.png
-heroImageAlt: 연막 상태 점검 — 노즐에서 나오는 연막이 묽게 흩어지는 모습을 확인하는 장면
 related:
   - guides/ignition-and-spray
   - troubleshooting/nozzle-clogged

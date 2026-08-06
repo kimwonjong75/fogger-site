@@ -1,0 +1,35 @@
+---
+import { SHIPPING } from '../data/products';
+
+/**
+ * 배송 조건 고지.
+ * "무료배송" 표기가 나오는 페이지에는 반드시 이 컴포넌트를 한 번 배치한다.
+ */
+const { class: className } = Astro.props;
+---
+
+<p class:list={['shipping-note', className]}>
+  <strong>{SHIPPING.label}</strong>
+  <span>{SHIPPING.note}</span>
+</p>
+
+<style>
+  .shipping-note {
+    margin: 1rem 0;
+    padding: 0.7rem 0.9rem;
+    border: 1px solid var(--c-border);
+    border-radius: 8px;
+    background: var(--c-surface-alt);
+    font-size: 0.83rem;
+    line-height: 1.6;
+    color: var(--c-text-muted);
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .shipping-note strong {
+    color: var(--c-text);
+    flex: none;
+  }
+</style>

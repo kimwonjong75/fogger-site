@@ -1,10 +1,11 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import BuyCTA from '../components/BuyCTA.astro';
+import { BUY_CTA_LABEL_SHORT } from '../data/site';
 import ModelSpecTable from '../components/ModelSpecTable.astro';
 import SafetyBox from '../components/SafetyBox.astro';
+import ShippingNote from '../components/ShippingNote.astro';
 import {
-  DEFAULT_PRODUCT_ID,
   FILL_RATIO_LABEL,
   MEDIA_LABEL,
   PRODUCTS,
@@ -20,9 +21,10 @@ const [small, large] = PRODUCTS;
   canonicalPath="/compare/"
   ogImage="/og/og-compare.png"
   crumbs={[{ name: '모델비교', href: '/compare/' }]}
-  stickyBuy={DEFAULT_PRODUCT_ID}
+  stickyBuy="generic"
 >
-  <h1>모델 비교표</h1>
+  <p class="eyebrow">모델비교</p>
+  <h1>BF-100S와 BF-102 무엇이 다른가</h1>
   <p class="lede">
     본체 구조와 사용 절차는 세 구성 모두 같습니다. 실제로 갈리는 지점은 한 번에 담는 양, 들고
     다니는 방식, 노즐이 닿는 거리입니다.
@@ -55,7 +57,7 @@ const [small, large] = PRODUCTS;
             >
               사양 자세히
             </a>
-            <BuyCTA productId={product.id} content={`compare_${product.id}`} label="구매하기" variant="secondary" />
+            <BuyCTA productId={product.id} content={`compare_${product.id}`} label={BUY_CTA_LABEL_SHORT} variant="secondary" />
           </div>
         </section>
       ))
@@ -76,6 +78,8 @@ const [small, large] = PRODUCTS;
       않고도 닿습니다.
     </li>
   </ul>
+
+  <ShippingNote />
 
   <SafetyBox title="모델과 무관하게 공통 적용" />
 </BaseLayout>

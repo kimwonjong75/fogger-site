@@ -13,6 +13,7 @@ const docs = await getPublishedDocs('uses');
   canonicalPath={meta.href}
   ogImage="/og/og-uses.png"
   crumbs={[{ name: meta.label, href: meta.href }]}
+  noindex={docs.length === 0}
 >
   <h1>{meta.title}</h1>
   <p class="lede">{meta.description}</p>

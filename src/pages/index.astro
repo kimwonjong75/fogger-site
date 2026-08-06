@@ -1,26 +1,22 @@
 ---
-import heroImage from '../assets/hero-home.png';
+import heroImage from '../assets/photo-bf-102.jpg';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import BuyCTA from '../components/BuyCTA.astro';
 import ModelCard from '../components/ModelCard.astro';
 import Pic from '../components/Pic.astro';
 import SafetyBox from '../components/SafetyBox.astro';
-import {
-  DEFAULT_PRODUCT_ID,
-  FILL_RATIO_LABEL,
-  HEAT_SOURCE,
-  MEDIA_LABEL,
-  PRODUCTS,
-  SHIPPING,
-} from '../data/products';
+import ShippingNote from '../components/ShippingNote.astro';
+import StatRow from '../components/StatRow.astro';
+import TrustBar from '../components/TrustBar.astro';
+import { MEDIA_LABEL, PRODUCTS } from '../data/products';
 import { COLLECTION_META, docHref, getPublishedDocs } from '../lib/content';
 import { organizationSchema, websiteSchema } from '../lib/schema';
 
 const sections = [
   { key: 'guides' as const, docs: (await getPublishedDocs('guides')).slice(0, 4) },
-  { key: 'uses' as const, docs: (await getPublishedDocs('uses')).slice(0, 3) },
   { key: 'troubleshooting' as const, docs: (await getPublishedDocs('troubleshooting')).slice(0, 3) },
-];
+  { key: 'uses' as const, docs: (await getPublishedDocs('uses')).slice(0, 3) },
+].filter(({ docs }) => docs.length > 0);
 ---
 
 <BaseLayout
@@ -32,54 +28,55 @@ const sections = [
   schemaNodes={[organizationSchema(), websiteSchema()]}
 >
   <section class="hero">
-    <div>
-      <h1>현장에 맞는 연막소독기를 숫자로 고르세요</h1>
+    <div class="hero__text">
+      <p class="eyebrow">공식 기술정보</p>
+      <h1>블루가드 연막소독기<br />BF-100S · BF-102</h1>
       <p class="lede">
-        BF-100S와 BF-102는 탱크 용량과 휴대 방식이 다릅니다. 사양과 사용법, 안전수칙을 확인하고
-        현장에 맞는 구성을 고르세요.
+        부탄가스로 작동하는 휴대용 미니 연막기입니다. 모델별 탱크 용량과 노즐 구성, 충전 한도와
+        안전 기준을 공식 사양 그대로 정리했습니다.
       </p>
-      <ul class="hero__facts">
-        <li><span>가열원</span>{HEAT_SOURCE}</li>
-        <li><span>사용 매질</span>{MEDIA_LABEL}</li>
-        <li><span>충전 한도</span>탱크 용량의 {FILL_RATIO_LABEL}</li>
-        {SHIPPING.free && <li><span>배송</span>{SHIPPING.label}</li>}
-      </ul>
       <div class="hero__actions">
-        <BuyCTA content="home_hero" productId={DEFAULT_PRODUCT_ID} showShipping />
-        <a class="hero__link" href="/compare/">모델 비교표 보기</a>
+        <BuyCTA content="home_hero" showShipping />
+        <a class="hero__link" href="/compare/">모델 비교표 보기 →</a>
       </div>
+      <p class="hero__media">사용 매질 · {MEDIA_LABEL}</p>
     </div>
     <Pic
       src={heroImage}
-      alt="블루가드 연막소독기 — 작업 현장 통로를 따라 연막이 퍼져 나가는 장면"
-      width={520}
-      height={293}
+      alt="블루가드 연막소독기 대용량 — 흰색 연료통과 스테인리스 배럴이 보이는 본체 제품 사진"
+      width={480}
+      height={480}
       priority
-      sizes="(max-width: 900px) 100vw, 520px"
+      sizes="(max-width: 900px) 100vw, 480px"
       class="hero__image"
     />
   </section>
 
-  <SafetyBox title="쓰기 전에 이것만은" compact only={['fill-limit', 'aux-inlet', 'media']} />
+  <StatRow />
 
-  <section>
-    <h2>모델 고르기</h2>
+  <SafetyBox title="쓰기 전에 이것만은" compact only={['venue', 'fill-limit', 'aux-inlet']} />
+
+  <section aria-labelledby="models">
+    <h2 id="models">모델 고르기</h2>
+    <p class="section-desc">
+      본체 구조와 사용 절차는 세 구성이 같습니다. 갈리는 것은 한 번에 담는 양, 들고 다니는 방식,
+      분사구가 닿는 거리입니다.
+    </p>
     <div class="grid">
-      {
-        PRODUCTS.map((product) => (
-          <ModelCard product={product} context="home" featured={product.id === DEFAULT_PRODUCT_ID} />
-        ))
-      }
+      {PRODUCTS.map((product) => <ModelCard product={product} context="home" />)}
     </div>
     <p class="section-more">
       <a href="/products/">제품 전체 보기</a> · <a href="/compare/">모델 비교표</a>
     </p>
+    <ShippingNote />
   </section>
+
+  <TrustBar />
 
   {
     sections.map(({ key, docs }) => (
-      <section>
-        <h2>{COLLECTION_META[key].title}</h2>
+      <section aria-labelledby={`sec-${key}`}>
+        <h2 id={`sec-${key}`}>{COLLECTION_META[key].title}</h2>
         <p class="section-desc">{COLLECTION_META[key].description}</p>
         <ul class="doc-list">
           {docs.map((doc) => (
@@ -92,54 +89,34 @@ const sections = [
           ))}
         </ul>
         <p class="section-more">
-          <a href={COLLECTION_META[key].href}>{COLLECTION_META[key].label} 전체 보기</a>
+          <a href={COLLECTION_META[key].href}>{COLLECTION_META[key].label} 전체 보기 →</a>
         </p>
       </section>
     ))
   }
 
-  <section class="closing">
+  <section class="panel panel--ink closing">
     <h2>안전하게 쓰는 것이 먼저입니다</h2>
     <p>
-      연막소독기는 가열 기기입니다. 충전 한도와 보조주입구 취급, 지정 매질 이 세 가지만 지켜도 사고
-      대부분을 막을 수 있습니다.
+      연막소독기는 매질을 가열해 기화시키는 기기입니다. 충전 한도, 보조주입구 취급, 지정 매질
+      이 세 가지만 지켜도 사고 대부분을 막을 수 있습니다. 사용 가능한 장소는 함께 쓰는 약제의
+      표시사항이 정합니다.
     </p>
-    <p><a href="/safety/">전체 안전수칙 보기</a></p>
+    <p><a href="/safety/">전체 안전수칙 보기 →</a></p>
   </section>
 </BaseLayout>
 
 <style>
   .hero {
     display: grid;
-    grid-template-columns: 1.1fr 0.9fr;
-    gap: 2rem;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: clamp(1.5rem, 4vw, 3rem);
     align-items: center;
-    padding: 1.25rem 0 0.5rem;
+    padding: clamp(1rem, 3vw, 2.25rem) 0 1rem;
   }
 
-  .hero h1 {
+  .hero__text h1 {
     margin-top: 0;
-  }
-
-  .hero__facts {
-    list-style: none;
-    margin: 0 0 1.5rem;
-    padding: 0;
-    display: grid;
-    gap: 0.35rem;
-    font-size: 0.92rem;
-  }
-
-  .hero__facts li {
-    display: flex;
-    gap: 0.6rem;
-  }
-
-  .hero__facts span {
-    flex: none;
-    width: 5.5rem;
-    color: var(--c-text-muted);
-    font-weight: 600;
   }
 
   .hero__actions {
@@ -150,15 +127,27 @@ const sections = [
   }
 
   .hero__link {
-    font-weight: 600;
-    font-size: 0.94rem;
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-decoration: none;
+  }
+
+  .hero__link:hover {
+    text-decoration: underline;
+  }
+
+  .hero__media {
+    margin: 1.1rem 0 0;
+    font-size: 0.85rem;
+    color: var(--c-text-muted);
   }
 
   .hero :global(.hero__image) {
     width: 100%;
     height: auto;
-    border-radius: 12px;
+    border-radius: 14px;
     display: block;
+    background: var(--c-surface-alt);
   }
 
   .grid {
@@ -168,15 +157,24 @@ const sections = [
   }
 
   .section-desc {
-    margin: 0 0 1rem;
+    margin: 0 0 1.25rem;
     color: var(--c-text-muted);
-    font-size: 0.95rem;
+    font-size: 0.97rem;
+    max-width: 60ch;
   }
 
   .section-more {
-    margin: 1rem 0 0;
-    font-size: 0.92rem;
-    font-weight: 600;
+    margin: 1.25rem 0 0;
+    font-size: 0.93rem;
+    font-weight: 700;
+  }
+
+  .section-more a {
+    text-decoration: none;
+  }
+
+  .section-more a:hover {
+    text-decoration: underline;
   }
 
   .doc-list {
@@ -184,45 +182,47 @@ const sections = [
     margin: 0;
     padding: 0;
     display: grid;
-    gap: 0.5rem;
+    gap: 0.6rem;
   }
 
   .doc-list a {
     display: grid;
-    gap: 0.15rem;
-    padding: 0.85rem 1rem;
+    gap: 0.2rem;
+    padding: 1rem 1.15rem;
     border: 1px solid var(--c-border);
-    border-radius: 8px;
+    border-radius: 12px;
     text-decoration: none;
     color: var(--c-text);
     background: var(--c-surface);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
   }
 
   .doc-list a:hover {
     border-color: var(--c-accent);
-    background: var(--c-accent-soft);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
   }
 
   .doc-list strong {
-    font-size: 0.98rem;
+    font-size: 1rem;
+    letter-spacing: -0.015em;
   }
 
   .doc-list span {
-    font-size: 0.87rem;
+    font-size: 0.88rem;
     color: var(--c-text-muted);
-    line-height: 1.6;
+    line-height: 1.65;
   }
 
-  .closing {
-    margin-top: 3rem;
-    padding: 1.5rem;
-    border-radius: 10px;
-    background: var(--c-surface-alt);
-    border: 1px solid var(--c-border);
+  .closing p {
+    color: var(--c-on-ink);
+    max-width: 62ch;
   }
 
-  .closing h2 {
-    margin-top: 0;
+  @media (prefers-reduced-motion: reduce) {
+    .doc-list a:hover {
+      transform: none;
+    }
   }
 
   @media (max-width: 900px) {

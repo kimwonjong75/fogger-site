@@ -1,9 +1,9 @@
 ---
-title: 겨울철 저온 환경 운용
+title: 연막소독기 겨울철 저온 운용
 description: 기온이 낮을 때 부탄가스 출력과 예열 시간이 어떻게 달라지는지, 저온 현장에서 지켜야 할 절차와 보관 기준을 정리한 초안입니다.
 updatedDate: 2026-08-04
 published: false
-reviewer: 블루가드 기술지원팀
+reviewer: 김원종
 ctaType: none
 faq:
   - q: 영하에서도 쓸 수 있나요?

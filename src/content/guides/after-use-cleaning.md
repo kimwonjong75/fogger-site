@@ -1,12 +1,10 @@
 ---
-title: 사용 후 세척과 보관
+title: 연막소독기 사용 후 세척과 보관
 description: 작업이 끝난 연막소독기를 어떻게 식히고 비우고 닦아야 다음 작업에서 노즐이 막히지 않는지, 보관 방법까지 순서대로 정리했습니다.
 updatedDate: 2026-07-24
 published: true
-reviewer: 블루가드 기술지원팀
+reviewer: 김원종
 ctaType: as
-heroImage: ../../assets/guide-clean.png
-heroImageAlt: 연막소독기 사용 후 세척 — 식힌 본체의 노즐을 분리해 잔여물을 닦아내는 장면
 related:
   - guides/ignition-and-spray
   - troubleshooting/nozzle-clogged

@@ -15,6 +15,8 @@ import { GA4_MEASUREMENT_ID } from '../data/site';
  *  - scroll_75          : page_path (페이지당 1회)
  */
 const isRealId = /^G-[A-Z0-9]{6,}$/.test(GA4_MEASUREMENT_ID) && !/^G-X+$/.test(GA4_MEASUREMENT_ID);
+/** 자리표시자 ID는 산출물에 내보내지 않는다 */
+const measurementId = isRealId ? GA4_MEASUREMENT_ID : '';
 ---
 
 {
@@ -22,12 +24,12 @@ const isRealId = /^G-[A-Z0-9]{6,}$/.test(GA4_MEASUREMENT_ID) && !/^G-X+$/.test(G
     <script
       is:inline
       async
-      src={`https://www.googletagmanager.com/gtag/js?id=${GA4_MEASUREMENT_ID}`}
+      src={`https://www.googletagmanager.com/gtag/js?id=${measurementId}`}
     />
   )
 }
 
-<script is:inline define:vars={{ GA4_MEASUREMENT_ID, isRealId }}>
+<script is:inline define:vars={{ measurementId, isRealId }}>
   window.dataLayer = window.dataLayer || [];
   function gtag() {
     window.dataLayer.push(arguments);
@@ -36,7 +38,7 @@ const isRealId = /^G-[A-Z0-9]{6,}$/.test(GA4_MEASUREMENT_ID) && !/^G-X+$/.test(G
 
   if (isRealId) {
     gtag('js', new Date());
-    gtag('config', GA4_MEASUREMENT_ID, { send_page_view: true });
+    gtag('config', measurementId, { send_page_view: true });
   }
 </script>
 

@@ -1,12 +1,10 @@
 ---
-title: 점화가 안 될 때 점검 순서
+title: 연막소독기 점화 불량 점검 순서
 description: 점화 스위치를 눌러도 불이 붙지 않을 때 가스 체결 상태부터 점화부까지 어떤 순서로 확인해야 하는지 현장 점검법을 정리했습니다.
 updatedDate: 2026-07-31
 published: true
-reviewer: 블루가드 기술지원팀
+reviewer: 김원종
 ctaType: as
-heroImage: ../../assets/ts-ignition.png
-heroImageAlt: 연막소독기 점화 점검 — 부탄가스 체결부를 분리해 결합 상태를 확인하는 장면
 related:
   - guides/ignition-and-spray
   - troubleshooting/weak-smoke

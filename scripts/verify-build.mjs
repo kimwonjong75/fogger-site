@@ -23,12 +23,46 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
+const CONTENT = join(ROOT, 'src', 'content');
 const SITE = 'https://fogger.blueguard.kr';
 const PAGE_BUDGET = 1.2 * 1024 * 1024;
 
 const FORBIDDEN_SCHEMA = ['Offer', 'Product', 'AggregateRating', 'aggregateRating', 'FAQPage', 'HowTo'];
-/** published:false 문서 id — 어디에도 나타나면 안 된다 */
-const UNPUBLISHED = ['winter-operation', 'greenhouse'];
+
+/**
+ * 산출물에 남으면 배포를 막아야 하는 자리표시자·잘못된 목적지.
+ * 문자열이 하나라도 dist 안에 있으면 검증 실패.
+ */
+const BLOCKERS = [
+  { needle: 'TODO_', why: '사업자 정보 등 자리표시자가 채워지지 않았습니다' },
+  { needle: 'G-XXXXXXXXXX', why: 'GA4 측정 ID가 자리표시자입니다' },
+  { needle: 'example.com', why: '예시 도메인이 남아 있습니다' },
+  {
+    needle: 'smartstore.naver.com/blueguard?',
+    why: '구매 CTA가 스마트스토어로 연결됩니다 (공식몰 상품 URL이어야 함)',
+  },
+];
+
+/**
+ * 구매 CTA가 반드시 향해야 하는 목적지.
+ * 호스트·경로 접두사만 보면 다른 상품 URL도 통과하므로 상품번호까지 고정한다.
+ * 상품이 바뀌면 site.ts의 OFFICIAL_STORE_PRODUCT_URL과 이 값을 함께 갱신한다.
+ */
+const EXPECTED_BUY_HOST = 'blueguard.kr';
+const EXPECTED_BUY_PRODUCT_NO = '3054';
+
+/** 구매 CTA가 최소 1개는 있어야 하는 전환 페이지 */
+const CONVERSION_PATHS = [/^\/$/, /^\/products\//, /^\/compare\/$/];
+
+/**
+ * GA4 측정 ID 유효성 — Analytics.astro와 동일한 판정을 써야
+ * "계측은 꺼졌는데 빌드는 통과"하는 상태가 생기지 않는다.
+ */
+const isRealGa4Id = (id) => /^G-[A-Z0-9]{6,}$/.test(id) && !/^G-X+$/.test(id);
+
+/** 생성 이미지 매니페스트 — og 카드 외의 생성물이 남아 있는지 확인용 */
+const STRICT_IMAGES = process.env.STRICT_IMAGES === '1';
+const IMAGE_MANIFEST = join(ROOT, 'src', 'assets', 'generated-manifest.json');
 
 const errors = [];
 const warnings = [];
@@ -78,13 +112,43 @@ const attr = (tag, name) => {
 
 const all = (html, re) => [...html.matchAll(re)];
 
+/** HTML 속성값의 엔티티를 되돌린다 (&amp; 때문에 쿼리 파싱이 깨지는 것 방지) */
+const unescapeAttr = (value) =>
+  value
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+
+/**
+ * 콘텐츠 컬렉션에서 published:false 문서 id를 직접 읽는다.
+ * 목록을 손으로 관리하지 않아야 새 비공개 문서가 검증에서 누락되지 않는다.
+ */
+async function collectUnpublishedIds() {
+  const ids = [];
+  for (const dir of await readdir(CONTENT, { withFileTypes: true })) {
+    if (!dir.isDirectory()) continue;
+    for (const file of await readdir(join(CONTENT, dir.name))) {
+      if (!file.endsWith('.md')) continue;
+      const raw = readFileSync(join(CONTENT, dir.name, file), 'utf8');
+      const frontmatter = raw.split('---')[1] ?? '';
+      if (/^published:\s*false\s*$/m.test(frontmatter)) ids.push(file.replace(/\.md$/, ''));
+    }
+  }
+  return ids;
+}
+
 /* ---------- 로드 ---------- */
 
 const files = await walk(DIST);
 const pages = files.filter((f) => f.endsWith('.html')).sort();
 const assetSizes = new Map(files.map((f) => [f, size(f)]));
+const UNPUBLISHED = await collectUnpublishedIds();
 
-console.log(`검사 대상: HTML ${pages.length}개 / 전체 파일 ${files.length}개\n`);
+console.log(
+  `검사 대상: HTML ${pages.length}개 / 전체 파일 ${files.length}개 / 비공개 문서 ${UNPUBLISHED.length}건 (${UNPUBLISHED.join(', ') || '없음'})\n`,
+);
 
 const titles = new Map();
 
@@ -299,15 +363,141 @@ for (const file of pages) {
     if (html.includes(`/${id}/`)) fail(`${where} 비공개 문서 링크 노출: ${id}`);
   }
 
+  /* --- 자리표시자·잘못된 목적지 (배포 차단) --- */
+  for (const blocker of BLOCKERS) {
+    if (html.includes(blocker.needle)) {
+      fail(`${where} "${blocker.needle}" 가 산출물에 남아 있습니다 — ${blocker.why}`);
+    }
+  }
+
+  /* --- 구매 CTA 목적지 --- */
+  const ctaTags = all(html, /(<a\b[^>]*data-ga-event="purchase_cta_click"[^>]*>)/gi).map((m) => m[1]);
+
+  // data-ga-event가 빠져 검사망을 벗어난 구매 링크가 없는지 역방향으로도 확인
+  for (const [, tag] of all(html, /(<a\b[^>]*href="[^"]*blueguard\.kr\/product[^"]*"[^>]*>)/gi)) {
+    if (!tag.includes('data-ga-event="purchase_cta_click"')) {
+      fail(`${where} 공식몰 상품 링크에 data-ga-event="purchase_cta_click" 가 없어 계측·검증에서 빠집니다`);
+    }
+  }
+
+  for (const tag of ctaTags) {
+    const href = attr(tag, 'href');
+    if (!href) {
+      fail(`${where} 구매 CTA에 href 없음`);
+      continue;
+    }
+    let url;
+    try {
+      url = new URL(unescapeAttr(href));
+    } catch {
+      fail(`${where} 구매 CTA href 파싱 실패 → ${href}`);
+      continue;
+    }
+    const productNo = decodeURIComponent(url.pathname).match(/\/(\d+)\/?$/)?.[1];
+    if (url.hostname !== EXPECTED_BUY_HOST || productNo !== EXPECTED_BUY_PRODUCT_NO) {
+      fail(
+        `${where} 구매 CTA가 지정 상품(${EXPECTED_BUY_HOST} 상품번호 ${EXPECTED_BUY_PRODUCT_NO})이 아님 → ${href}`,
+      );
+    }
+    if (!url.searchParams.get('utm_content')) {
+      fail(`${where} 구매 CTA에 utm_content 없음 → ${href}`);
+    }
+  }
+
+  if (CONVERSION_PATHS.some((re) => re.test(urlPath)) && ctaTags.length === 0) {
+    fail(`${where} 전환 페이지인데 구매 CTA가 하나도 없습니다`);
+  }
+
+  /* --- "무료배송" 표기에는 조건 고지가 같은 페이지에 있어야 한다 --- */
+  if (html.includes('무료배송') && !html.includes('반품 시 왕복 배송비')) {
+    fail(`${where} "무료배송" 표기가 있는데 배송 조건 고지가 없습니다`);
+  }
+
   /* --- 10. 웹폰트 --- */
   if (/@font-face|fonts\.googleapis\.com|fonts\.gstatic\.com|\.woff2?/i.test(html)) {
     fail(`${where} 웹폰트 참조 발견`);
   }
 
-  /* --- noindex 는 404 에만 --- */
+  /* --- noindex 는 404 와 "공개 문서 0건인 컬렉션 인덱스"에만 --- */
   const hasNoindex = /name="robots"\s+content="noindex/i.test(html);
-  if (hasNoindex !== is404) {
-    fail(`${where} noindex 설정이 잘못됨 (404만 noindex여야 함)`);
+  // 스코프 CSS에도 클래스명이 들어가므로 실제로 렌더링된 요소로 판정한다
+  const isEmptyIndex = /<p class="doc-index__empty"/.test(html);
+  if (hasNoindex && !is404 && !isEmptyIndex) {
+    fail(`${where} 색인 대상 페이지에 noindex가 붙어 있습니다`);
+  }
+  if (!hasNoindex && is404) fail(`${where} 404에 noindex가 없습니다`);
+  if (!hasNoindex && isEmptyIndex) {
+    fail(`${where} 공개 문서가 0건인 인덱스인데 noindex가 없습니다 (얇은 페이지)`);
+  }
+}
+
+/* ---------- 제품 실사 존재 확인 ---------- */
+{
+  // 제품 컷은 코드로 만들 수 없다. 없으면 실패시켜 임시 그래픽으로 대체되는 일을 막는다.
+  for (const name of ['photo-bf-100s.jpg', 'photo-bf-102.jpg', 'photo-bf-102-long-nozzle.jpg']) {
+    if (size(join(ROOT, 'src', 'assets', name)) === null) {
+      fail(`[photos] 제품 실사가 없습니다: src/assets/${name} — \`npm run photos\` 로 가져오세요`);
+    }
+  }
+
+  // og:image는 브랜드 카드이므로 생성물이어도 된다. 그 밖의 생성 이미지가 남아 있으면 알린다.
+  try {
+    const manifest = JSON.parse(readFileSync(IMAGE_MANIFEST, 'utf8'));
+    const nonOg = Object.keys(manifest.files ?? {}).filter((f) => !f.startsWith('public/og/'));
+    if (nonOg.length > 0) {
+      const msg = `og 카드가 아닌 생성 이미지가 남아 있습니다: ${nonOg.join(', ')}`;
+      if (STRICT_IMAGES) fail(`[images] ${msg}`);
+      else warn(`[images] ${msg}`);
+    }
+  } catch {
+    warn('[images] generated-manifest.json 이 없습니다 — `npm run images` 를 실행하세요');
+  }
+}
+
+/* ---------- 설정 파일의 자리표시자 (산출물에는 안 나오지만 배포를 막아야 하는 것) ---------- */
+{
+  const siteConfig = readFileSync(join(ROOT, 'src', 'data', 'site.ts'), 'utf8');
+
+  const gaId = siteConfig.match(/GA4_MEASUREMENT_ID\s*=\s*'([^']*)'/)?.[1] ?? '';
+  if (!isRealGa4Id(gaId)) {
+    fail(
+      `[site.ts] GA4_MEASUREMENT_ID "${gaId}" 가 유효한 측정 ID가 아닙니다 — 이 상태에서는 계측이 전혀 되지 않습니다`,
+    );
+  }
+
+  if (siteConfig.includes('TODO_')) {
+    fail('[site.ts] 채우지 않은 TODO_ 값이 남아 있습니다');
+  }
+
+  // 검증기가 보는 상품번호와 실제 구매 URL이 어긋나면 검사가 무의미해진다
+  const storeUrl = siteConfig.match(/OFFICIAL_STORE_PRODUCT_URL\s*=\s*\n?\s*'([^']*)'/)?.[1] ?? '';
+  if (!decodeURIComponent(storeUrl).includes(`/${EXPECTED_BUY_PRODUCT_NO}`)) {
+    fail(
+      `[site.ts] OFFICIAL_STORE_PRODUCT_URL 이 검증 기준 상품번호(${EXPECTED_BUY_PRODUCT_NO})와 다릅니다 — verify-build.mjs의 EXPECTED_BUY_PRODUCT_NO 도 함께 갱신하세요`,
+    );
+  }
+
+  // 사업자 주소 행정구역 표기 오류 (광주광역시는 전라남도와 별개 광역자치단체)
+  if (/전남\s*광주|전라남도\s*광주/.test(siteConfig)) {
+    fail('[site.ts] 주소 행정구역 표기 오류 — 광주광역시는 전라남도 소속이 아닙니다');
+  }
+
+  // 탱크 용량이 공식 상세페이지와 대조 확인되지 않으면 배포를 막는다 (충전 한도는 안전 수치)
+  const productsConfig = readFileSync(join(ROOT, 'src', 'data', 'products.ts'), 'utf8');
+  if (/TANK_SPEC_CONFIRMED\s*=\s*false/.test(productsConfig)) {
+    fail(
+      '[products.ts] 탱크 용량이 공식 상세페이지 표기와 다릅니다 (1.7L/2.8L vs 1.8L/2.5L). 확인 후 TANK_SPEC_CONFIRMED를 true로 바꾸세요',
+    );
+  }
+}
+
+/* ---------- 그 외 산출물(텍스트 파일)의 자리표시자 ---------- */
+for (const file of files.filter((f) => /\.(txt|xml|json)$/.test(f))) {
+  const text = readFileSync(file, 'utf8');
+  for (const blocker of BLOCKERS) {
+    if (text.includes(blocker.needle)) {
+      fail(`[${file.slice(DIST.length)}] "${blocker.needle}" 남아 있음 — ${blocker.why}`);
+    }
   }
 }
 

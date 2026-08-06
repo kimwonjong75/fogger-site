@@ -16,6 +16,8 @@ const formatter = new Intl.DateTimeFormat('ko-KR', {
 });
 ---
 
+{docs.length === 0 && <p class="doc-index__empty">공개된 문서가 아직 없습니다. 검수가 끝나는 대로 추가됩니다.</p>}
+
 <ul class="doc-index">
   {
     docs.map((doc) => (
@@ -68,6 +70,15 @@ const formatter = new Intl.DateTimeFormat('ko-KR', {
     font-size: 0.9rem;
     color: var(--c-text-muted);
     line-height: 1.65;
+  }
+
+  .doc-index__empty {
+    margin: 1.5rem 0 0;
+    padding: 1rem 1.15rem;
+    border: 1px dashed var(--c-border-strong);
+    border-radius: 10px;
+    color: var(--c-text-muted);
+    font-size: 0.92rem;
   }
 
   .doc-index__meta {

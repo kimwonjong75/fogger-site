@@ -16,12 +16,16 @@ export const BUSINESS = {
   businessNumber: '536-88-00185',
   /** 통신판매업신고번호 (예: 제0000-지역0000호) */
   mailOrderNumber: '제2015-광주광산-0395호',
-  /** 사업장 주소 */
-  address: '전남광주 광산구 송도로 257-10, 2F 202호',
+  /**
+   * 사업장 주소.
+   * 공식몰 회사소개(blueguard.kr/about.html) 표기와 글자 단위로 일치시킨다.
+   * 검색엔진은 여러 사이트에 흩어진 상호·주소·전화(NAP)의 일치 여부를 신뢰 신호로 쓴다.
+   */
+  address: '광주광역시 광산구 송도로 257-10 2층 202호',
   /** 대표 이메일 */
   email: 'bearis@naver.com',
-  /** 고객문의 전화 (없으면 빈 문자열로 두면 렌더링에서 생략된다) */
-  tel: '',
+  /** 고객문의 전화 (빈 문자열이면 렌더링에서 생략된다) */
+  tel: '070-4147-1894',
 } as const;
 
 export const SITE = {
@@ -42,6 +46,22 @@ export const EXTERNAL = {
   corporate: 'https://blueguard.kr',
   smartstore: 'https://smartstore.naver.com/blueguard',
 } as const;
+
+/**
+ * 공식몰 구매 URL.
+ *
+ * 모델(BF-100S / BF-102 / 롱노즐)은 이 한 페이지의 옵션 드롭다운에서 고른다.
+ * 모델별 상세 URL이 따로 없으므로 전 모델이 같은 URL을 쓰고 utm_content로만 구분한다.
+ * 모델별 딥링크가 생기면 products.ts의 buyUrl만 개별 값으로 바꾸면 된다.
+ */
+export const OFFICIAL_STORE_PRODUCT_URL =
+  'https://blueguard.kr/product/%EB%B8%94%EB%A3%A8%EA%B0%80%EB%93%9C-%EB%B0%A9%EC%97%AD%EC%9A%A9-%EC%97%B0%EB%A7%89%EC%86%8C%EB%8F%85%EA%B8%B0/3054';
+
+/** 구매 CTA 기본 문구 — 옵션 선택이 필요한 단일 상품 페이지이므로 모델명을 붙이지 않는다. */
+export const BUY_CTA_LABEL = '옵션 선택하고 구매하기';
+
+/** 카드·고정바처럼 폭이 좁은 자리용. 모델명 옆에 '구매하기'만 쓰면 해당 모델이 바로 담기는 것처럼 읽힌다. */
+export const BUY_CTA_LABEL_SHORT = '옵션 선택하고 구매';
 
 /** Organization @id — 사이트 전역에서 동일한 노드를 참조 */
 export const ORG_ID = `${SITE.url}/#organization`;

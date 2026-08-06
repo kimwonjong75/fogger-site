@@ -1,22 +1,29 @@
 ---
-import { DEFAULT_PRODUCT_ID, getProduct, SHIPPING, type ProductId } from '../data/products';
+import { getProduct, SHIPPING, type ProductId } from '../data/products';
+import { BUY_CTA_LABEL, OFFICIAL_STORE_PRODUCT_URL } from '../data/site';
 import { withUtm } from '../lib/url';
 
+/**
+ * 공식몰 구매 CTA.
+ *
+ * 공식몰은 단일 상품 페이지 + 옵션 선택 구조라 모델별 딥링크가 없다.
+ * productId를 주면 GA에 모델을 함께 기록하지만, 링크 목적지와 문구는 옵션 선택 기준이다.
+ */
 interface Props {
-  /** 어떤 모델을 사는 CTA인지 */
+  /** 계측용 모델 지정. 생략하면 모델 미지정 CTA */
   productId?: ProductId;
   /** utm_content — CTA 위치 식별자 (예: hero, doc_footer, sticky_bar) */
   content: string;
   label?: string;
   variant?: 'primary' | 'secondary';
-  /** 무료배송 안내 문구 표시 */
+  /** 무료배송 배지 표시 (조건 문구는 페이지의 ShippingNote가 담당) */
   showShipping?: boolean;
   campaign?: string;
   class?: string;
 }
 
 const {
-  productId = DEFAULT_PRODUCT_ID,
+  productId,
   content,
   label,
   variant = 'primary',
@@ -25,9 +32,9 @@ const {
   class: className,
 } = Astro.props;
 
-const product = getProduct(productId);
-const href = withUtm(product.buyUrl, { content, campaign });
-const text = label ?? `${product.model} 구매하기`;
+const product = productId ? getProduct(productId) : null;
+const href = withUtm(product?.buyUrl ?? OFFICIAL_STORE_PRODUCT_URL, { content, campaign });
+const text = label ?? BUY_CTA_LABEL;
 ---
 
 <span class:list={['buy-cta-wrap', className]}>
@@ -38,8 +45,8 @@ const text = label ?? `${product.model} 구매하기`;
     rel="noopener external"
     data-ga-event="purchase_cta_click"
     data-ga-utm-content={content}
-    data-ga-model={product.model}
-    data-ga-product-id={product.id}
+    data-ga-model={product?.model}
+    data-ga-product-id={product?.id}
   >
     {text}
   </a>

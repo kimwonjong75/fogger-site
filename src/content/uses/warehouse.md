@@ -1,12 +1,10 @@
 ---
-title: 창고 적재물 사이 방역
+title: 창고 연막소독 사각지대 줄이기
 description: 팔레트와 랙이 들어찬 창고에서 연막이 닿지 않는 사각지대를 줄이려면 어떤 순서로 구획을 나눠 움직여야 하는지 현장 기준으로 정리했습니다.
 updatedDate: 2026-07-22
-published: true
-reviewer: 블루가드 기술지원팀
+published: false
+reviewer: 김원종
 ctaType: product
-heroImage: ../../assets/use-warehouse.png
-heroImageAlt: 창고 연막 방역 — 랙 사이 통로에서 적재물 틈을 향해 연막을 흘려보내는 장면
 related:
   - uses/underground-parking
   - guides/ignition-and-spray
@@ -48,7 +46,7 @@ sources:
 - 팔레트 아래 공간
 - 벽면과 적재물 사이 좁은 틈
 
-이 세 곳은 각도를 바꿔 한 번 더 지나가야 합니다. 손이 닿지 않는 높이는 [지하주차장 방역](/uses/underground-parking/)과 마찬가지로 노즐 도달 거리를 늘리는 편이 안전합니다.
+이 세 곳은 각도를 바꿔 한 번 더 지나가야 합니다. 사람이 올라가서 닿게 하지 말고, 노즐 도달 거리를 늘리는 구성이 안전합니다.
 
 ## 작업 후
 
