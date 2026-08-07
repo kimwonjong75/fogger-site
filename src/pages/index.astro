@@ -15,6 +15,7 @@ import {
   HOWTO_VIDEO,
   QC_VIDEOS,
   VIDEO_PUBLISHED_DATE,
+  howToApprovalLabel,
 } from '../data/media';
 import { OFFICIAL_STORE_PRODUCT_URL } from '../data/site';
 import { COLLECTION_META, docHref, getPublishedDocs } from '../lib/content';
@@ -31,6 +32,8 @@ const guides = (await getPublishedDocs('guides')).slice(0, 4);
 const troubles = (await getPublishedDocs('troubleshooting')).slice(0, 4);
 const evidenceVideos = [...QC_VIDEOS, ...CUSTOMER_USE_VIDEOS];
 const optionUrl = withUtm(OFFICIAL_STORE_PRODUCT_URL, { content: 'home_hero_secondary' });
+
+const approval = howToApprovalLabel();
 
 /** 화면에 렌더링하는 10단계와 같은 순서·문구를 쓴다 */
 const howTo = howToSchema('/', '블루가드 연막소독기 사용방법', HOWTO_STEPS);
@@ -54,7 +57,7 @@ const howToVideo = videoSchema({
 
 <BaseLayout
   title="가정용 휴대용 연막소독기 블루가드"
-  description="가정용·휴대용 연막소독기 블루가드 BF-100S·BF-102 공식 정보. 실내외 매질 기준과 모기 방역 사용법, 안전수칙, 문제해결을 한곳에 모았습니다."
+  description="가정용·휴대용 연막소독기 블루가드 공식 정보. 연막·연무 겸용 기준과 실내외 매질 선택, 모기 방역 사용법과 안전수칙을 한곳에 모았습니다."
   canonicalPath="/"
   ogImage="/og/og-default.png"
   crumbs={[{ name: '홈', href: '/' }]}
@@ -65,7 +68,7 @@ const howToVideo = videoSchema({
       <div class="full-bleed__inner hero">
         <div class="hero__text">
           <p class="eyebrow eyebrow--ink">공식 기술정보</p>
-          <h1>가정용 휴대용 연막소독기<br />블루가드 BF-100S · BF-102</h1>
+          <h1>가정용 휴대용 연막소독기<br />블루가드 연막·연무 겸용</h1>
           <p class="lede">
             부탄가스로 작동하는 국산 미니 연막기입니다. <strong>연막·연무를 한 대로</strong> 쓰며,
             넣는 매질을 바꾸면 실내에서도 작업합니다. 모델별 탱크 용량과 노즐 구성, 충전 한도와
@@ -179,6 +182,7 @@ const howToVideo = videoSchema({
         ))
       }
     </ol>
+    {approval && <p class="howto-approval">{approval}</p>}
     <p class="section-more">
       <a href="/guides/">단계별 상세 문서 보기</a> · <a href="/safety/">안전수칙</a>
     </p>
@@ -423,6 +427,12 @@ const howToVideo = videoSchema({
     margin: 0;
     font-size: 0.88rem;
     line-height: 1.65;
+    color: var(--c-text-muted);
+  }
+
+  .howto-approval {
+    margin: 1rem 0 0;
+    font-size: 0.85rem;
     color: var(--c-text-muted);
   }
 

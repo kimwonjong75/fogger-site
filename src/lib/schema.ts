@@ -119,8 +119,7 @@ export function productSchema(product: Product) {
     '@type': 'Product',
     '@id': `${url}#product`,
     name: product.name,
-    sku: product.model,
-    model: product.model,
+    sku: product.officialLabel,
     category: PRODUCT_TYPE,
     description: [
       product.tagline,

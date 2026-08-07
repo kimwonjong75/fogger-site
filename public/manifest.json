@@ -1,7 +1,7 @@
 {
   "name": "블루가드 연막소독기",
   "short_name": "블루가드 포거",
-  "description": "휴대용 부탄가스 연막소독기 BF-100S·BF-102 공식 정보 사이트",
+  "description": "가정용 휴대용 부탄가스 연막소독기 공식 정보 사이트 — 연막·연무 겸용",
   "start_url": "/",
   "display": "browser",
   "background_color": "#ffffff",

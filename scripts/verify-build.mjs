@@ -57,6 +57,10 @@ const BLOCKERS = [
   { needle: 'TODO_', why: '사업자 정보 등 자리표시자가 채워지지 않았습니다' },
   { needle: 'G-XXXXXXXXXX', why: 'GA4 측정 ID가 자리표시자입니다' },
   { needle: 'example.com', why: '예시 도메인이 남아 있습니다' },
+  // 고객이 주문할 때 보는 이름(기본형/대용량/대용량+롱노즐)과 사이트 표기를 일치시킨다.
+  // 내부 모델 번호가 화면에 나가면 같은 제품인지 확인이 안 된다.
+  { needle: 'BF-100S', why: '내부 모델 번호가 노출됐습니다 — 공식 옵션명을 쓰세요' },
+  { needle: 'BF-102', why: '내부 모델 번호가 노출됐습니다 — 공식 옵션명을 쓰세요' },
   {
     needle: 'smartstore.naver.com/blueguard?',
     why: '구매 CTA가 스마트스토어로 연결됩니다 (공식몰 상품 URL이어야 함)',
@@ -611,7 +615,8 @@ else {
   for (const id of UNPUBLISHED) {
     if (llms.includes(`/${id}/`)) fail(`[llms] published:false 문서가 llms.txt에 있음: ${id}`);
   }
-  for (const needle of ['인용', '충전 한도', 'BF-100S', 'BF-102']) {
+  // 제품 표기는 공식 옵션명으로만 한다 — 내부 모델 번호는 산출물에 나가면 안 된다
+  for (const needle of ['인용', '충전 한도', '기본형', '대용량', '대용량+롱노즐']) {
     if (!llms.includes(needle)) fail(`[llms] "${needle}" 항목 없음`);
   }
 }

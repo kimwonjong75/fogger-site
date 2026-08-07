@@ -80,13 +80,13 @@ const related = (await getAllPublishedDocs()).slice(0, 3);
 ---
 
 <BaseLayout
-  title={`휴대용 연막소독기 ${product.model} 사양`}
+  title={`휴대용 연막소독기 ${product.officialLabel} 사양`}
   description={`${product.name}의 탱크 용량과 최대 충전량, 구성품, 실내외 사용 매질과 안전 기준을 공식 사양 그대로 정리했습니다.`}
   canonicalPath={url}
   ogImage="/og/og-products.png"
   crumbs={[
     { name: '제품', href: '/products/' },
-    { name: product.model, href: url },
+    { name: product.officialLabel, href: url },
   ]}
   schemaNodes={[productSchema(product)]}
   stickyBuy={product.id}
@@ -113,14 +113,14 @@ const related = (await getAllPublishedDocs()).slice(0, 3);
     {
       base && (
         <p class="variant-note">
-          이 구성은 <a href={`/products/${base.id}/`}>{base.model}</a> 에 롱노즐을 더한 것입니다.
+          이 구성은 <a href={`/products/${base.id}/`}>{base.officialLabel}</a> 에 롱노즐을 더한 것입니다.
           본체 사양은 동일합니다.
         </p>
       )
     }
 
     <h2>사양</h2>
-    <FactTable rows={facts} caption={`${product.model} 사양`} />
+    <FactTable rows={facts} caption={`${product.officialLabel} 사양`} />
 
     {
       product.includes.length > 0 && (
@@ -176,7 +176,7 @@ const related = (await getAllPublishedDocs()).slice(0, 3);
     }
 
     <section class="closing">
-      <h2>{product.model}로 결정하셨나요?</h2>
+      <h2>{product.officialLabel}으로 결정하셨나요?</h2>
       <p>사용 전 준비 절차와 안전수칙을 먼저 확인하시길 권합니다.</p>
       <div class="buy-row">
         <BuyCTA productId={product.id} content={`product_${product.id}_bottom`} showShipping />

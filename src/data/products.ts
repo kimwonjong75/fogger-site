@@ -210,9 +210,14 @@ export const TANK_SPEC_CONFIRMED = true;
 
 export interface Product {
   id: ProductId;
-  /** 모델명 (BF-100S 등) */
-  model: string;
-  /** 공식 상세페이지의 옵션 표기 (기본형 / 대용량 / 대용량+롱노즐) */
+  /**
+   * 공식 옵션명 — 화면·구조화데이터·분석 이벤트에 쓰는 **유일한** 제품 표기다.
+   *
+   * 공식몰 옵션 드롭다운 표기(기본형 / 대용량 / 대용량+롱노즐)와 글자 단위로 일치시킨다.
+   * 내부 도면상의 모델 번호(BF-…)는 화면 어디에도 쓰지 않는다 — 고객이 주문할 때
+   * 보는 이름과 사이트가 부르는 이름이 다르면 같은 제품인지 확인이 안 된다.
+   * 이 규칙 때문에 `model` 필드는 의도적으로 두지 않았다.
+   */
   officialLabel: string;
   /** 화면 표기용 전체 이름 */
   name: string;
@@ -269,9 +274,8 @@ export function maxFillLiters(tankLiters: number): number {
 export const PRODUCTS: Product[] = [
   {
     id: 'bf-100s',
-    model: 'BF-100S',
     officialLabel: '기본형',
-    name: '블루가드 연막소독기 BF-100S 기본형',
+    name: '블루가드 연막소독기 기본형',
     tagline: '탱크가 가장 작은 기본형. 세척용 받침대가 함께 들어 있습니다.',
     tankLiters: 1.8,
     dimensionsMm: '465×265×180',
@@ -286,9 +290,8 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'bf-102',
-    model: 'BF-102',
     officialLabel: '대용량',
-    name: '블루가드 연막소독기 BF-102 대용량',
+    name: '블루가드 연막소독기 대용량',
     tagline: '탱크가 크고 전용 어깨스트랩이 들어 있어 오래 들고 작업합니다.',
     tankLiters: 2.5,
     dimensionsMm: '465×360×170',
@@ -303,9 +306,8 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'bf-102-long-nozzle',
-    model: 'BF-102 + 롱노즐',
     officialLabel: '대용량+롱노즐',
-    name: '블루가드 연막소독기 BF-102 롱노즐 구성',
+    name: '블루가드 연막소독기 대용량+롱노즐',
     tagline: '대용량 본체에 50cm 롱노즐을 더해 아래에서 위로 침투 분사합니다.',
     tankLiters: 2.5,
     dimensionsMm: '465×360×170',
@@ -358,7 +360,7 @@ export interface SpecRow {
 }
 
 export const SPEC_ROWS: SpecRow[] = [
-  { label: '공식 옵션명', value: (p) => p.officialLabel },
+  { label: '구성', value: (p) => p.officialLabel },
   { label: '탱크 용량', value: (p) => `${p.tankLiters}L` },
   { label: '최대 충전량', value: (p) => `${maxFillLiters(p.tankLiters)}L` },
   { label: '충전 한도', value: () => `탱크 용량의 ${FILL_RATIO_LABEL}`, shared: true },

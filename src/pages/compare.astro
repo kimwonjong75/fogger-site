@@ -16,7 +16,7 @@ const [small, large] = PRODUCTS;
 ---
 
 <BaseLayout
-  title="BF-100S와 BF-102 모델비교"
+  title="연막소독기 기본형·대용량 비교"
   description="탱크 용량과 최대 충전량, 어깨끈과 롱노즐 유무를 나란히 두고 현장에 맞는 모델을 고르는 기준을 정리했습니다."
   canonicalPath="/compare/"
   ogImage="/og/og-compare.png"
@@ -24,14 +24,14 @@ const [small, large] = PRODUCTS;
   stickyBuy="generic"
 >
   <p class="eyebrow">모델비교</p>
-  <h1>BF-100S와 BF-102 무엇이 다른가</h1>
+  <h1>기본형과 대용량, 무엇이 다른가</h1>
   <p class="lede">
     본체 구조와 사용 절차는 세 구성 모두 같습니다. 실제로 갈리는 지점은 한 번에 담는 양, 들고
     다니는 방식, 노즐이 닿는 거리입니다.
   </p>
 
   <ModelSpecTable
-    caption="BF-100S · BF-102 · BF-102 롱노즐 구성"
+    caption="기본형 · 대용량 · 대용량+롱노즐"
     footnote={`최대 충전량은 탱크 용량의 ${FILL_RATIO_LABEL}를 적용한 값이며, 매질은 전 모델 공통으로 ${MEDIA_LABEL}만 사용합니다.`}
   />
 
@@ -40,7 +40,7 @@ const [small, large] = PRODUCTS;
     {
       PRODUCTS.map((product) => (
         <section class="picker__item">
-          <h3>{product.model}</h3>
+          <h3>{product.officialLabel}</h3>
           <p class="picker__spec">
             탱크 {product.tankLiters}L · 최대충전 {maxFillLiters(product.tankLiters)}L
           </p>
@@ -51,7 +51,7 @@ const [small, large] = PRODUCTS;
             <a
               href={`/products/${product.id}/`}
               data-ga-event="model_select"
-              data-ga-model={product.model}
+              data-ga-model={product.officialLabel}
               data-ga-product-id={product.id}
               data-ga-context="compare"
             >
@@ -67,10 +67,10 @@ const [small, large] = PRODUCTS;
   <h2>한 줄 요약</h2>
   <ul class="summary">
     <li>
-      한 공간을 짧게 처리한다면 <strong>{small!.model}</strong>. 가볍고 준비가 빠릅니다.
+      한 공간을 짧게 처리한다면 <strong>{small!.officialLabel}</strong>. 가볍고 준비가 빠릅니다.
     </li>
     <li>
-      이동 거리가 길고 면적이 넓다면 <strong>{large!.model}</strong>. 탱크가 크고 어깨끈이 있어 중간
+      이동 거리가 길고 면적이 넓다면 <strong>{large!.officialLabel}</strong>. 탱크가 크고 어깨끈이 있어 중간
       재충전 횟수가 줍니다.
     </li>
     <li>

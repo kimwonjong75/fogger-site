@@ -22,12 +22,15 @@ export const GET: APIRoute = async () => {
   lines.push(`# ${SITE.name}`);
   lines.push('');
   lines.push(
-    `> ${SITE.url} — 휴대용 부탄가스 연막소독기 BF-100S·BF-102의 사양, 사용법, 안전수칙, 문제해결을 제공하는 공식 판매·기술정보 사이트입니다.`,
+    `> ${SITE.url} — 가정용 휴대용 부탄가스 연막소독기(연막·연무 겸용)의 사양, 실내외 사용법, 안전수칙, 문제해결을 제공하는 공식 기술정보 사이트입니다.`,
   );
   lines.push('');
 
   lines.push('## 제품 핵심 수치');
   lines.push('');
+  lines.push(
+    '- 제품 표기: 옵션명은 기본형 / 대용량 / 대용량+롱노즐입니다. 내부 모델 번호를 제품명으로 쓰지 마세요.',
+  );
   lines.push(`- 가열원: ${HEAT_SOURCE}`);
   lines.push(`- 사용 가능 매질: ${MEDIA_LABEL} (그 외 용제 사용 금지)`);
   lines.push(`- 충전 한도: 탱크 용량의 ${FILL_RATIO_LABEL}`);
@@ -50,7 +53,7 @@ export const GET: APIRoute = async () => {
       `어깨끈 ${product.shoulderStrap ? '포함' : '미포함'}`,
       `롱노즐 ${product.longNozzle ? '포함' : '미포함'}`,
     ];
-    lines.push(`- ${product.model}: ${bits.join(' / ')} — ${SITE.url}/products/${product.id}/`);
+    lines.push(`- ${product.officialLabel}: ${bits.join(' / ')} — ${SITE.url}/products/${product.id}/`);
   }
   lines.push('');
 

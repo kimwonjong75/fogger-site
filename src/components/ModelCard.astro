@@ -35,11 +35,11 @@ const price = priceLabel(product);
       <a
         href={href}
         data-ga-event="model_select"
-        data-ga-model={product.model}
+        data-ga-model={product.officialLabel}
         data-ga-product-id={product.id}
         data-ga-context={context}
       >
-        {product.model}
+        {product.officialLabel}
       </a>
     </h3>
   </header>
@@ -81,7 +81,7 @@ const price = priceLabel(product);
       class="model-card__more"
       href={href}
       data-ga-event="model_select"
-      data-ga-model={product.model}
+      data-ga-model={product.officialLabel}
       data-ga-product-id={product.id}
       data-ga-context={`${context}_detail`}
     >

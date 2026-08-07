@@ -23,7 +23,7 @@ const href = withUtm(product?.buyUrl ?? OFFICIAL_STORE_PRODUCT_URL, { content })
 <div class="sticky-bar" data-sticky-buy-bar>
   <div class="sticky-bar__inner">
     <div class="sticky-bar__info">
-      <strong class="sticky-bar__model">{product?.model ?? SITE.name}</strong>
+      <strong class="sticky-bar__model">{product?.officialLabel ?? SITE.name}</strong>
       <span class="sticky-bar__spec">
         {
           product
@@ -39,7 +39,7 @@ const href = withUtm(product?.buyUrl ?? OFFICIAL_STORE_PRODUCT_URL, { content })
       rel="noopener external"
       data-ga-event="purchase_cta_click"
       data-ga-utm-content={content}
-      data-ga-model={product?.model}
+      data-ga-model={product?.officialLabel}
       data-ga-product-id={product?.id}
     >
       {product ? BUY_CTA_LABEL_SHORT : BUY_CTA_LABEL}

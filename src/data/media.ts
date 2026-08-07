@@ -246,30 +246,32 @@ export const QC_VIDEOS: VideoAsset[] = [
  */
 
 /**
- * 10단계 절차의 적용 범위와 승인 상태  ← 여기를 채우면 됩니다
+ * 10단계 절차의 적용 범위와 승인 상태.
  *
- * 현재 이 절차는 영상 자막을 전사한 것이고, 어느 모델에 적용되는지·
- * 예외 상황이 있는지는 확인되지 않았다.
+ * 2026-08-07 확인 완료
+ *   - 전 구성(기본형·대용량·대용량+롱노즐)에 그대로 적용된다.
+ *   - "가스밸브 반 개방"도 전 구성 동일 기준이다.
+ *   - 별도 예외 절차는 두지 않는다.
+ *   - 10번 "물로 코일 속 청소"는 현재 문구 이상으로 세분화하지 않는다.
  *
- * 확인해야 할 것
- *   1. BF-100S와 BF-102 양쪽에 그대로 적용되는가 (탱크 용량이 달라 4~10초 예열이 같은지)
- *   2. "가스밸브 반 개방"이 두 모델 모두 같은 기준인가
- *   3. 점화 실패·누유·역화 시 예외 절차가 따로 있는가
- *   4. 10번 "물로 코일 속 청소"의 구체적 방법과 물 양
- *
- * `approvedBy`가 채워지면 화면에 "기술책임자 검토 완료 (날짜)"를 노출한다.
- * 채워지기 전에는 "공식 영상 기준 절차"로만 표기한다.
+ * 값을 바꿀 때는 누가 언제 확인했는지 함께 갱신한다.
  */
 export const HOWTO_APPROVAL = {
-  /** 적용 모델 — 확인 전에는 null */
-  appliesTo: null as string[] | null,
-  /** 검토·승인한 사람과 소속 */
-  approvedBy: null as string | null,
+  /** 적용 구성 — 공식 옵션명으로만 적는다 */
+  appliesTo: ['기본형', '대용량', '대용량+롱노즐'] as string[] | null,
+  /** 검토·승인한 사람 */
+  approvedBy: '김원종' as string | null,
   /** 승인일 (YYYY-MM-DD) */
-  approvedDate: null as string | null,
-  /** 예외 절차가 별도 문서로 있는 경우 그 경로 */
-  exceptionsDoc: null as string | null,
+  approvedDate: '2026-08-07' as string | null,
 } as const;
+
+/** 승인 표기 문자열 — 승인자와 날짜가 모두 있을 때만 반환 */
+export function howToApprovalLabel(): string | null {
+  const { appliesTo, approvedBy, approvedDate } = HOWTO_APPROVAL;
+  if (!approvedBy || !approvedDate) return null;
+  const scope = appliesTo?.length ? `${appliesTo.join(' · ')} 공통` : '전 구성 공통';
+  return `${scope} · ${approvedBy} 검토 (${approvedDate})`;
+}
 
 export const HOWTO_STEPS = [
   {

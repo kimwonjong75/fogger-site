@@ -30,7 +30,7 @@ const notes = [footnote, includeShared ? SHIPPING.note : null].filter(Boolean);
     <thead>
       <tr>
         <th scope="col">항목</th>
-        {PRODUCTS.map((product) => <th scope="col">{product.model}</th>)}
+        {PRODUCTS.map((product) => <th scope="col">{product.officialLabel}</th>)}
       </tr>
     </thead>
     <tbody>

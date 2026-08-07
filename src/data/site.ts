@@ -39,7 +39,7 @@ export const SITE = {
   locale: 'ko_KR',
   lang: 'ko',
   description:
-    '휴대용 부탄가스 연막소독기 BF-100S·BF-102의 사양, 사용법, 안전수칙, 문제해결을 정리한 공식 정보 사이트입니다.',
+    '가정용 휴대용 부탄가스 연막소독기의 사양, 실내외 사용법, 안전수칙, 문제해결을 정리한 공식 정보 사이트입니다. 연막·연무 겸용.',
   /** 기본 OG 이미지 (public/ 기준 절대경로) */
   defaultOgImage: '/og/og-default.png',
 } as const;
