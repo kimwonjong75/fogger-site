@@ -31,10 +31,130 @@ export interface VideoAsset {
  *
  * schema.org의 uploadDate는 "이 사이트에 업로드된 시점"을 뜻하므로 촬영일이 아니라
  * 게시일을 쓴다. 전 영상이 2026-08-06에 리포지토리에 추가됐다.
- * 촬영일·촬영자·게시 동의는 별도로 확인해야 하며, 확인 전에는 "공식"·"제조사 촬영" 같은
- * 단정 표현을 캡션에 쓰지 않는다.
  */
 export const VIDEO_PUBLISHED_DATE = '2026-08-06';
+
+/* ------------------------------------------------------------------ *
+ * 영상 출처 확인표  ← 여기를 채우면 됩니다
+ * ------------------------------------------------------------------ */
+
+/**
+ * 영상별 촬영·권리 정보.
+ *
+ * 채우는 방법
+ *   - 아는 것만 채우고 모르는 칸은 null로 둔다. 추측해서 적지 않는다.
+ *   - `shotBy`가 '제조사'이고 `webConsent`가 true인 영상에만 화면 캡션에
+ *     "제조사 촬영", "공식", "품질검수" 같은 단정 표현을 쓸 수 있다.
+ *   - `hasPeople`이 true면 등장 인물의 초상 사용 동의를 받았는지 함께 확인한다.
+ *     차량번호·상호·얼굴이 식별되면 모자이크 처리 후 재인코딩한다.
+ *
+ * 채우고 나면 화면 캡션과 VideoObject 설명을 이 값에 맞춰 조정한다.
+ */
+export interface VideoProvenance {
+  /** public/video 기준 파일명 */
+  file: string;
+  /** 촬영 주체 — '제조사' | '자사' | '고객' | 그 외 실제 촬영자 */
+  shotBy: string | null;
+  /** 촬영일 (YYYY-MM-DD). 모르면 null */
+  shotDate: string | null;
+  /** 촬영 장소 */
+  shotPlace: string | null;
+  /** 저작권자 */
+  copyrightHolder: string | null;
+  /** 웹 게시 동의를 받았는가 */
+  webConsent: boolean | null;
+  /** 사람이 등장하는가 (초상 동의 확인 대상) */
+  hasPeople: boolean | null;
+  /** 확인자와 확인일 */
+  verifiedBy: string | null;
+  verifiedDate: string | null;
+}
+
+export const VIDEO_PROVENANCE: VideoProvenance[] = [
+  {
+    file: 'blueguard-fogger-howto.mp4',
+    shotBy: null,
+    shotDate: null,
+    shotPlace: null,
+    copyrightHolder: null,
+    webConsent: null,
+    hasPeople: null,
+    verifiedBy: null,
+    verifiedDate: null,
+  },
+  {
+    file: 'qc-assembly-1.mp4',
+    shotBy: null,
+    shotDate: null,
+    shotPlace: null,
+    copyrightHolder: null,
+    webConsent: null,
+    hasPeople: null,
+    verifiedBy: null,
+    verifiedDate: null,
+  },
+  {
+    file: 'qc-assembly-2.mp4',
+    shotBy: null,
+    shotDate: null,
+    shotPlace: null,
+    copyrightHolder: null,
+    webConsent: null,
+    hasPeople: null,
+    verifiedBy: null,
+    verifiedDate: null,
+  },
+  {
+    file: 'spray-test.mp4',
+    shotBy: null,
+    shotDate: null,
+    shotPlace: null,
+    copyrightHolder: null,
+    webConsent: null,
+    hasPeople: null,
+    verifiedBy: null,
+    verifiedDate: null,
+  },
+  {
+    file: 'long-nozzle-spray.mp4',
+    shotBy: null,
+    shotDate: null,
+    shotPlace: null,
+    copyrightHolder: null,
+    webConsent: null,
+    hasPeople: null,
+    verifiedBy: null,
+    verifiedDate: null,
+  },
+  {
+    file: 'customer-use-1.mp4',
+    shotBy: null,
+    shotDate: null,
+    shotPlace: null,
+    copyrightHolder: null,
+    webConsent: null,
+    hasPeople: null,
+    verifiedBy: null,
+    verifiedDate: null,
+  },
+  {
+    file: 'customer-use-2.mp4',
+    shotBy: null,
+    shotDate: null,
+    shotPlace: null,
+    copyrightHolder: null,
+    webConsent: null,
+    hasPeople: null,
+    verifiedBy: null,
+    verifiedDate: null,
+  },
+];
+
+/** 출처가 확인되어 단정 표현을 쓸 수 있는 영상인지 */
+export function canAssertOfficial(file: string): boolean {
+  const p = VIDEO_PROVENANCE.find((v) => v.file === file);
+  return p?.shotBy === '제조사' && p.webConsent === true;
+}
 
 /** 공식 사용법 영상 — 원본 1920×1080 113MB를 웹용 1280×720으로 재인코딩 */
 export const HOWTO_VIDEO: VideoAsset = {
@@ -120,10 +240,37 @@ export const QC_VIDEOS: VideoAsset[] = [
 ];
 
 /**
- * 공식 사용법 영상의 10단계 전체.
+ * 사용법 영상의 10단계 전체.
  * 문구는 영상 자막을 그대로 옮긴 것이며 임의로 늘리거나 줄이지 않는다.
  * 사이트 전역 사용법 문서가 이 순서·문구와 어긋나지 않아야 한다.
  */
+
+/**
+ * 10단계 절차의 적용 범위와 승인 상태  ← 여기를 채우면 됩니다
+ *
+ * 현재 이 절차는 영상 자막을 전사한 것이고, 어느 모델에 적용되는지·
+ * 예외 상황이 있는지는 확인되지 않았다.
+ *
+ * 확인해야 할 것
+ *   1. BF-100S와 BF-102 양쪽에 그대로 적용되는가 (탱크 용량이 달라 4~10초 예열이 같은지)
+ *   2. "가스밸브 반 개방"이 두 모델 모두 같은 기준인가
+ *   3. 점화 실패·누유·역화 시 예외 절차가 따로 있는가
+ *   4. 10번 "물로 코일 속 청소"의 구체적 방법과 물 양
+ *
+ * `approvedBy`가 채워지면 화면에 "기술책임자 검토 완료 (날짜)"를 노출한다.
+ * 채워지기 전에는 "공식 영상 기준 절차"로만 표기한다.
+ */
+export const HOWTO_APPROVAL = {
+  /** 적용 모델 — 확인 전에는 null */
+  appliesTo: null as string[] | null,
+  /** 검토·승인한 사람과 소속 */
+  approvedBy: null as string | null,
+  /** 승인일 (YYYY-MM-DD) */
+  approvedDate: null as string | null,
+  /** 예외 절차가 별도 문서로 있는 경우 그 경로 */
+  exceptionsDoc: null as string | null,
+} as const;
+
 export const HOWTO_STEPS = [
   {
     no: 1,

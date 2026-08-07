@@ -42,12 +42,26 @@ const docSchema = ({ image }: SchemaContext) =>
         .min(4, 'faq는 최소 4개여야 합니다.')
         .max(6, 'faq는 최대 6개까지입니다.'),
 
-      /** 근거 출처 */
+      /**
+       * 근거 출처.
+       *
+       * `url`은 기관 홈이 아니라 **그 주장을 담은 문서**를 직접 가리킨다.
+       * 홈 URL만 걸면 독자가 근거를 확인할 수 없어 출처가 없는 것과 같다.
+       *
+       * 선택 항목(issuer·docDate·section)을 채우면 화면에 함께 표기된다.
+       * 링크가 나중에 죽어도 문서명과 발행일이 남아 추적할 수 있다.
+       */
       sources: z
         .array(
           z.object({
             name: z.string().min(1),
             url: z.url(),
+            /** 발행 기관 — 예: 질병관리청 */
+            issuer: z.string().optional(),
+            /** 발행일 또는 개정일 (YYYY-MM-DD) */
+            docDate: z.string().optional(),
+            /** 인용한 조항·페이지 — 예: "제12조" · "p.34" */
+            section: z.string().optional(),
           }),
         )
         .default([]),

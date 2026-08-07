@@ -1,6 +1,12 @@
 ---
 interface Props {
-  sources: { name: string; url: string }[];
+  sources: {
+    name: string;
+    url: string;
+    issuer?: string;
+    docDate?: string;
+    section?: string;
+  }[];
   reviewer: string;
   updatedDate: Date;
 }
@@ -37,6 +43,11 @@ const formatted = new Intl.DateTimeFormat('ko-KR', {
               <a href={source.url} target="_blank" rel="noopener nofollow external">
                 {source.name}
               </a>
+              {(source.issuer || source.docDate || source.section) && (
+                <span class="doc-meta__cite">
+                  {[source.issuer, source.docDate, source.section].filter(Boolean).join(' · ')}
+                </span>
+              )}
             </li>
           ))}
         </ul>
@@ -89,5 +100,11 @@ const formatted = new Intl.DateTimeFormat('ko-KR', {
 
   li {
     line-height: 1.6;
+  }
+
+  .doc-meta__cite {
+    display: block;
+    font-size: 0.82rem;
+    opacity: 0.8;
   }
 </style>
