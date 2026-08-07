@@ -53,9 +53,10 @@ const href = withUtm(product?.buyUrl ?? OFFICIAL_STORE_PRODUCT_URL, { content })
     bottom: 0;
     z-index: 40;
     height: 60px;
-    background: var(--c-surface);
-    border-top: 1px solid var(--c-border);
-    box-shadow: 0 -4px 16px rgb(15 23 42 / 0.08);
+    background: rgb(10 16 28 / 0.96);
+    border-top: 1px solid rgb(255 255 255 / 0.1);
+    box-shadow: 0 -12px 30px rgb(4 9 18 / 0.2);
+    backdrop-filter: blur(14px);
   }
 
   .sticky-bar__inner {
@@ -78,11 +79,12 @@ const href = withUtm(product?.buyUrl ?? OFFICIAL_STORE_PRODUCT_URL, { content })
   .sticky-bar__model {
     font-size: 0.95rem;
     line-height: 1.2;
+    color: #fff;
   }
 
   .sticky-bar__spec {
     font-size: 0.8rem;
-    color: var(--c-text-muted);
+    color: var(--c-on-ink-dim);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -94,15 +96,21 @@ const href = withUtm(product?.buyUrl ?? OFFICIAL_STORE_PRODUCT_URL, { content })
     align-items: center;
     height: 44px;
     padding: 0 1.25rem;
-    border-radius: 8px;
-    background: var(--c-accent);
-    color: #fff;
-    font-weight: 700;
+    border-radius: 999px;
+    background: linear-gradient(100deg, var(--c-yellow), #ff6a00);
+    color: #17110a;
+    font-weight: 850;
     text-decoration: none;
   }
 
   .sticky-bar__cta:hover {
-    background: var(--c-accent-dark);
+    background: linear-gradient(100deg, #ffc13b, #ff7b1a);
+  }
+
+  @media (min-width: 721px) {
+    .sticky-bar {
+      display: none;
+    }
   }
 
   @media print {

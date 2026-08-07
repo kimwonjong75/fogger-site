@@ -88,33 +88,33 @@ const jsonLd = graph([breadcrumbSchema(allCrumbs), ...schemaNodes]);
     --c-text: #0f172a;
     --c-text-muted: #52627a;
     --c-surface: #ffffff;
-    --c-surface-alt: #f4f7fb;
+    --c-surface-alt: #f5f6f8;
     --c-border: #e2e8f0;
     --c-border-strong: #cbd5e1;
-    --c-accent: #1d63b8;
-    --c-accent-dark: #164e91;
-    --c-accent-soft: #e8f0fb;
+    --c-accent: #f59e0b;
+    --c-accent-dark: #b85c00;
+    --c-accent-soft: #fff3dc;
     /* 어두운 배경 블록 — 히어로·수치 강조에 사용 */
-    --c-ink: #0b2545;
-    --c-ink-2: #143a6b;
-    --c-on-ink: #eaf1fb;
-    --c-on-ink-dim: #a8c1e2;
+    --c-ink: #0a101c;
+    --c-ink-2: #111b2e;
+    --c-on-ink: #f4f7fb;
+    --c-on-ink-dim: #aab5c7;
     /* 제품 본체 색에서 추출한 브랜드 옐로. 안전경고(--c-warn)와는 명도·용도를 분리해서 쓴다. */
-    --c-yellow: #f2b705;
-    --c-yellow-dark: #c99a0a;
+    --c-yellow: #ffb20b;
+    --c-yellow-dark: #e48700;
     --c-warn: #d97706;
     --c-warn-soft: #fffbeb;
     --c-warn-border: #fcd9a4;
     --c-warn-text: #92400e;
     --c-danger: #dc2626;
 
-    --w-page: 1080px;
+    --w-page: 1160px;
     --w-narrow: 760px;
     --pad-x: 20px;
 
     /* 그림자 — 웹폰트 없이 깊이를 만드는 거의 유일한 수단이라 값을 통일해 쓴다 */
     --shadow-sm: 0 1px 2px rgb(11 37 69 / 0.06);
-    --shadow-md: 0 4px 16px -4px rgb(11 37 69 / 0.12), 0 1px 3px rgb(11 37 69 / 0.06);
+    --shadow-md: 0 18px 50px -24px rgb(11 18 32 / 0.35), 0 2px 8px rgb(11 18 32 / 0.08);
 
     /* 웹폰트 0 — 시스템 폰트만 사용 */
     --font-sans: system-ui, -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', '맑은 고딕',
@@ -141,7 +141,7 @@ const jsonLd = graph([breadcrumbSchema(allCrumbs), ...schemaNodes]);
     flex-direction: column;
     font-family: var(--font-sans);
     font-size: 16px;
-    line-height: 1.7;
+    line-height: 1.65;
     color: var(--c-text);
     background: var(--c-surface);
     word-break: keep-all;
@@ -156,7 +156,7 @@ const jsonLd = graph([breadcrumbSchema(allCrumbs), ...schemaNodes]);
     width: 100%;
     max-width: var(--w-page);
     margin: 0 auto;
-    padding: 0 var(--pad-x) 2.5rem;
+    padding: 0 var(--pad-x) 4.5rem;
   }
 
   .shell--narrow {
@@ -192,17 +192,17 @@ const jsonLd = graph([breadcrumbSchema(allCrumbs), ...schemaNodes]);
   }
 
   h1 {
-    font-size: clamp(1.9rem, 5.2vw, 2.65rem);
-    font-weight: 800;
-    letter-spacing: -0.035em;
+    font-size: clamp(2.1rem, 5.2vw, 3.1rem);
+    font-weight: 850;
+    letter-spacing: -0.05em;
     margin: 0.5rem 0 0.9rem;
   }
 
   h2 {
-    font-size: clamp(1.4rem, 3.4vw, 1.75rem);
-    font-weight: 750;
-    letter-spacing: -0.025em;
-    margin: 3rem 0 1rem;
+    font-size: clamp(1.75rem, 3.6vw, 2.45rem);
+    font-weight: 850;
+    letter-spacing: -0.045em;
+    margin: 5rem 0 1rem;
   }
 
   h3 {
@@ -217,11 +217,11 @@ const jsonLd = graph([breadcrumbSchema(allCrumbs), ...schemaNodes]);
   .shell main > h2::before {
     content: '';
     display: block;
-    width: 34px;
+    width: 42px;
     height: 3px;
     border-radius: 2px;
-    background: var(--c-accent);
-    margin-bottom: 0.7rem;
+    background: linear-gradient(90deg, var(--c-yellow), #ff6a00);
+    margin-bottom: 0.9rem;
   }
 
   /* 제목 위 작은 라벨 */
@@ -305,10 +305,10 @@ const jsonLd = graph([breadcrumbSchema(allCrumbs), ...schemaNodes]);
    * 전폭 밴드는 가로 스크롤 위험이 있어 쓰지 않고, 안쪽에서 배경·여백으로 리듬을 만든다.
    */
   .panel {
-    margin: 2.5rem 0;
-    padding: clamp(1.25rem, 3vw, 2rem);
+    margin: 4rem 0;
+    padding: clamp(1.5rem, 4vw, 3rem);
     border: 1px solid var(--c-border);
-    border-radius: 14px;
+    border-radius: 24px;
     background: var(--c-surface);
     box-shadow: var(--shadow-sm);
   }
