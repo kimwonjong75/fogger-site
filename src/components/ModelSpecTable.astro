@@ -10,15 +10,25 @@ interface Props {
   /** 전 모델 동일한 공통 사양 행까지 포함할지 */
   includeShared?: boolean;
   footnote?: string;
+  /** 본문 삽입용 — 핵심 행만 보여주고 전체 비교표로 링크한다 */
+  compact?: boolean;
 }
 
 const {
   caption = '모델별 핵심 수치',
   includeShared = true,
   footnote,
+  compact = false,
 } = Astro.props;
 
-const rows = includeShared ? SPEC_ROWS : SPEC_ROWS.filter((row) => !row.shared);
+/** 본문을 읽다가 "이게 나한테 맞는 모델인가"를 판단하는 데 직결되는 행만 남긴다 */
+const COMPACT_LABELS = ['탱크 용량', '노즐', '주요 사용처', '배송'];
+
+const rows = compact
+  ? SPEC_ROWS.filter((row) => COMPACT_LABELS.includes(row.label))
+  : includeShared
+    ? SPEC_ROWS
+    : SPEC_ROWS.filter((row) => !row.shared);
 
 /** 공통 사양 행에는 배송이 포함되므로, 표가 "무료배송"을 말하면 조건도 함께 말한다 */
 const notes = [footnote, includeShared ? SHIPPING.note : null].filter(Boolean);
@@ -45,6 +55,7 @@ const notes = [footnote, includeShared ? SHIPPING.note : null].filter(Boolean);
     </tbody>
   </table>
   {notes.map((note) => <p class="spec-table__footnote">{note}</p>)}
+  {compact && <p class="spec-table__more"><a href="/compare/">전체 사양 비교표 보기 →</a></p>}
 </div>
 
 <style>
@@ -91,5 +102,11 @@ const notes = [footnote, includeShared ? SHIPPING.note : null].filter(Boolean);
     margin: 0.6rem 0 0;
     font-size: 0.85rem;
     color: var(--c-text-muted);
+  }
+
+  .spec-table__more {
+    margin: 0.75rem 0 0;
+    font-size: 0.93rem;
+    font-weight: 700;
   }
 </style>

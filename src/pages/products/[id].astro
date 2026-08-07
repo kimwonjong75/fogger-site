@@ -75,6 +75,11 @@ const facts = [
 const price = priceLabel(product);
 if (price) facts.splice(3, 0, { label: '공식몰 정가', value: price });
 
+/** 구매 판단에 직결되는 값만 먼저 보여주고 나머지는 접어 둔다 */
+const PRIMARY_FACT_LABELS = ['공식 옵션명', '공식몰 정가', '탱크 용량', '크기', '배송'];
+const primaryFacts = facts.filter((f) => PRIMARY_FACT_LABELS.includes(f.label));
+const secondaryFacts = facts.filter((f) => !PRIMARY_FACT_LABELS.includes(f.label));
+
 const base = product.basedOn ? getProduct(product.basedOn) : null;
 const related = (await getAllPublishedDocs()).slice(0, 3);
 ---
@@ -120,7 +125,11 @@ const related = (await getAllPublishedDocs()).slice(0, 3);
     }
 
     <h2>사양</h2>
-    <FactTable rows={facts} caption={`${product.officialLabel} 사양`} />
+    <FactTable rows={primaryFacts} caption={`${product.officialLabel} 핵심 사양`} />
+    <details class="spec-more">
+      <summary>전체 사양 보기 ({secondaryFacts.length}개 항목 더)</summary>
+      <FactTable rows={secondaryFacts} caption={`${product.officialLabel} 전체 사양`} />
+    </details>
 
     {
       product.includes.length > 0 && (
@@ -271,5 +280,43 @@ const related = (await getAllPublishedDocs()).slice(0, 3);
 
   .closing h2 {
     margin-top: 0;
+  }
+
+  .spec-more {
+    margin: -0.5rem 0 1.5rem;
+    border: 1px solid var(--c-border);
+    border-radius: 8px;
+    background: var(--c-surface);
+  }
+
+  .spec-more summary {
+    cursor: pointer;
+    padding: 0.85rem 1rem;
+    font-weight: 600;
+    font-size: 0.93rem;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    color: var(--c-text-muted);
+  }
+
+  .spec-more summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .spec-more summary::after {
+    content: '+';
+    flex: none;
+    font-weight: 400;
+  }
+
+  .spec-more[open] summary::after {
+    content: '−';
+  }
+
+  .spec-more :global(.fact-table) {
+    margin: 0;
+    padding: 0 1rem 1rem;
   }
 </style>

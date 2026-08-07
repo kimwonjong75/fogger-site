@@ -12,13 +12,17 @@ interface Props {
 const { only, title = '작업 전 반드시 확인', compact = false } = Astro.props;
 
 const rules = only ? SAFETY_RULES.filter((r) => only.includes(r.id)) : SAFETY_RULES;
+
+/** compact가 아닐 때만 critical/warning으로 나눠 warning을 접는다 — 항목 수 자체는 그대로 유지한다 */
+const criticalRules = rules.filter((r) => r.level === 'critical');
+const warningRules = rules.filter((r) => r.level !== 'critical');
 ---
 
 <aside class:list={['safety-box', compact && 'safety-box--compact']} aria-label={title}>
   <p class="safety-box__title">{title}</p>
   <ul class="safety-box__list">
     {
-      rules.map((rule) => (
+      (compact ? rules : criticalRules).map((rule) => (
         <li class:list={['safety-box__item', `is-${rule.level}`]}>
           <strong>{rule.title}</strong>
           {!compact && <span>{rule.body}</span>}
@@ -26,6 +30,21 @@ const rules = only ? SAFETY_RULES.filter((r) => only.includes(r.id)) : SAFETY_RU
       ))
     }
   </ul>
+  {
+    !compact && warningRules.length > 0 && (
+      <details class="safety-box__more">
+        <summary>그 외 주의사항 {warningRules.length}개 더 보기</summary>
+        <ul class="safety-box__list">
+          {warningRules.map((rule) => (
+            <li class:list={['safety-box__item', `is-${rule.level}`]}>
+              <strong>{rule.title}</strong>
+              <span>{rule.body}</span>
+            </li>
+          ))}
+        </ul>
+      </details>
+    )
+  }
 </aside>
 
 <style>
@@ -87,5 +106,40 @@ const rules = only ? SAFETY_RULES.filter((r) => only.includes(r.id)) : SAFETY_RU
 
   .safety-box__item span {
     color: var(--c-text-muted);
+  }
+
+  .safety-box__more {
+    margin-top: 0.9rem;
+    padding-top: 0.75rem;
+    border-top: 1px dashed var(--c-warn-border);
+  }
+
+  .safety-box__more summary {
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--c-warn-text);
+  }
+
+  .safety-box__more summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .safety-box__more summary::after {
+    content: '+';
+    flex: none;
+    font-weight: 400;
+  }
+
+  .safety-box__more[open] summary::after {
+    content: '−';
+  }
+
+  .safety-box__more .safety-box__list {
+    margin-top: 0.75rem;
   }
 </style>

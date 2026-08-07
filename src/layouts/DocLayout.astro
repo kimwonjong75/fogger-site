@@ -109,7 +109,7 @@ const showSticky = data.ctaType === 'product';
       <Content />
     </div>
 
-    {data.showSpecTable && <ModelSpecTable footnote="수치는 제품 데이터에서 자동으로 채워집니다." />}
+    {data.showSpecTable && <ModelSpecTable compact footnote="수치는 제품 데이터에서 자동으로 채워집니다." />}
 
     {data.videoKey && <VideoEmbed video={VIDEO_BY_KEY[data.videoKey]} />}
 

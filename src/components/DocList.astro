@@ -29,7 +29,6 @@ const formatter = new Intl.DateTimeFormat('ko-KR', {
             <time datetime={doc.data.updatedDate.toISOString().slice(0, 10)}>
               {formatter.format(doc.data.updatedDate)} 수정
             </time>
-            <span>검수 {doc.data.reviewer}</span>
           </span>
         </a>
       </li>
