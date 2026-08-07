@@ -1,0 +1,47 @@
+# 산출물 검증 게이트.
+#
+# 이 저장소는 배포가 수동(GitHub Desktop으로 push)이므로, 검증을 사람이 기억해서
+# 돌려야 하는 상태였다. /admin/ 편집 화면에서 사장님이 직접 문서를 고치기 시작하면
+# 그 방식으로는 막을 수 없다 — 본문 텍스트만으로도 검증이 깨지기 때문이다.
+# (내부 모델 번호 노출, "무료배송" 조건 고지 누락, 이미지 alt 형식 위반 등)
+#
+# 그래서 편집 → PR → 이 워크플로 통과 → 병합 순서를 강제한다.
+# PR이 빨간불이면 병합하지 않는다.
+name: verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# CMS 저장은 잦으므로 같은 브랜치의 앞선 실행은 취소한다.
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: 빌드 + 산출물 검증
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # package.json engines: ">=22.12.0"
+          node-version: '22.12'
+          cache: npm
+
+      - run: npm ci
+
+      # npm run build:verify = astro check && astro build && scripts/verify-build.mjs
+      # 세 단계를 나눠 실행해 PR에서 어느 단계가 깨졌는지 바로 보이게 한다.
+      - name: 타입 검사
+        run: npm run check
+
+      - name: 빌드
+        run: npm run build
+
+      - name: 산출물 검증
+        run: npm run verify

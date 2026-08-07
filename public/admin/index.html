@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!--
+      편집 화면은 검색결과에 뜨면 안 된다.
+      robots.txt로 크롤링 자체를 막으면 크롤러가 이 태그를 읽지 못해 오히려 색인될 수 있으므로,
+      크롤링은 열어 두고 여기서 막는다. 즉 이 한 줄이 유일한 방어선이라
+      scripts/verify-build.mjs 가 이 태그의 존재를 검사한다.
+    -->
+    <meta name="robots" content="noindex" />
+    <title>블루가드 — 문서 편집</title>
+  </head>
+  <body>
+    <!--
+      버전을 고정한다. @latest 로 두면 편집기가 사장님 모르게 바뀌고,
+      그때 config.yml 과 어긋나면 편집 화면이 뜨지 않는다.
+      올릴 때는 로컬에서 npm run dev 로 /admin/ 을 열어 확인한 뒤 올린다.
+    -->
+    <script src="https://unpkg.com/@sveltia/cms@0.181.0/dist/sveltia-cms.js"></script>
+  </body>
+</html>

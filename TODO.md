@@ -134,6 +134,61 @@ https://fogger.blueguard.kr/uses/underground-parking/
 
 ---
 
+## E. 문서 편집 화면 켜기 (한 번만 하면 됩니다)
+
+이제 가이드·활용사례·문제해결 문서를 **브라우저에서 직접** 고칠 수 있습니다.
+주소는 `https://fogger.blueguard.kr/admin/` 입니다. 아래 3가지를 한 번만 해 두시면 됩니다.
+
+### E-1. 편집 화면 로그인용 토큰 만들기
+**어디서** — GitHub → 우측 상단 프로필 → Settings → Developer settings
+→ Personal access tokens → **Fine-grained tokens** → Generate new token
+
+이렇게 설정해 주세요.
+
+| 항목 | 값 |
+|---|---|
+| Token name | `fogger-admin` (아무 이름이나 됩니다) |
+| Expiration | 원하는 기간 (만료되면 다시 발급받아 넣으면 됩니다) |
+| Repository access | **Only select repositories** → `fogger-site` |
+| Permissions → Contents | **Read and write** |
+
+만든 토큰은 **그 화면을 벗어나면 다시 볼 수 없습니다.** 비밀번호 관리 프로그램에 저장해 두세요.
+
+편집 화면에서 **Sign In Using Access Token** 을 누르고 이 토큰을 붙여넣으면 로그인됩니다.
+토큰은 사장님 브라우저에만 저장되고 사이트에는 저장되지 않습니다.
+
+> 편집 화면 주소 자체는 누구나 열 수 있습니다(검색에는 안 잡히게 해 뒀습니다).
+> 다만 이 토큰이 없으면 **아무것도 고칠 수 없습니다.** 잠금은 주소가 아니라 토큰이 겁니다.
+
+### E-2. Actions 가 PR 을 만들 수 있게 허용
+**어디서** — GitHub 저장소 → Settings → Actions → General → 맨 아래 Workflow permissions
+
+- [ ] **Allow GitHub Actions to create and approve pull requests** 체크 후 Save
+
+이걸 켜야 편집 내용이 "게시 요청"으로 자동으로 올라옵니다. 안 켜면 저장은 되지만
+게시 요청이 안 만들어져서 사장님이 직접 만들어야 합니다.
+
+### E-3. 첫 저장 한번 해 보기
+
+문서 하나를 열어 아무 데나 한 글자 고치고 저장한 뒤, 아래가 순서대로 되는지 봐 주세요.
+
+1. GitHub 저장소 **Pull requests** 탭에 "문서 수정 게시 요청" 이 생긴다
+2. 그 안에서 검사가 돌고 **초록색 체크** 로 바뀐다 (2~3분)
+3. **Merge pull request** 를 누른다
+4. 평소처럼 GitHub Desktop 으로 받아서 배포한다
+
+**빨간 X 가 뜨면 병합하지 마세요.** 무엇이 잘못됐는지 한글로 나옵니다.
+그 항목을 편집 화면에서 고치고 다시 저장하면 검사가 다시 돕니다.
+
+### 편집 화면에서 못 하는 것
+
+일부러 막아 둔 것들입니다. 필요하면 이 문서에 적어 주시면 반영합니다.
+
+- **제품 사양·가격·안전수칙** — 공식 상세페이지와 대조해서 확인한 값이라 근거를 함께 관리합니다.
+- **사진 넣기** — 사이트 검사 규칙(이미지 크기·대체텍스트)을 마크다운 사진이 못 채웁니다.
+
+---
+
 ## 완료 처리
 
 - [x] 공식몰 정가 3건 확인 및 반영 (2026-08-07)

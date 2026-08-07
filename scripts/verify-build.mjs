@@ -16,10 +16,11 @@
  *   9. 이미지 width·height 필수, 히어로 외 lazy, alt "{주제} — {구체 장면}"
  *  10. 웹폰트 0
  */
-import { readFileSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { readdir } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parse as parseYaml } from 'yaml';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
@@ -77,6 +78,15 @@ const EXPECTED_BUY_PRODUCT_NO = '3054';
 
 /** 구매 CTA가 최소 1개는 있어야 하는 전환 페이지 */
 const CONVERSION_PATHS = [/^\/$/, /^\/products\//, /^\/compare\/$/];
+
+/**
+ * 산출물에는 있지만 "사이트 페이지"가 아닌 경로.
+ *
+ * /admin/ 은 사장님이 문서를 고치는 편집 도구 화면이다. 방문자에게 보여줄 페이지가 아니므로
+ * canonical·og:image·구조화데이터·브레드크럼 같은 페이지 규칙과 사이트맵 등재 의무를
+ * 적용하지 않는다. 대신 이 화면에만 해당하는 조건은 아래 "편집 화면" 블록에서 따로 검사한다.
+ */
+const NON_PAGE_PATHS = [/^\/admin\//];
 
 /**
  * GA4 측정 ID 유효성 — Analytics.astro와 동일한 판정을 써야
@@ -166,7 +176,10 @@ async function collectUnpublishedIds() {
 /* ---------- 로드 ---------- */
 
 const files = await walk(DIST);
-const pages = files.filter((f) => f.endsWith('.html')).sort();
+const pages = files
+  .filter((f) => f.endsWith('.html'))
+  .filter((f) => !NON_PAGE_PATHS.some((re) => re.test(urlPathFor(f))))
+  .sort();
 const assetSizes = new Map(files.map((f) => [f, size(f)]));
 const UNPUBLISHED = await collectUnpublishedIds();
 
@@ -486,6 +499,141 @@ for (const file of pages) {
   }
 }
 
+/* ---------- 편집 화면 (/admin/) ---------- */
+{
+  const adminHtmlPath = join(DIST, 'admin', 'index.html');
+  if (size(adminHtmlPath) === null) {
+    fail('[admin] dist/admin/index.html 이 없습니다 — public/admin/ 이 빌드에 포함됐는지 확인하세요');
+  } else {
+    const html = readFileSync(adminHtmlPath, 'utf8');
+
+    // 편집 화면이 검색결과에 뜨면 안 된다.
+    // robots.txt로 크롤링 자체를 막으면 크롤러가 이 noindex를 읽지 못해 오히려 색인될 수 있으므로,
+    // 크롤링은 열어 두고 noindex로 막는다. 즉 이 태그가 유일한 방어선이다.
+    if (!/name="robots"\s+content="noindex/i.test(html)) {
+      fail('[admin] 편집 화면에 noindex가 없습니다 — 검색결과에 노출될 수 있습니다');
+    }
+
+    // config.yml 이 없으면 화면은 뜨지만 편집할 항목이 하나도 안 나온다.
+    if (size(join(DIST, 'admin', 'config.yml')) === null) {
+      fail('[admin] dist/admin/config.yml 이 없습니다 — 편집 항목이 표시되지 않습니다');
+    }
+  }
+
+  // 편집 화면으로 가는 링크가 공개 페이지에 있으면 방문자에게도 노출된다.
+  for (const file of pages) {
+    const html = readFileSync(file, 'utf8');
+    if (/<a\b[^>]*\shref="\/admin\//i.test(html)) {
+      fail(`[${urlPathFor(file)}] 공개 페이지에서 편집 화면(/admin/)으로 링크하고 있습니다`);
+    }
+  }
+}
+
+/* ---------- 편집 화면 입력 규칙 ↔ 실제 문서 대조 ---------- */
+/**
+ * admin/config.yml 의 입력 규칙은 src/content.config.ts 의 zod 스키마를 손으로 옮긴 것이라
+ * 한쪽만 고치면 조용히 어긋난다. 어긋나는 방향은 둘 다 나쁘다.
+ *
+ *   규칙이 느슨해지면 → 화면에서는 저장되는데 빌드가 깨진다
+ *   규칙이 빡빡해지면 → 멀쩡한 기존 문서를 편집 화면이 거부해서 손을 못 댄다
+ *
+ * 그래서 "지금 저장소에 있는 모든 문서가 편집 화면을 통과하는가"를 직접 확인한다.
+ */
+{
+  const configPath = join(DIST, 'admin', 'config.yml');
+  if (size(configPath) !== null) {
+    let config = null;
+    try {
+      config = parseYaml(readFileSync(configPath, 'utf8'));
+    } catch (error) {
+      fail(`[admin] config.yml 파싱 실패 — 편집 화면이 뜨지 않습니다: ${error.message}`);
+    }
+
+    const collections = config?.collections ?? [];
+    for (const collection of collections) {
+      const fields = collection.fields ?? [];
+      const byName = new Map(fields.map((f) => [f.name, f]));
+
+      // 규칙이 통째로 사라지는 것(가장 흔한 드리프트)을 먼저 잡는다
+      for (const name of ['title', 'description', 'faq', 'sources', 'body']) {
+        if (!byName.has(name)) fail(`[admin] "${collection.label}" 에 "${name}" 입력칸이 없습니다`);
+      }
+
+      const dir = join(CONTENT, collection.name);
+      let entries = [];
+      try {
+        entries = readdirSync(dir).filter((f) => f.endsWith('.md'));
+      } catch {
+        fail(`[admin] "${collection.label}" 의 폴더를 찾을 수 없습니다: ${collection.folder}`);
+        continue;
+      }
+
+      const test = (name, value) => {
+        const pattern = byName.get(name)?.pattern;
+        if (!pattern || value === undefined || value === null) return true;
+        return new RegExp(pattern[0]).test(String(value));
+      };
+      const relatedOptions = new Set(
+        (byName.get('related')?.options ?? []).map((o) => o.value ?? o),
+      );
+
+      for (const file of entries) {
+        const where = `${collection.name}/${file}`;
+        const raw = readFileSync(join(dir, file), 'utf8');
+        let fm;
+        try {
+          fm = parseYaml(raw.split('---')[1] ?? '');
+        } catch {
+          fail(`[admin] ${where} 의 frontmatter 파싱 실패`);
+          continue;
+        }
+
+        if (!test('title', fm.title)) {
+          fail(`[admin] ${where} 의 제목을 편집 화면이 거부합니다 (${[...fm.title].length}자)`);
+        }
+        if (!test('description', fm.description)) {
+          fail(
+            `[admin] ${where} 의 요약 설명을 편집 화면이 거부합니다 (${[...(fm.description ?? '')].length}자)`,
+          );
+        }
+
+        const faqField = byName.get('faq');
+        const faqCount = fm.faq?.length ?? 0;
+        if (faqField && (faqCount < faqField.min || faqCount > faqField.max)) {
+          fail(`[admin] ${where} 의 FAQ ${faqCount}개가 편집 화면 허용범위를 벗어납니다`);
+        }
+
+        const sourceFields = new Map(
+          (byName.get('sources')?.fields ?? []).map((f) => [f.name, f]),
+        );
+        for (const source of fm.sources ?? []) {
+          for (const [name, field] of sourceFields) {
+            if (!field.pattern || source[name] === undefined) continue;
+            if (!new RegExp(field.pattern[0]).test(String(source[name]))) {
+              fail(`[admin] ${where} 의 출처 "${name}" 값을 편집 화면이 거부합니다: ${source[name]}`);
+            }
+          }
+        }
+
+        // 선택지에 없는 문서는 편집 화면에서 고르지도, 유지하지도 못한다.
+        // 문서를 새로 추가했으면 config.yml 의 related options 에도 추가해야 한다.
+        for (const ref of fm.related ?? []) {
+          if (relatedOptions.size > 0 && !relatedOptions.has(ref)) {
+            fail(`[admin] ${where} 가 참조한 "${ref}" 가 편집 화면의 관련문서 선택지에 없습니다`);
+          }
+        }
+
+        const key = `${collection.name}/${file.replace(/\.md$/, '')}`;
+        if (relatedOptions.size > 0 && !relatedOptions.has(key)) {
+          fail(
+            `[admin] "${key}" 가 편집 화면의 관련문서 선택지에 없습니다 — public/admin/config.yml 의 related options 에 추가하세요`,
+          );
+        }
+      }
+    }
+  }
+}
+
 /* ---------- 설정 파일의 자리표시자 (산출물에는 안 나오지만 배포를 막아야 하는 것) ---------- */
 {
   const siteConfig = readFileSync(join(ROOT, 'src', 'data', 'site.ts'), 'utf8');
@@ -524,7 +672,8 @@ for (const file of pages) {
 }
 
 /* ---------- 그 외 산출물(텍스트 파일)의 자리표시자 ---------- */
-for (const file of files.filter((f) => /\.(txt|xml|json)$/.test(f))) {
+// .yml 은 편집 화면 설정(admin/config.yml) 때문에 포함한다 — 설정에 적은 문구도 산출물이다.
+for (const file of files.filter((f) => /\.(txt|xml|json|ya?ml)$/.test(f))) {
   const text = readFileSync(file, 'utf8');
   for (const blocker of BLOCKERS) {
     if (text.includes(blocker.needle)) {

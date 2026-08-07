@@ -105,6 +105,47 @@ FOGGER_PHOTO_SOURCE=... npm run photos   # 다른 경로에서 가져오기
 3. `media.ts`에 `VideoAsset` 항목 추가
 4. 문서에서 쓰려면 `content.config.ts`의 `videoKey` enum에 키를 추가하고 frontmatter에 지정
 
+## 문서 편집 화면 (`/admin/`)
+
+사장님이 `src/content/**` 문서를 브라우저에서 직접 고치는 화면. Sveltia CMS(버전 고정).
+
+| 파일 | 역할 |
+| :--- | :--- |
+| `public/admin/index.html` | 편집기 로더. `noindex` 필수 (검증기가 검사) |
+| `public/admin/config.yml` | 입력칸 정의. `src/content.config.ts` 의 zod 스키마를 옮긴 것 |
+
+**흐름**
+
+```
+편집 화면 저장 → draft 브랜치 커밋 → open-draft-pr 워크플로가 PR 유지
+  → verify 워크플로 검사 → 초록불이면 병합 → main
+```
+
+`main`이 아니라 `draft`를 바라보는 이유: Sveltia CMS는 저장 시 PR을 만드는 editorial
+workflow를 **지원하지 않는다**(구현하지 않을 기능으로 명시). 그대로 두면 검증을 거치지 않은
+문서가 `main`에 직행한다.
+
+**편집 화면에 없는 것과 그 이유**
+
+- 제품 사양·가격·안전수칙 — 근거 주석이 달린 검증된 값이다. 폼으로 열면 근거 추적이 끊긴다.
+- 히어로 이미지 — `image()` 스키마는 마크다운 기준 상대경로를 요구하는데 CMS는 `/uploads/`
+  절대경로를 쓴다. 현재 이 필드를 쓰는 문서가 없어 편집 화면에서 뺐다.
+- 본문 이미지 — 검증기가 모든 `<img>`에 width/height와 `{주제} — {구체 장면}` alt를 요구하는데
+  마크다운 이미지는 이를 채우지 못한다. 넣으면 CI가 막는다(사이트에는 반영되지 않는다).
+
+`config.yml`과 `content.config.ts`가 어긋나면 "화면에서는 저장되는데 빌드가 깨지는" 상태가
+조용히 생긴다. 검증기가 저장소의 모든 문서를 편집 화면 규칙에 통과시켜 보는 방식으로 막는다.
+
+## CI
+
+| 워크플로 | 언제 | 하는 일 |
+| :--- | :--- | :--- |
+| `verify` | `main` push, 모든 PR | `astro check` → 빌드 → 산출물 검증 |
+| `open-draft-pr` | `draft` push | `draft → main` PR을 열어 두고 갱신 |
+
+배포는 수동(GitHub Desktop)이므로, 검증을 사람이 기억해서 돌리는 대신 CI가 강제한다.
+`verify`가 빨간불인 PR은 병합하지 않는다.
+
 ## 검증
 
 ```bash
@@ -121,6 +162,8 @@ npm run build:verify
 - **배송 조건 고지** — "무료배송"만 있고 조건 문구가 없으면 실패
 - title 35자·중복, canonical 자기참조, 구조화데이터 정책, 화면 브레드크럼 일치
 - 이미지 width/height·lazy·alt 형식
+- **편집 화면 정합성** — `/admin/` 의 `noindex`·`config.yml` 존재, 공개 페이지에서 `/admin/`
+  링크 금지, `config.yml` 입력 규칙이 저장소의 모든 문서를 통과하는지(스키마 드리프트)
 
 실사 이미지로 교체한 뒤에는 임시 이미지 경고를 실패로 승격시켜 확인한다:
 
