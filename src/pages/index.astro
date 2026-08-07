@@ -1,42 +1,46 @@
 ---
 import heroImage from '../assets/photo-bf-102.jpg';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import BuyCTA from '../components/BuyCTA.astro';
 import ModelCard from '../components/ModelCard.astro';
+import PhotoSlot from '../components/PhotoSlot.astro';
 import Pic from '../components/Pic.astro';
 import SafetyBox from '../components/SafetyBox.astro';
-import ShippingNote from '../components/ShippingNote.astro';
-import StatRow from '../components/StatRow.astro';
-import TrustBar from '../components/TrustBar.astro';
 import VideoEmbed from '../components/VideoEmbed.astro';
-import { MEDIA_SPECS, PRODUCTS, WORK_REFERENCE } from '../data/products';
 import {
-  CUSTOMER_USE_VIDEOS,
-  HOWTO_STEPS,
-  HOWTO_VIDEO,
-  QC_VIDEOS,
-  VIDEO_PUBLISHED_DATE,
-  howToApprovalLabel,
-} from '../data/media';
-import { OFFICIAL_STORE_PRODUCT_URL } from '../data/site';
-import { COLLECTION_META, docHref, getPublishedDocs } from '../lib/content';
-import {
-  howToSchema,
-  itemListSchema,
-  organizationSchema,
-  videoSchema,
-  websiteSchema,
-} from '../lib/schema';
-import { withUtm } from '../lib/url';
+  BUILD_QUALITY,
+  DOMESTIC_PARTS_PERCENT,
+  MEDIA_SPECS,
+  PRODUCTS,
+  SPRAY_MODES,
+  WORK_REFERENCE,
+} from '../data/products';
+import { HOWTO_VIDEO, VIDEO_PUBLISHED_DATE } from '../data/media';
+import { itemListSchema, organizationSchema, videoSchema, websiteSchema } from '../lib/schema';
 
-const guides = (await getPublishedDocs('guides')).slice(0, 4);
-const troubles = (await getPublishedDocs('troubleshooting')).slice(0, 4);
-const evidenceVideos = [...QC_VIDEOS, ...CUSTOMER_USE_VIDEOS];
-const optionUrl = withUtm(OFFICIAL_STORE_PRODUCT_URL, { content: 'home_hero_secondary' });
+/**
+ * 홈은 "왜 이 제품을 사야 하는가"만 답한다.
+ *
+ * 사용법 10단계·매질 조건·가이드 목록·문제해결 목록은 홈에서 뺐다. 삭제가 아니라
+ * 이동이다 — 10단계와 HowTo 구조화데이터는 /guides/로 함께 옮겼고(둘이 떨어지면
+ * 검색에서 절차가 인식되지 않는다), 매질 조건은 /guides/choose-media/와 /safety/에
+ * 이미 같은 내용이 있다.
+ *
+ * 배경: 개편 전 홈은 한글 2,369자·모바일 13.5화면이었고 사진 비중은 29%였다.
+ * 정보가 부족해서가 아니라 읽어야 해서 이탈한다는 판단(2026-08-07 사장님 지시).
+ */
 
-const approval = howToApprovalLabel();
+/** 홈에는 눈으로 확인 가능한 네 곳만 낸다. 가스 연결부는 제품 상세에서 다룬다 */
+const HOME_PARTS = BUILD_QUALITY.slice(0, 4);
 
-/** 화면에 렌더링하는 10단계와 같은 순서·문구를 쓴다 */
-const howTo = howToSchema('/', '블루가드 연막소독기 사용방법', HOWTO_STEPS);
+const base = PRODUCTS[0];
+const large = PRODUCTS[1];
+/** 외형 표기 "465×265×180" 의 가장 긴 변 — 소형화 주장의 근거 수치 */
+const longestSideMm = base.dimensionsMm.split('×')[0];
+
+const videoMin = Math.floor(HOWTO_VIDEO.durationSec / 60);
+const videoSec = HOWTO_VIDEO.durationSec % 60;
+const videoLength = videoMin > 0 ? `${videoMin}분 ${videoSec}초` : `${videoSec}초`;
 
 const productList = itemListSchema(
   '/products/',
@@ -57,38 +61,33 @@ const howToVideo = videoSchema({
 
 <BaseLayout
   title="가정용 휴대용 연막소독기 블루가드"
-  description="가정용·휴대용 연막소독기 블루가드 공식 정보. 연막·연무 겸용 기준과 실내외 매질 선택, 모기 방역 사용법과 안전수칙을 한곳에 모았습니다."
+  description="차량 장비가 들어가기 어려운 좁은 현장을 위해 소형화한 국산 휴대용 연막소독기. 연막·연무 겸용 사양과 눈으로 확인하는 부품 기준을 정리했습니다."
   canonicalPath="/"
   ogImage="/og/og-default.png"
   crumbs={[{ name: '홈', href: '/' }]}
-  schemaNodes={[organizationSchema(), websiteSchema(), productList, howTo, howToVideo]}
+  schemaNodes={[organizationSchema(), websiteSchema(), productList, howToVideo]}
+  stickyBuy="generic"
 >
   <Fragment slot="hero">
     <div class="full-bleed hero-band">
       <div class="full-bleed__inner hero">
         <div class="hero__text">
-          <p class="eyebrow eyebrow--ink">공식 기술정보</p>
-          <h1>가정용 휴대용 연막소독기<br />블루가드 연막·연무 겸용</h1>
+          <p class="eyebrow eyebrow--ink">부품 {DOMESTIC_PARTS_PERCENT}% 국산</p>
+          <h1>차량 장비가 못 들어가는 곳까지,<br />손에 드는 국산 연막소독기</h1>
           <p class="lede">
-            부탄가스로 작동하는 국산 미니 연막기입니다. <strong>연막·연무를 한 대로</strong> 쓰며,
-            넣는 매질을 바꾸면 실내에서도 작업합니다. 모델별 탱크 용량과 노즐 구성, 충전 한도와
-            안전 기준을 공식 사양 그대로 정리했습니다.
+            국산 기술로 줄인 부탄가스 연막기입니다. 마당·창고·축사·하수구까지 직접 들고
+            이동해 분사합니다.
           </p>
           <div class="hero__actions">
-            <a class="hero__cta hero__cta--primary" href="/compare/">모델 차이 비교하기</a>
-            <a
-              class="hero__cta hero__cta--secondary"
-              href={optionUrl}
-              target="_blank"
-              rel="noopener external"
-              data-ga-event="purchase_cta_click"
-              data-ga-utm-content="home_hero_secondary"
-            >
-              공식몰에서 옵션 선택
+            <a class="hero__cta hero__cta--primary" href="#works">
+              작동 영상 보기 · {videoLength}
             </a>
+            <a class="hero__cta hero__cta--secondary" href="#models">내게 맞는 모델 찾기</a>
           </div>
           <p class="hero__media">
-            {MEDIA_SPECS.map((medium) => `${medium.name} · ${medium.venueLabel}`).join('  /  ')}
+            한 손 휴대 · {SPRAY_MODES} · {base.officialLabel} {base.tankLiters}L / {
+              large.officialLabel
+            } {large.tankLiters}L
           </p>
         </div>
 
@@ -105,157 +104,119 @@ const howToVideo = videoSchema({
         </div>
       </div>
     </div>
-
-    <div class="full-bleed stat-band">
-      <div class="full-bleed__inner">
-        <StatRow variant="ink" />
-      </div>
-    </div>
   </Fragment>
 
-  <SafetyBox title="쓰기 전에 이것만은" compact only={['venue', 'fill-limit', 'aux-inlet']} />
-
-  <section aria-labelledby="models">
-    <h2 id="models">어떤 모델을 골라야 하나요?</h2>
+  <!-- S2 소형화 — 사장님이 가장 강조하고 싶어 한 메시지 -->
+  <section id="works" aria-labelledby="works-h">
+    <h2 id="works-h">차량까지 동원할 필요 없는 현장을 위해</h2>
     <p class="section-desc">
-      본체 구조와 사용 절차는 세 구성이 같습니다. 갈리는 것은 한 번에 담는 양, 들고 다니는 방식,
-      분사구가 닿는 거리입니다. 마당처럼 좁은 곳이면 기본형, 정원·창고처럼 넓은 곳이면 대용량,
-      하수구나 풀숲처럼 손이 닿지 않는 곳이면 롱노즐 구성입니다.
+      대형 장비가 들어가기 어려운 좁은 곳에서도 작업자가 직접 들고 이동합니다.
+    </p>
+
+    <div class="works">
+      <PhotoSlot
+        no="⑫"
+        what="실제 작업 전경"
+        note="마당·창고·축사 중 한 곳에서 사람이 들고 이동하며 분사하는 전신 컷"
+        ratio="4 / 3"
+      />
+      <ul class="benefits">
+        <li>
+          <strong>한 손으로 듭니다</strong>
+          <span>가장 긴 변 {longestSideMm}mm. 오래 작업할 때는 어깨끈을 씁니다.</span>
+        </li>
+        <li>
+          <strong>{SPRAY_MODES}</strong>
+          <span>
+            넣는 매질만 바꾸면 모드가 바뀝니다 — {
+              MEDIA_SPECS.map((m) => `${m.name} ${m.venueLabel}`).join(', ')
+            }.
+          </span>
+        </li>
+        <li>
+          <strong>
+            <span class="num">{WORK_REFERENCE.chargeMl.toLocaleString('ko-KR')}</span>mL로 약
+            <span class="num">{WORK_REFERENCE.minutes}</span>분 ·
+            <span class="num">{WORK_REFERENCE.pyeong}</span>평
+          </strong>
+          <span>{WORK_REFERENCE.note}</span>
+        </li>
+      </ul>
+    </div>
+
+    <VideoEmbed video={HOWTO_VIDEO} />
+
+    <p class="section-more">
+      <a href="/guides/">사용 순서 10단계 보기</a> ·
+      <a href="/guides/choose-media/">매질 고르는 법</a>
+    </p>
+  </section>
+
+  <!-- S3 부품 — 이번 개편의 핵심 섹션 -->
+  <section class="panel panel--ink parts" aria-labelledby="parts-h">
+    <h2 id="parts-h">겉은 비슷해도, 안쪽은 다릅니다</h2>
+    <p class="parts__desc">
+      가격표보다 먼저 확인할 네 곳입니다. 저희 것부터 열어서 보여드립니다.
+    </p>
+
+    <div class="parts__grid">
+      {
+        HOME_PARTS.map((part, i) => (
+          <article class="part">
+            <PhotoSlot
+              no={['③', '④', '⑤', '⑥'][i]}
+              what={`${part.part} 클로즈업`}
+              note="네 컷을 같은 배경·조명·거리로 한 번에 촬영"
+              ratio="1 / 1"
+            />
+            <p class="part__name">{part.part}</p>
+            <p class="part__claim">{part.claim}</p>
+            <p class="part__detail">{part.detail}</p>
+            <p class="part__check">
+              <span>확인법</span>
+              {part.howToCheck}
+            </p>
+          </article>
+        ))
+      }
+    </div>
+
+    <p class="parts__close">1~2만원의 차이보다, 오래 쓸 구조를 먼저 보세요.</p>
+  </section>
+
+  <!-- S4 모델 -->
+  <section id="models" aria-labelledby="models-h">
+    <h2 id="models-h">어디에 쓰실 건가요</h2>
+    <p class="section-desc">
+      마당이면 기본형, 넓은 곳이면 대용량, 손이 안 닿는 곳이면 롱노즐입니다.
     </p>
     <div class="grid grid--3">
-      {PRODUCTS.map((product) => <ModelCard product={product} context="home" />)}
+      {
+        PRODUCTS.map((product) => (
+          <ModelCard product={product} context="home" withBuy={false} compact />
+        ))
+      }
     </div>
     <p class="section-more">
-      <a href="/products/">제품 전체 보기</a> · <a href="/compare/">모델 비교표</a>
+      <a href="/compare/">세 구성 비교표 보기</a> · <a href="/products/">제품 전체 보기</a>
     </p>
-    <ShippingNote />
   </section>
 
-  <section aria-labelledby="venue">
-    <h2 id="venue">실내에서도 쓸 수 있나요?</h2>
+  <!-- S5 안전 + 구매 -->
+  <section aria-labelledby="close-h">
+    <h2 id="close-h">사진만 보지 말고, 부품과 작동 모습을 확인하세요</h2>
     <p class="section-desc">
-      쓸 수 있습니다. 이 기기는 <strong>연막·연무 겸용</strong>이라, 탱크에 넣는 매질을 바꾸면
-      모드가 바뀝니다. 기기를 두 대 살 필요가 없습니다.
+      실제 구조와 분사 영상을 확인한 뒤 현장에 맞는 구성을 고르시면 됩니다.
     </p>
-    <div class="venue-grid">
-      {
-        MEDIA_SPECS.map((medium) => (
-          <div class="venue-card">
-            <p class="venue-card__where">
-              {medium.mode} 모드 · {medium.venueLabel}
-            </p>
-            <p class="venue-card__name">{medium.name}</p>
-            <p class="venue-card__detail">{medium.detail}</p>
-          </div>
-        ))
-      }
+    <SafetyBox title="쓰기 전에 이것만은" compact only={['venue', 'fill-limit', 'aux-inlet']} />
+    <div class="close-actions">
+      <BuyCTA content="home_close" />
+      <a class="close-actions__link" href="/safety/">전체 안전수칙 보기 →</a>
     </div>
-    <p class="venue-work">
-      충전량 {WORK_REFERENCE.chargeMl.toLocaleString('ko-KR')}mL 기준 약 {WORK_REFERENCE.minutes}분
-      · {WORK_REFERENCE.pyeong}평 작업 <span>{WORK_REFERENCE.note}</span>
+    <p class="section-more section-more--quiet">
+      <a href="/guides/">사용법</a> · <a href="/uses/">활용사례</a> ·
+      <a href="/troubleshooting/">문제해결</a>
     </p>
-    <p class="venue-caution">
-      매질을 무엇으로 바꾸든 가열원은 부탄가스 연소입니다. 창문·출입구·환기설비로 공기가 통하는
-      상태에서만 작동시키고, 창이 없는 방이나 환기가 막힌 지하공간에서는 사용하지 마세요.
-      실제 허용 장소와 대상 해충은 함께 쓰는 약제의 표시사항이 정합니다.
-    </p>
-    <p class="section-more">
-      <a href="/guides/choose-media/">매질 고르는 법</a> ·
-      <a href="/guides/fogger-vs-mist-blower/">연막기와 연무기 차이</a>
-    </p>
-  </section>
-
-  <section aria-labelledby="howto">
-    <h2 id="howto">어떻게 사용하나요?</h2>
-    <p class="section-desc">
-      공식 사용법 영상의 10단계입니다. 작업 전 준비부터 점화, 펌핑, 사용 후 세척까지 순서대로
-      따라가면 됩니다.
-    </p>
-    <VideoEmbed video={HOWTO_VIDEO} />
-    <ol class="howto-steps">
-      {
-        HOWTO_STEPS.map((step) => (
-          <li id={`step-${step.no}`}>
-            <strong>{step.title}</strong>
-            <span>{step.body}</span>
-          </li>
-        ))
-      }
-    </ol>
-    {approval && <p class="howto-approval">{approval}</p>}
-    <p class="section-more">
-      <a href="/guides/">단계별 상세 문서 보기</a> · <a href="/safety/">안전수칙</a>
-    </p>
-  </section>
-
-  <section aria-labelledby="evidence">
-    <h2 id="evidence">실제로 어떻게 생겼나요?</h2>
-    <p class="section-desc">
-      조립 공정과 실제 분사 장면을 담은 촬영본입니다. 클릭하면 재생됩니다.
-    </p>
-    <div class="video-row">
-      {evidenceVideos.map((video) => <VideoEmbed video={video} />)}
-    </div>
-  </section>
-
-  <TrustBar />
-
-  <section aria-labelledby="sec-guides">
-    <h2 id="sec-guides">{COLLECTION_META.guides.title}</h2>
-    <p class="section-desc">{COLLECTION_META.guides.description}</p>
-    <ol class="step-list">
-      {
-        guides.map((doc, i) => (
-          <li>
-            <a href={docHref(doc.collection, doc.id)}>
-              <span class="step-list__no">{i + 1}</span>
-              <span class="step-list__body">
-                <strong>{doc.data.title}</strong>
-                <span>{doc.data.description}</span>
-              </span>
-            </a>
-          </li>
-        ))
-      }
-    </ol>
-    <p class="section-more">
-      <a href={COLLECTION_META.guides.href}>{COLLECTION_META.guides.label} 전체 보기 →</a>
-    </p>
-  </section>
-
-  <section aria-labelledby="sec-troubleshooting">
-    <h2 id="sec-troubleshooting">{COLLECTION_META.troubleshooting.title}</h2>
-    <p class="section-desc">{COLLECTION_META.troubleshooting.description}</p>
-    <div class="symptom-list">
-      {
-        troubles.map((doc) => (
-          <a class="symptom" href={docHref(doc.collection, doc.id)}>
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <path d="M12 9v4m0 4h.01M10.3 3.9 2.7 17.5A1.8 1.8 0 0 0 4.3 20h15.4a1.8 1.8 0 0 0 1.6-2.5L13.7 3.9a1.8 1.8 0 0 0-3.4 0Z" />
-            </svg>
-            <span>
-              <strong>{doc.data.title}</strong>
-              <span>{doc.data.description}</span>
-            </span>
-          </a>
-        ))
-      }
-    </div>
-    <p class="section-more">
-      <a href={COLLECTION_META.troubleshooting.href}>
-        {COLLECTION_META.troubleshooting.label} 전체 보기 →
-      </a>
-    </p>
-  </section>
-
-  <section class="panel panel--ink closing">
-    <h2>안전하게 쓰는 것이 먼저입니다</h2>
-    <p>
-      연막소독기는 매질을 가열해 기화시키는 기기입니다. 충전 한도, 보조주입구 취급, 지정 매질
-      이 세 가지만 지켜도 사고 대부분을 막을 수 있습니다. 사용 가능한 장소는 함께 쓰는 약제의
-      표시사항이 정합니다.
-    </p>
-    <p><a href="/safety/">전체 안전수칙 보기 →</a></p>
   </section>
 </BaseLayout>
 
@@ -353,11 +314,6 @@ const howToVideo = videoSchema({
     filter: drop-shadow(0 18px 22px rgb(0 0 0 / 0.35));
   }
 
-  .stat-band {
-    background: var(--c-ink-2);
-    padding: 0.25rem 0 clamp(1.5rem, 4vw, 2.25rem);
-  }
-
   .grid {
     display: grid;
     gap: 1rem;
@@ -380,6 +336,12 @@ const howToVideo = videoSchema({
     font-weight: 700;
   }
 
+  .section-more--quiet {
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--c-text-muted);
+  }
+
   .section-more a {
     text-decoration: none;
   }
@@ -388,237 +350,152 @@ const howToVideo = videoSchema({
     text-decoration: underline;
   }
 
-  .video-row {
+  /* 소형화 — 사진과 근거 3개를 나란히 두고 문단을 쓰지 않는다 */
+  .works {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-    gap: 0.9rem;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(1rem, 3vw, 1.75rem);
+    align-items: start;
+    margin-bottom: 1.5rem;
   }
 
-  /* 실내외 — 매질 두 개를 나란히 두고 어느 쪽이 어디용인지 한눈에 보이게 한다 */
-  .venue-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 0.9rem;
-    margin-top: 1.25rem;
-  }
-
-  .venue-card {
-    padding: 1.1rem 1.2rem;
-    border: 1px solid var(--c-border);
-    border-radius: 12px;
-    background: var(--c-surface-alt);
-  }
-
-  .venue-card__where {
-    margin: 0;
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    color: var(--c-accent-ink, var(--c-text));
-  }
-
-  .venue-card__name {
-    margin: 0.3rem 0 0.5rem;
-    font-size: 1.05rem;
-    font-weight: 700;
-  }
-
-  .venue-card__detail {
-    margin: 0;
-    font-size: 0.88rem;
-    line-height: 1.65;
-    color: var(--c-text-muted);
-  }
-
-  .howto-approval {
-    margin: 1rem 0 0;
-    font-size: 0.85rem;
-    color: var(--c-text-muted);
-  }
-
-  .venue-work {
-    margin: 0.9rem 0 0;
-    font-size: 0.95rem;
-    font-weight: 700;
-  }
-
-  .venue-work span {
-    display: block;
-    margin-top: 0.25rem;
-    font-size: 0.82rem;
-    font-weight: 400;
-    color: var(--c-text-muted);
-  }
-
-  .venue-caution {
-    margin: 1rem 0 0;
-    padding: 0.9rem 1.05rem;
-    border-left: 3px solid var(--c-border-strong);
-    font-size: 0.88rem;
-    line-height: 1.7;
-    color: var(--c-text-muted);
-  }
-
-  /* 공식 10단계 — 영상 자막을 그대로 옮긴 순서라 번호를 그대로 노출한다 */
-  .howto-steps {
-    margin: 1.5rem 0 0;
-    padding-left: 1.4rem;
-    display: grid;
-    gap: 0.7rem;
-  }
-
-  .howto-steps li {
-    padding-left: 0.2rem;
-  }
-
-  .howto-steps strong {
-    display: block;
-    font-size: 0.97rem;
-  }
-
-  .howto-steps span {
-    display: block;
-    margin-top: 0.2rem;
-    font-size: 0.9rem;
-    line-height: 1.65;
-    color: var(--c-text-muted);
-  }
-
-  /* 사용법 — 순서가 중요한 콘텐츠라 번호 칩으로 단계처럼 보이게 한다 */
-  .step-list {
+  .benefits {
     list-style: none;
-    margin: 1.5rem 0 0;
+    margin: 0;
     padding: 0;
     display: grid;
-    gap: 0.6rem;
-    counter-reset: step;
-  }
-
-  .step-list a {
-    display: flex;
-    align-items: center;
     gap: 0.9rem;
-    padding: 1rem 1.15rem;
-    border: 1px solid var(--c-border);
-    border-radius: 12px;
-    text-decoration: none;
-    color: var(--c-text);
-    background: var(--c-surface);
-    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+    align-content: center;
   }
 
-  .step-list a:hover {
-    border-color: var(--c-accent);
-    box-shadow: var(--shadow-md);
-    transform: translateY(-1px);
-  }
-
-  .step-list__no {
-    flex: none;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background: var(--c-accent-soft);
-    color: var(--c-accent-dark);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 800;
-    font-size: 0.9rem;
-  }
-
-  .step-list__body {
+  .benefits li {
     display: grid;
-    gap: 0.15rem;
-    min-width: 0;
+    gap: 0.2rem;
+    padding-left: 0.9rem;
+    border-left: 3px solid var(--c-yellow);
   }
 
-  .step-list__body strong {
-    font-size: 1rem;
+  .benefits strong {
+    font-size: 1.02rem;
     letter-spacing: -0.015em;
   }
 
-  .step-list__body span {
-    font-size: 0.87rem;
+  .benefits span {
+    font-size: 0.88rem;
+    line-height: 1.65;
     color: var(--c-text-muted);
-    line-height: 1.6;
   }
 
-  /* 문제해결 — 증상을 고르는 흐름이라 경고 아이콘을 앞세운다 */
-  .symptom-list {
-    margin-top: 1.5rem;
+  /* 부품 — 어두운 패널로 세워 이 섹션에만 시선이 멈추게 한다 */
+  .parts__desc {
+    margin: 0 0 1.5rem;
+    color: var(--c-on-ink-dim);
+    font-size: 0.97rem;
+    max-width: 60ch;
+  }
+
+  .parts__grid {
     display: grid;
-    gap: 0.6rem;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
   }
 
-  .symptom {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.85rem;
-    padding: 1rem 1.15rem;
-    border: 1px solid var(--c-warn-border);
-    border-left: 3px solid var(--c-warn);
-    border-radius: 10px;
-    text-decoration: none;
-    color: var(--c-text);
-    background: var(--c-warn-soft);
-    transition: box-shadow 0.15s ease, transform 0.15s ease;
-  }
-
-  .symptom:hover {
-    box-shadow: var(--shadow-sm);
-    transform: translateY(-1px);
-  }
-
-  .symptom svg {
-    flex: none;
-    width: 22px;
-    height: 22px;
-    margin-top: 0.1rem;
-    fill: none;
-    stroke: var(--c-warn-text);
-    stroke-width: 1.6;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
-  .symptom span {
+  .part {
     display: grid;
-    gap: 0.15rem;
+    gap: 0.3rem;
+    align-content: start;
   }
 
-  .symptom strong {
-    font-size: 0.98rem;
-    color: var(--c-text);
+  .part__name {
+    margin: 0.6rem 0 0;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--c-on-ink-dim);
   }
 
-  .symptom span span {
+  .part__claim {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #fff;
+  }
+
+  .part__detail {
+    margin: 0;
     font-size: 0.86rem;
-    color: var(--c-text-muted);
     line-height: 1.6;
+    color: var(--c-on-ink-dim);
   }
 
-  .closing p {
+  .part__check {
+    margin: 0.35rem 0 0;
+    padding-top: 0.55rem;
+    border-top: 1px solid rgb(255 255 255 / 0.16);
+    font-size: 0.84rem;
+    line-height: 1.6;
     color: var(--c-on-ink);
-    max-width: 62ch;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .step-list a:hover,
-    .symptom:hover {
-      transform: none;
-    }
+  .part__check span {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--c-yellow);
+    margin-bottom: 0.15rem;
+  }
+
+  .parts__close {
+    margin: 1.75rem 0 0;
+    padding-top: 1.25rem;
+    border-top: 1px solid rgb(255 255 255 / 0.16);
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #fff;
+  }
+
+  .close-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+  }
+
+  .close-actions__link {
+    font-size: 0.93rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .close-actions__link:hover {
+    text-decoration: underline;
   }
 
   @media (max-width: 900px) {
     .hero,
-    .grid--3 {
+    .grid--3,
+    .works {
       grid-template-columns: 1fr;
     }
 
     .hero__figure {
       max-width: 320px;
       margin: 0 auto;
+    }
+
+    /*
+     * 모바일에서도 2열을 유지한다.
+     * 1열로 떨어뜨리면 네 곳이 세로로 2,300px 늘어져 "네 곳"이 한눈에 안 들어온다.
+     * 이 섹션은 개별 사진을 뜯어보는 자리가 아니라 네 곳이 있다는 걸 보여주는 자리다
+     * (자세한 값은 /products/의 부품 표에 있다).
+     */
+    .parts__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.75rem;
     }
   }
 </style>

@@ -2,17 +2,32 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import DocList from '../../components/DocList.astro';
 import SafetyBox from '../../components/SafetyBox.astro';
+import { HOWTO_STEPS, howToApprovalLabel } from '../../data/media';
 import { COLLECTION_META, docHref, getPublishedDocs } from '../../lib/content';
-import { itemListSchema } from '../../lib/schema';
+import { howToSchema, itemListSchema } from '../../lib/schema';
 
 const meta = COLLECTION_META.guides;
 const docs = await getPublishedDocs('guides');
+
+const approval = howToApprovalLabel();
 
 const list = itemListSchema(
   meta.href,
   meta.title,
   docs.map((doc) => ({ name: doc.data.title, href: docHref('guides', doc.id) })),
 );
+
+/**
+ * 공식 사용법 10단계.
+ *
+ * 2026-08-07에 홈에서 이 페이지로 옮겼다. 홈이 "왜 사야 하는가"만 답하도록 줄이면서
+ * 단계 목록을 뺐는데, **화면의 10단계와 HowTo 구조화데이터는 반드시 같은 페이지에 있어야
+ * 한다.** 둘이 갈라지면 검색엔진이 절차를 인식하지 못하고, 화면에 없는 내용을 구조화데이터로
+ * 내보내는 정책 위반이 된다. 그래서 목록과 스키마를 함께 옮겼다.
+ *
+ * 화면에 렌더링하는 순서·문구를 그대로 쓴다. step-{no} 앵커도 스키마가 참조한다.
+ */
+const howTo = howToSchema(meta.href, '블루가드 연막소독기 사용방법', HOWTO_STEPS);
 ---
 
 <BaseLayout
@@ -21,13 +36,32 @@ const list = itemListSchema(
   canonicalPath={meta.href}
   ogImage="/og/og-guides.png"
   crumbs={[{ name: meta.label, href: meta.href }]}
-  schemaNodes={[list]}
+  schemaNodes={[list, howTo]}
 >
   <h1>{meta.title}</h1>
   <p class="lede">{meta.description}</p>
 
   <SafetyBox title="모든 작업에 공통" compact only={['fill-limit', 'aux-inlet']} />
 
+  <section aria-labelledby="howto">
+    <h2 id="howto">공식 사용 순서 10단계</h2>
+    <p class="section-desc">
+      작업 전 준비부터 점화, 펌핑, 사용 후 세척까지 순서대로 따라가면 됩니다.
+    </p>
+    <ol class="howto-steps">
+      {
+        HOWTO_STEPS.map((step) => (
+          <li id={`step-${step.no}`}>
+            <strong>{step.title}</strong>
+            <span>{step.body}</span>
+          </li>
+        ))
+      }
+    </ol>
+    {approval && <p class="howto-approval">{approval}</p>}
+  </section>
+
+  <h2>단계별 상세 문서</h2>
   <DocList docs={docs} />
 
   <p class="more">
@@ -37,6 +71,44 @@ const list = itemListSchema(
 </BaseLayout>
 
 <style>
+  .section-desc {
+    margin: 0 0 1.25rem;
+    color: var(--c-text-muted);
+    font-size: 0.97rem;
+    max-width: 60ch;
+  }
+
+  /* 공식 10단계 — 영상 자막을 그대로 옮긴 순서라 번호를 그대로 노출한다 */
+  .howto-steps {
+    margin: 1.5rem 0 0;
+    padding-left: 1.4rem;
+    display: grid;
+    gap: 0.7rem;
+  }
+
+  .howto-steps li {
+    padding-left: 0.2rem;
+  }
+
+  .howto-steps strong {
+    display: block;
+    font-size: 0.97rem;
+  }
+
+  .howto-steps span {
+    display: block;
+    margin-top: 0.2rem;
+    font-size: 0.9rem;
+    line-height: 1.65;
+    color: var(--c-text-muted);
+  }
+
+  .howto-approval {
+    margin: 1rem 0 0;
+    font-size: 0.85rem;
+    color: var(--c-text-muted);
+  }
+
   .more {
     margin-top: 2rem;
     font-size: 0.93rem;

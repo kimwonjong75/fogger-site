@@ -80,13 +80,17 @@ export const SITE_VERIFICATION = {
   bing: 'CECFCC488E32F238626180CFBECCDE2B',
 } as const;
 
-/** 헤더 내비게이션 (구매하기 CTA는 별도) */
+/**
+ * 헤더 내비게이션 (구매하기 CTA는 별도).
+ *
+ * 2026-08-07에 6개에서 4개로 줄였다. 메뉴가 많으면 고를 게 많아져 아무것도 안 누른다.
+ * 뺀 활용사례·문제해결은 푸터와 홈 하단 링크, 각 문서의 RelatedGuides가 계속 받으므로
+ * 내부 링크가 끊기지는 않는다 — 셋 중 하나라도 없애면 그때는 끊긴다.
+ */
 export const NAV = [
   { label: '제품', href: '/products/' },
   { label: '모델비교', href: '/compare/' },
   { label: '사용법', href: '/guides/' },
-  { label: '활용사례', href: '/uses/' },
-  { label: '문제해결', href: '/troubleshooting/' },
   { label: '안전수칙', href: '/safety/' },
 ] as const;
 

@@ -5,7 +5,11 @@ import ModelCard from '../../components/ModelCard.astro';
 import SafetyBox from '../../components/SafetyBox.astro';
 import ShippingNote from '../../components/ShippingNote.astro';
 import StatRow from '../../components/StatRow.astro';
+import TrustBar from '../../components/TrustBar.astro';
+import VideoEmbed from '../../components/VideoEmbed.astro';
 import {
+  BUILD_QUALITY,
+  DOMESTIC_PARTS_PERCENT,
   FILL_RATIO_LABEL,
   HEAT_SOURCE,
   MEDIA_LABEL,
@@ -14,7 +18,15 @@ import {
   SPRAY_MODES,
   USE_VENUE,
 } from '../../data/products';
+import { CUSTOMER_USE_VIDEOS, QC_VIDEOS, SPRAY_TEST_VIDEO } from '../../data/media';
 import { itemListSchema } from '../../lib/schema';
+
+/**
+ * 조립·분사 촬영본과 신뢰 블록은 2026-08-07에 홈에서 이 페이지로 옮겼다.
+ * 홈은 "왜 사야 하는가"만 답하도록 줄였고, 이 자료들은 이미 사려고 마음먹은 사람이
+ * 마지막으로 확인하는 근거라서 구매 판단 페이지가 제자리다.
+ */
+const evidenceVideos = [...QC_VIDEOS, SPRAY_TEST_VIDEO, ...CUSTOMER_USE_VIDEOS];
 
 const list = itemListSchema(
   '/products/',
@@ -59,12 +71,40 @@ const commonFacts = [
     }
   </div>
 
+  <h2>눈으로 확인하는 부품 사양</h2>
+  <p class="section-desc">
+    부품 {DOMESTIC_PARTS_PERCENT}% 국산입니다. 구매 전에 직접 확인하실 수 있는 기준을 함께
+    적었습니다.
+  </p>
+  <dl class="parts">
+    {
+      BUILD_QUALITY.map((part) => (
+        <div class="parts__row">
+          <dt>{part.part}</dt>
+          <dd>
+            <strong>{part.claim}</strong>
+            <span>{part.detail}</span>
+            <span class="parts__check">확인법 — {part.howToCheck}</span>
+          </dd>
+        </div>
+      ))
+    }
+  </dl>
+
   <h2>전 모델 공통 사양</h2>
   <FactTable rows={commonFacts} footnote="모델별로 다른 값은 각 제품 페이지와 모델 비교표에서 확인하세요." />
 
   <ShippingNote />
 
+  <h2>조립과 분사 촬영본</h2>
+  <p class="section-desc">클릭하면 재생됩니다.</p>
+  <div class="video-row">
+    {evidenceVideos.map((video) => <VideoEmbed video={video} />)}
+  </div>
+
   <SafetyBox />
+
+  <TrustBar />
 
   <p class="more"><a href="/compare/">모델 비교표에서 나란히 보기 →</a></p>
 </BaseLayout>
@@ -77,6 +117,64 @@ const commonFacts = [
     margin: 1.5rem 0 0.5rem;
   }
 
+  .section-desc {
+    margin: 0 0 1.25rem;
+    color: var(--c-text-muted);
+    font-size: 0.97rem;
+    max-width: 60ch;
+  }
+
+  .parts {
+    margin: 0;
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .parts__row {
+    display: grid;
+    grid-template-columns: 7.5rem 1fr;
+    gap: 0.5rem 1rem;
+    padding: 0.9rem 1.1rem;
+    border: 1px solid var(--c-border);
+    border-left: 3px solid var(--c-yellow);
+    border-radius: 8px;
+    background: var(--c-surface);
+  }
+
+  .parts__row dt {
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+
+  .parts__row dd {
+    margin: 0;
+    display: grid;
+    gap: 0.15rem;
+  }
+
+  .parts__row strong {
+    font-size: 1rem;
+    letter-spacing: -0.015em;
+  }
+
+  .parts__row span {
+    font-size: 0.88rem;
+    line-height: 1.65;
+    color: var(--c-text-muted);
+  }
+
+  .parts__check {
+    margin-top: 0.2rem;
+    padding-top: 0.4rem;
+    border-top: 1px dotted var(--c-border);
+  }
+
+  .video-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 0.9rem;
+  }
+
   .more {
     font-weight: 600;
     font-size: 0.95rem;
@@ -85,6 +183,14 @@ const commonFacts = [
   @media (max-width: 900px) {
     .grid {
       grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 560px) {
+    /* 부품명 칸(7.5rem)을 남기면 설명이 160px로 눌려 한 줄에 다섯 글자씩 끊긴다 */
+    .parts__row {
+      grid-template-columns: 1fr;
+      row-gap: 0.35rem;
     }
   }
 </style>

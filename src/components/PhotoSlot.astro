@@ -1,0 +1,89 @@
+---
+/**
+ * 촬영 예정 사진 자리.
+ *
+ * 사진이 준비되기 전까지 레이아웃을 잡아 두기 위한 자리표시자다.
+ *
+ * **개발 서버에서만 보이고 배포 산출물에는 아무것도 남기지 않는다.**
+ * "AI로 만든 가짜 사진은 넣지 않는다. 사진이 없으면 그 자리를 아예 비운다"가
+ * 이 프로젝트의 원칙이라(TODO.md B), 방문자에게 "사진 준비 중" 상자를 보여주지 않는다.
+ * 사장님은 개발 서버에서 배치를 확인하고, 방문자는 사진이 붙은 뒤에만 보게 된다.
+ *
+ * 사진이 오면 이 컴포넌트를 그 자리에서 <Pic>으로 바꾼다. no는 TODO.md F-4의 번호다.
+ */
+interface Props {
+  /** 촬영 목록 번호 (TODO.md F-4) */
+  no: string;
+  /** 무엇을 찍는지 */
+  what: string;
+  /** 촬영 지시 요약 */
+  note?: string;
+  /** CSS aspect-ratio 값 */
+  ratio?: string;
+}
+
+const { no, what, note, ratio = '4 / 3' } = Astro.props;
+---
+
+{
+  import.meta.env.DEV && (
+    <div class="photo-slot" style={`aspect-ratio:${ratio}`} data-shot={no}>
+      <span class="photo-slot__no">{no}</span>
+      <span class="photo-slot__what">{what}</span>
+      {note && <span class="photo-slot__note">{note}</span>}
+      <span class="photo-slot__dev">개발 화면에만 보입니다</span>
+    </div>
+  )
+}
+
+<style>
+  /*
+   * width를 반드시 100%로 고정한다.
+   * aspect-ratio만 주고 폭을 열어 두면, 폭이 내용 높이를 따라가 그리드 밖으로
+   * 부풀어 나간다(모바일에서 가로 스크롤이 생겼던 원인). 폭이 먼저 정해져야
+   * 높이가 비율에서 계산된다.
+   */
+  .photo-slot {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 0.75rem;
+    text-align: center;
+    border: 2px dashed var(--c-border-strong);
+    border-radius: 10px;
+    background: var(--c-surface-alt);
+    color: var(--c-text-muted);
+  }
+
+  .photo-slot__no {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--c-accent);
+    line-height: 1;
+  }
+
+  .photo-slot__what {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--c-text);
+    max-width: 26ch;
+  }
+
+  .photo-slot__note {
+    font-size: 0.74rem;
+    line-height: 1.45;
+    max-width: 32ch;
+  }
+
+  .photo-slot__dev {
+    margin-top: 0.25rem;
+    font-size: 0.66rem;
+    letter-spacing: 0.04em;
+    opacity: 0.7;
+  }
+</style>

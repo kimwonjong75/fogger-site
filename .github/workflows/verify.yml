@@ -33,6 +33,12 @@ jobs:
           node-version: '22.12'
           cache: npm
 
+      # actions/setup-node로 Node 22.12를 깔면 거기 딸려오는 npm이 로컬(npm 11)보다 오래돼
+      # `npm ci`의 package.json↔package-lock.json 정합성 검사를 더 엄격하게 한다.
+      # 로컬에서는 통과하는데 CI에서만 `npm ci`가 즉시(10초 내) 떨어지는 게 이 증상이라
+      # npm 자체를 명시적으로 올린 뒤 설치한다.
+      - run: npm install -g npm@11
+
       - run: npm ci
 
       # npm run build:verify = astro check && astro build && scripts/verify-build.mjs
