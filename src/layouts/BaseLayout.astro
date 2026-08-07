@@ -92,7 +92,14 @@ const jsonLd = graph([breadcrumbSchema(allCrumbs), ...schemaNodes]);
     --c-border: #e2e8f0;
     --c-border-strong: #cbd5e1;
     --c-accent: #f59e0b;
-    --c-accent-dark: #b85c00;
+    /*
+     * 본문 글자·테두리·포커스에 쓰는 진한 주황.
+     * 배경이 흰색(#fff)에서 연회색(#f6f7f9)으로 바뀌면서 이전 값 #b85c00 이 4.29:1 로
+     * 떨어져 WCAG AA(4.5:1)를 못 넘겼다. 지금 값은 연회색 위 4.98:1, 흰 배경 5.34:1,
+     * 어두운 패널(#0a101c) 위 3.56:1 로 밝은 곳과 어두운 곳 모두에서 성립한다.
+     * --c-accent(#f59e0b)는 흰 배경에서 2.15:1 이므로 글자·테두리에는 쓰지 않는다.
+     */
+    --c-accent-dark: #a85400;
     --c-accent-soft: #fff3dc;
     /* 어두운 배경 블록 — 히어로·수치 강조에 사용 */
     --c-ink: #0a101c;
@@ -205,6 +212,28 @@ const jsonLd = graph([breadcrumbSchema(allCrumbs), ...schemaNodes]);
     margin: 5rem 0 1rem;
   }
 
+  /*
+   * 읽는 문서(.shell--narrow = 가이드·활용사례·문제해결 20건, 개인정보·약관)는
+   * 위의 랜딩용 타입 스케일을 쓰지 않는다.
+   *
+   * 홈·제품·모델비교는 훑어보는 화면이라 큰 제목이 맞지만, 문서는 처음부터 끝까지
+   * 읽는 글이다. /guides/mosquito-control/ 은 h2가 11개라 랜딩 스케일을 그대로 두면
+   * 제목과 여백만 1,019px — 페이지의 22%를 먹는다.
+   * 2026-08-07 사장님 확인: 문서만 원래 크기로.
+   */
+  .shell--narrow h1 {
+    font-size: clamp(1.9rem, 5.2vw, 2.65rem);
+    font-weight: 800;
+    letter-spacing: -0.035em;
+  }
+
+  .shell--narrow h2 {
+    font-size: clamp(1.4rem, 3.4vw, 1.75rem);
+    font-weight: 750;
+    letter-spacing: -0.025em;
+    margin: 3rem 0 1rem;
+  }
+
   h3 {
     font-size: 1.14rem;
     font-weight: 700;
@@ -252,10 +281,15 @@ const jsonLd = graph([breadcrumbSchema(allCrumbs), ...schemaNodes]);
     text-underline-offset: 2px;
   }
 
+  /*
+   * 포커스 테두리는 --c-accent(#f59e0b)를 쓰지 않는다. 흰 배경에서 2.15:1 이라
+   * UI 요소 기준(3:1)에 미달해 키보드 사용자가 어디에 있는지 안 보인다.
+   * --c-accent-dark 는 밝은 배경 5.34:1, 어두운 패널 3.56:1 로 양쪽 다 성립한다.
+   */
   a:focus-visible,
   button:focus-visible,
   summary:focus-visible {
-    outline: 2px solid var(--c-accent);
+    outline: 3px solid var(--c-accent-dark);
     outline-offset: 2px;
   }
 
@@ -277,14 +311,20 @@ const jsonLd = graph([breadcrumbSchema(allCrumbs), ...schemaNodes]);
     font-size: 0.9em;
   }
 
+  /*
+   * 키보드 사용자가 가장 먼저 만나는 요소다. 주황(#f59e0b) 위 흰 글자는 2.15:1 이라
+   * 정작 눈에 안 띄었다. 어두운 바탕에 흰 글자로 바꿔 18:1 을 확보한다.
+   */
   .skip-link {
     position: absolute;
     left: -9999px;
     top: 0;
     z-index: 100;
     padding: 0.6rem 1rem;
-    background: var(--c-accent);
+    background: var(--c-ink);
     color: #fff;
+    font-weight: 700;
+    border-bottom: 3px solid var(--c-accent);
   }
 
   .skip-link:focus {

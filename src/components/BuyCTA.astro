@@ -76,19 +76,29 @@ const text = label ?? BUY_CTA_LABEL;
     transition: background-color 0.15s ease, border-color 0.15s ease;
   }
 
+  /*
+   * 주황 위에는 진한 글자를 얹는다.
+   *
+   * 강조색이 파랑(#1d63b8)에서 주황(#f59e0b)으로 바뀌면서, 파랑에서 성립하던
+   * "흰 글자"가 2.15:1 로 떨어졌다(AA 기준 4.5:1). 사이트에서 가장 중요한 버튼이
+   * 가장 안 읽히는 상태였다. 헤더·하단 구매바는 이미 진한 글자를 쓰고 있었고,
+   * 여기도 같은 방식으로 맞춘다 — 그라데이션 밝은 끝 10.4:1, 진한 끝 6.5:1.
+   */
   .buy-cta--primary {
-    background: var(--c-accent);
-    color: #fff;
+    background: linear-gradient(100deg, var(--c-yellow), #ff6a00);
+    color: #17110a;
+    font-weight: 850;
   }
 
   .buy-cta--primary:hover {
-    background: var(--c-accent-dark);
+    background: linear-gradient(100deg, #ffc13b, #ff7b1a);
   }
 
+  /* 테두리도 --c-accent 는 흰 배경에서 2.15:1 이라 UI 요소 기준(3:1)에 미달한다 */
   .buy-cta--secondary {
     background: transparent;
     color: var(--c-accent-dark);
-    border-color: var(--c-accent);
+    border-color: var(--c-accent-dark);
   }
 
   .buy-cta--secondary:hover {
