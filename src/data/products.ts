@@ -17,11 +17,18 @@ export const PRODUCT_TYPE = '미니 연막기' as const;
 export const HEAT_SOURCE = '부탄가스' as const;
 
 /**
+ * 분사 모드.
+ * 공식 상세페이지 표기: "연막·연무 한 대로 겸용".
+ * 한 기기로 두 모드를 내며, 무엇을 넣느냐로 모드가 갈린다.
+ */
+export const SPRAY_MODES = '연막·연무 겸용' as const;
+
+/**
  * 사용 장소는 하나의 값이 아니라 세 축이 겹쳐서 정해진다.
  *
  *   1) 실내에서 쓸 수 있는가 → **매질**이 정한다
- *        경유   : 기름 성분과 연소 잔류물이 남으므로 실외 전용
- *        확산제 : 글리세린 50% 이상 수용성 매질이므로 실내에서도 사용
+ *        경유   : 연막 모드. 기름 성분과 연소 잔류물이 남으므로 실외 전용
+ *        확산제 : 연무 모드. 글리세린계 수용성 매질이므로 실내에서도 사용
  *
  *   2) 어떤 환기 상태여야 하는가 → **가열원**이 정한다
  *        매질을 무엇으로 바꾸든 부탄가스를 연소시키는 기기다.
@@ -33,12 +40,30 @@ export const HEAT_SOURCE = '부탄가스' as const;
  *
  * 화면 문구는 이 세 축 중 하나라도 빠뜨리지 않는다.
  * "실내 사용 가능"만 단독으로 쓰면 2번과 3번이 사라져 위험한 문장이 된다.
+ *
+ * ⚠️ 이 파일에 한때 `USE_LOCATION = '실외'` 상수가 "공식 상세페이지 사양표 표기"라는
+ *    근거와 함께 있었으나, 2026-08-07 상세페이지를 직접 확인한 결과 본문 텍스트에는
+ *    '실외'도 '실내'도 없었다(사양표가 이미지 안에 있음). 근거가 확인되지 않은 주석이었다.
+ *    사양 값을 적을 때는 반드시 원문을 직접 확인하고 무엇을 봤는지 함께 남긴다.
  */
 export const USE_VENUE = {
   /** 사양표 한 줄 표기 */
   label: '실내·실외 (매질에 따라 구분)',
   /** 매질과 무관하게 항상 함께 붙는 조건 */
   condition: '가열원이 부탄가스 연소이므로 공기가 통하는 상태에서만 사용합니다.',
+} as const;
+
+/**
+ * 공식 상세페이지 상단 표기 — "1,500ml로 약 30분 · 300평 작업".
+ *
+ * 탱크 용량이 아니라 **작업 기준량**이다. 이 값을 사양(탱크 용량)으로 오독한 사례가 있어
+ * (생성형 검색 답변이 "용량 1.5L"로 표시) 화면에서는 조건을 반드시 함께 노출한다.
+ */
+export const WORK_REFERENCE = {
+  chargeMl: 1500,
+  minutes: 30,
+  pyeong: 300,
+  note: '충전량 1,500mL 기준의 대략적인 값이며 매질·분사량·현장 조건에 따라 달라집니다.',
 } as const;
 
 /** 효능 (공식 상세페이지 표기) */
@@ -68,17 +93,20 @@ export const MEDIA_SPECS = [
   {
     id: 'diesel',
     name: '경유',
+    mode: '연막',
     indoor: false,
     venueLabel: '실외 전용',
-    detail: '연소 잔류물과 기름 성분이 남습니다. 실외에서만 사용하세요.',
+    detail:
+      '기름계 매질이라 흰 연막이 짙게 형성됩니다. 연소 잔류물과 기름 성분이 남으므로 실외에서만 사용하세요.',
   },
   {
     id: 'diffuser',
     name: '글리세린 50% 이상 확산제',
+    mode: '연무',
     indoor: true,
     venueLabel: '실내·실외',
     detail:
-      '수용성 매질이라 잔류물이 적어 실내에서도 사용합니다. 다만 가열원은 그대로 부탄가스 연소이므로 환기 조건은 실외와 동일하게 지킵니다.',
+      '수용성 매질이라 잔류물이 적고 냄새가 덜합니다. 실내에서도 사용하되, 가열원은 그대로 부탄가스 연소이므로 환기 조건은 실외와 동일하게 지킵니다.',
   },
 ] as const;
 
@@ -253,7 +281,7 @@ export const PRODUCTS: Product[] = [
     longNozzle: false,
     includes: ['본체', '세척용 받침대'],
     bestFor: ['가정용 — 마당·베란다 등 좁은 공간'],
-    priceKrw: null,
+    priceKrw: 92000,
     buyUrl: OFFICIAL_STORE_PRODUCT_URL,
   },
   {
@@ -270,7 +298,7 @@ export const PRODUCTS: Product[] = [
     longNozzle: false,
     includes: ['본체', '전용 어깨스트랩'],
     bestFor: ['정원·창고·축사 등 넓은 공간'],
-    priceKrw: null,
+    priceKrw: 103000,
     buyUrl: OFFICIAL_STORE_PRODUCT_URL,
   },
   {
@@ -287,7 +315,7 @@ export const PRODUCTS: Product[] = [
     longNozzle: true,
     includes: ['본체', '전용 어깨스트랩', '50cm 롱노즐', '스패너 2개', '코팅장갑', '설명서'],
     bestFor: ['하수구·풀숲 등 깊거나 손이 닿지 않는 곳'],
-    priceKrw: null,
+    priceKrw: 113000,
     basedOn: 'bf-102',
     buyUrl: OFFICIAL_STORE_PRODUCT_URL,
   },

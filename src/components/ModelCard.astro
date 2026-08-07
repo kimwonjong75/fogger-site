@@ -1,7 +1,7 @@
 ---
 import BuyCTA from './BuyCTA.astro';
 import Pic from './Pic.astro';
-import { maxFillLiters, type Product } from '../data/products';
+import { maxFillLiters, priceLabel, type Product } from '../data/products';
 import { PRODUCT_IMAGES, PRODUCT_IMAGE_ALT } from '../data/product-images';
 import { BUY_CTA_LABEL_SHORT } from '../data/site';
 
@@ -15,6 +15,7 @@ interface Props {
 
 const { product, context, withBuy = true } = Astro.props;
 const href = `/products/${product.id}/`;
+const price = priceLabel(product);
 ---
 
 <article class="model-card">
@@ -42,6 +43,8 @@ const href = `/products/${product.id}/`;
       </a>
     </h3>
   </header>
+
+  {price && <p class="model-card__price">{price}<span>공식몰 판매가</span></p>}
 
   <p class="model-card__tagline">{product.tagline}</p>
 
@@ -145,6 +148,22 @@ const href = `/products/${product.id}/`;
 
   .model-card__title a:hover {
     text-decoration: underline;
+  }
+
+  /* 가격은 구매 판단의 첫 기준이라 태그라인보다 위에, 모델명 바로 아래 둔다 */
+  .model-card__price {
+    margin: 0 0 0.15rem;
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+
+  .model-card__price span {
+    margin-left: 0.4rem;
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: var(--c-text-muted);
+    letter-spacing: 0;
   }
 
   .model-card__tagline {

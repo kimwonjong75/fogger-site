@@ -8,7 +8,7 @@ import ShippingNote from '../components/ShippingNote.astro';
 import StatRow from '../components/StatRow.astro';
 import TrustBar from '../components/TrustBar.astro';
 import VideoEmbed from '../components/VideoEmbed.astro';
-import { MEDIA_SPECS, PRODUCTS } from '../data/products';
+import { MEDIA_SPECS, PRODUCTS, WORK_REFERENCE } from '../data/products';
 import {
   CUSTOMER_USE_VIDEOS,
   HOWTO_STEPS,
@@ -67,8 +67,9 @@ const howToVideo = videoSchema({
           <p class="eyebrow eyebrow--ink">공식 기술정보</p>
           <h1>가정용 휴대용 연막소독기<br />블루가드 BF-100S · BF-102</h1>
           <p class="lede">
-            부탄가스로 작동하는 국산 미니 연막기입니다. 매질을 바꾸면 실내에서도 씁니다. 모델별
-            탱크 용량과 노즐 구성, 충전 한도와 안전 기준을 공식 사양 그대로 정리했습니다.
+            부탄가스로 작동하는 국산 미니 연막기입니다. <strong>연막·연무를 한 대로</strong> 쓰며,
+            넣는 매질을 바꾸면 실내에서도 작업합니다. 모델별 탱크 용량과 노즐 구성, 충전 한도와
+            안전 기준을 공식 사양 그대로 정리했습니다.
           </p>
           <div class="hero__actions">
             <a class="hero__cta hero__cta--primary" href="/compare/">모델 차이 비교하기</a>
@@ -130,20 +131,26 @@ const howToVideo = videoSchema({
   <section aria-labelledby="venue">
     <h2 id="venue">실내에서도 쓸 수 있나요?</h2>
     <p class="section-desc">
-      쓸 수 있습니다. 다만 <strong>기기가 아니라 매질이 정합니다.</strong> 넣는 매질에 따라 실외
-      전용이 되기도 하고 실내에서도 쓸 수 있게 되기도 합니다.
+      쓸 수 있습니다. 이 기기는 <strong>연막·연무 겸용</strong>이라, 탱크에 넣는 매질을 바꾸면
+      모드가 바뀝니다. 기기를 두 대 살 필요가 없습니다.
     </p>
     <div class="venue-grid">
       {
         MEDIA_SPECS.map((medium) => (
           <div class="venue-card">
-            <p class="venue-card__where">{medium.venueLabel}</p>
+            <p class="venue-card__where">
+              {medium.mode} 모드 · {medium.venueLabel}
+            </p>
             <p class="venue-card__name">{medium.name}</p>
             <p class="venue-card__detail">{medium.detail}</p>
           </div>
         ))
       }
     </div>
+    <p class="venue-work">
+      충전량 {WORK_REFERENCE.chargeMl.toLocaleString('ko-KR')}mL 기준 약 {WORK_REFERENCE.minutes}분
+      · {WORK_REFERENCE.pyeong}평 작업 <span>{WORK_REFERENCE.note}</span>
+    </p>
     <p class="venue-caution">
       매질을 무엇으로 바꾸든 가열원은 부탄가스 연소입니다. 창문·출입구·환기설비로 공기가 통하는
       상태에서만 작동시키고, 창이 없는 방이나 환기가 막힌 지하공간에서는 사용하지 마세요.
@@ -416,6 +423,20 @@ const howToVideo = videoSchema({
     margin: 0;
     font-size: 0.88rem;
     line-height: 1.65;
+    color: var(--c-text-muted);
+  }
+
+  .venue-work {
+    margin: 0.9rem 0 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+  }
+
+  .venue-work span {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.82rem;
+    font-weight: 400;
     color: var(--c-text-muted);
   }
 

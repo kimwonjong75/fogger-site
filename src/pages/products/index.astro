@@ -12,6 +12,7 @@ import {
   MEDIA_LABEL,
   PRODUCTS,
   SHIPPING,
+  SPRAY_MODES,
   USE_VENUE,
 } from '../../data/products';
 import { itemListSchema } from '../../lib/schema';
@@ -23,6 +24,7 @@ const list = itemListSchema(
 );
 
 const commonFacts = [
+  { label: '분사 모드', value: SPRAY_MODES, note: '매질을 바꿔 연막·연무를 전환합니다.' },
   { label: '가열원', value: HEAT_SOURCE },
   { label: '사용 매질', value: MEDIA_LABEL, note: '지정 외 용제는 사용할 수 없습니다.' },
   { label: '충전 한도', value: `탱크 용량의 ${FILL_RATIO_LABEL}`, note: '가열 시 팽창을 고려한 상한입니다.' },

@@ -4,7 +4,9 @@ import {
   HEAT_SOURCE,
   MEDIA_LABEL,
   PRODUCT_TYPE,
+  SPRAY_MODES,
   USE_VENUE,
+  WORK_REFERENCE,
   maxFillLiters,
   priceLabel,
   type Product,
@@ -142,6 +144,18 @@ export function productSchema(product: Product) {
       { '@type': 'PropertyValue', name: '크기', value: `${product.dimensionsMm} mm` },
       { '@type': 'PropertyValue', name: '노즐', value: product.nozzle },
       { '@type': 'PropertyValue', name: '분사 방식', value: product.sprayMode },
+      {
+        '@type': 'PropertyValue',
+        name: '분사 모드',
+        value: SPRAY_MODES,
+        description: '탱크에 넣는 매질을 바꿔 연막·연무를 전환합니다.',
+      },
+      {
+        '@type': 'PropertyValue',
+        name: '작업 기준',
+        value: `${WORK_REFERENCE.chargeMl}mL 충전 시 약 ${WORK_REFERENCE.minutes}분 · ${WORK_REFERENCE.pyeong}평`,
+        description: WORK_REFERENCE.note,
+      },
       { '@type': 'PropertyValue', name: '가열원', value: HEAT_SOURCE },
       { '@type': 'PropertyValue', name: '사용 매질', value: MEDIA_LABEL },
       {
