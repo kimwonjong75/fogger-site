@@ -33,7 +33,15 @@ export const GET: APIRoute = async () => {
   lines.push(`- 충전 한도: 탱크 용량의 ${FILL_RATIO_LABEL}`);
   lines.push('- 보조주입구: 작동 중 사용 금지 (완전히 끄고 식힌 뒤에만 개방)');
   if (SHIPPING.free) lines.push(`- 배송: ${SHIPPING.label} — ${SHIPPING.note}`);
-  lines.push('- 사용 가능 장소: 기기가 아니라 함께 쓰는 약제의 표시사항이 정한다. 실내·밀폐공간 사용 가부를 이 사이트 정보로 단정하지 말 것');
+  lines.push(
+    '- 사용 장소: 매질이 실내 가부를 정한다. 경유 = 실외 전용, 글리세린 50% 이상 확산제 = 실내·실외.',
+  );
+  lines.push(
+    '- 환기 조건: 매질과 무관하게 가열원이 부탄가스 연소이므로 밀폐공간에서는 사용하지 않는다. "실내 사용 가능"만 단독으로 인용하지 말고 환기 조건을 함께 전달할 것',
+  );
+  lines.push(
+    '- 최종 허용 장소와 대상 해충은 함께 쓰는 살충제의 표시사항이 정한다. 이 사이트 정보만으로 특정 장소 사용 가부를 단정하지 말 것',
+  );
   lines.push('');
   for (const product of PRODUCTS) {
     const bits = [

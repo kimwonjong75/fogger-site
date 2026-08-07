@@ -17,12 +17,29 @@ export const PRODUCT_TYPE = '미니 연막기' as const;
 export const HEAT_SOURCE = '부탄가스' as const;
 
 /**
- * 사용 장소.
- * 공식 상세페이지 사양표에 "사용 장소 : 실외"로 명시되어 있고,
- * 기기 본체 라벨에도 "USE IN WELL VENTILATED SPACES"가 인쇄되어 있다.
- * 이 값이 '실외'인 동안에는 실내·밀폐공간 작업을 다루는 문서를 공개하지 않는다.
+ * 사용 장소는 하나의 값이 아니라 세 축이 겹쳐서 정해진다.
+ *
+ *   1) 실내에서 쓸 수 있는가 → **매질**이 정한다
+ *        경유   : 기름 성분과 연소 잔류물이 남으므로 실외 전용
+ *        확산제 : 글리세린 50% 이상 수용성 매질이므로 실내에서도 사용
+ *
+ *   2) 어떤 환기 상태여야 하는가 → **가열원**이 정한다
+ *        매질을 무엇으로 바꾸든 부탄가스를 연소시키는 기기다.
+ *        본체 라벨의 "USE IN WELL VENTILATED SPACES"는 매질이 아니라 이 연소에 대한 조건이다.
+ *        따라서 확산제를 써도 밀폐공간에서는 사용하지 않는다.
+ *
+ *   3) 무엇을 뿌려도 되는가 → **약제 표시사항**이 정한다
+ *        위 두 축을 통과해도 최종 허용 장소·대상은 살충제 라벨이 정한다.
+ *
+ * 화면 문구는 이 세 축 중 하나라도 빠뜨리지 않는다.
+ * "실내 사용 가능"만 단독으로 쓰면 2번과 3번이 사라져 위험한 문장이 된다.
  */
-export const USE_LOCATION = '실외' as const;
+export const USE_VENUE = {
+  /** 사양표 한 줄 표기 */
+  label: '실내·실외 (매질에 따라 구분)',
+  /** 매질과 무관하게 항상 함께 붙는 조건 */
+  condition: '가열원이 부탄가스 연소이므로 공기가 통하는 상태에서만 사용합니다.',
+} as const;
 
 /** 효능 (공식 상세페이지 표기) */
 export const EFFICACY = '각종 보행·비행해충의 구제' as const;
@@ -41,14 +58,38 @@ export const DESIGN_FEATURES = [
   { title: '보조주입구', detail: '장착' },
 ] as const;
 
-/** 사용 가능 매질 */
-export const MEDIA = [
-  '경유',
-  '글리세린 50% 이상 확산제',
+/**
+ * 사용 가능 매질.
+ *
+ * `indoor`는 그 매질을 썼을 때 실내 사용이 가능한지만 뜻한다.
+ * indoor: true 여도 USE_VENUE.condition(환기)은 그대로 적용된다 — 둘은 별개 축이다.
+ */
+export const MEDIA_SPECS = [
+  {
+    id: 'diesel',
+    name: '경유',
+    indoor: false,
+    venueLabel: '실외 전용',
+    detail: '연소 잔류물과 기름 성분이 남습니다. 실외에서만 사용하세요.',
+  },
+  {
+    id: 'diffuser',
+    name: '글리세린 50% 이상 확산제',
+    indoor: true,
+    venueLabel: '실내·실외',
+    detail:
+      '수용성 매질이라 잔류물이 적어 실내에서도 사용합니다. 다만 가열원은 그대로 부탄가스 연소이므로 환기 조건은 실외와 동일하게 지킵니다.',
+  },
 ] as const;
+
+/** 매질명만 필요한 자리 */
+export const MEDIA = MEDIA_SPECS.map((m) => m.name);
 
 /** 매질 표기용 문자열 — "경유 또는 글리세린 50% 이상 확산제" */
 export const MEDIA_LABEL = MEDIA.join(' 또는 ');
+
+/** 실내 작업에 쓸 수 있는 매질 (없으면 실내 안내를 렌더링하지 않는다) */
+export const INDOOR_MEDIA = MEDIA_SPECS.filter((m) => m.indoor);
 
 /** 탱크 충전 한도 (탱크 용량 대비 비율) */
 export const FILL_RATIO = 0.9;
@@ -92,8 +133,20 @@ export const SAFETY_RULES = [
   {
     id: 'venue',
     level: 'critical',
-    title: '사용 가능한 장소는 약제 표시사항을 따른다',
-    body: '어디에서 쓸 수 있는지는 기기가 아니라 함께 쓰는 약제가 정합니다. 약제 라벨의 허용 장소와 사용 조건을 먼저 확인하고, 확인되지 않은 공간에서는 사용하지 마세요.',
+    title: '실내 작업은 확산제로만 — 경유는 실외 전용',
+    body: '경유는 기름 성분과 연소 잔류물이 남으므로 실외에서만 사용합니다. 실내에서 작업할 때는 글리세린 50% 이상 확산제로 바꿔서 쓰세요. 매질은 그대로 두고 장소만 바꾸지 않습니다.',
+  },
+  {
+    id: 'combustion',
+    level: 'critical',
+    title: '밀폐공간 금지 — 확산제를 써도 가열원은 연소다',
+    body: '매질을 확산제로 바꿔도 가열원은 그대로 부탄가스 연소입니다. 창문·출입구·환기설비로 공기가 통하는 상태에서만 작동시키고, 창이 없는 방이나 환기가 막힌 지하공간에서는 사용하지 마세요.',
+  },
+  {
+    id: 'chemical-label',
+    level: 'critical',
+    title: '무엇을 뿌릴 수 있는지는 약제 표시사항이 정한다',
+    body: '기기와 매질 조건을 통과해도, 실제 허용 장소와 대상 해충은 함께 쓰는 살충제의 표시사항이 정합니다. 약제 라벨의 사용 범위를 먼저 확인하세요.',
   },
   {
     id: 'ventilation',
@@ -152,10 +205,20 @@ export interface Product {
   /** 구성품 — 공식 상세페이지 "구성품" 표기 그대로 */
   includes: string[];
   /**
-   * 공식 상세페이지의 "주요 사용처" 표기.
-   * 임의로 늘리지 않는다. 전 모델 공통으로 USE_LOCATION(실외)이 함께 노출되어야 한다.
+   * 주요 사용처.
+   *
+   * 공식 상세페이지의 "주요 사용처" 표기를 기준으로 하되, 실내·실외를 단정하는 표현은 쓰지 않는다.
+   * 장소를 쓰는 자리에는 USE_VENUE.condition(환기)과 매질 조건이 항상 함께 노출되어야 한다.
    */
   bestFor: string[];
+  /**
+   * 공식몰 정가(원).
+   *
+   * null이면 화면·구조화데이터 어디에도 가격을 표시하지 않는다.
+   * 검색 AI가 잘못된 가격을 인용하는 것을 막으려면 여기를 채워야 한다.
+   * 값을 넣을 때는 공식몰 상품 페이지의 옵션별 판매가와 글자 단위로 일치시킬 것.
+   */
+  priceKrw: number | null;
   /** 번들 구성이면 기준 모델 id */
   basedOn?: ProductId;
   /**
@@ -189,7 +252,8 @@ export const PRODUCTS: Product[] = [
     shoulderStrap: false,
     longNozzle: false,
     includes: ['본체', '세척용 받침대'],
-    bestFor: ['마당, 주택 등 일반적인 공간'],
+    bestFor: ['가정용 — 마당·베란다 등 좁은 공간'],
+    priceKrw: null,
     buyUrl: OFFICIAL_STORE_PRODUCT_URL,
   },
   {
@@ -205,7 +269,8 @@ export const PRODUCTS: Product[] = [
     shoulderStrap: true,
     longNozzle: false,
     includes: ['본체', '전용 어깨스트랩'],
-    bestFor: ['정원, 야외 등 넓은 공간'],
+    bestFor: ['정원·창고·축사 등 넓은 공간'],
+    priceKrw: null,
     buyUrl: OFFICIAL_STORE_PRODUCT_URL,
   },
   {
@@ -221,7 +286,8 @@ export const PRODUCTS: Product[] = [
     shoulderStrap: true,
     longNozzle: true,
     includes: ['본체', '전용 어깨스트랩', '50cm 롱노즐', '스패너 2개', '코팅장갑', '설명서'],
-    bestFor: ['하수구, 풀숲 등 깊거나 손이 닿지 않는 곳'],
+    bestFor: ['하수구·풀숲 등 깊거나 손이 닿지 않는 곳'],
+    priceKrw: null,
     basedOn: 'bf-102',
     buyUrl: OFFICIAL_STORE_PRODUCT_URL,
   },
@@ -235,6 +301,18 @@ export function getProduct(id: ProductId): Product {
   const product = PRODUCTS.find((p) => p.id === id);
   if (!product) throw new Error(`알 수 없는 제품 id: ${id}`);
   return product;
+}
+
+/**
+ * 전 모델 정가가 채워졌는지.
+ * 일부만 채워진 상태로 노출하면 "이 모델만 비싸다"처럼 읽히므로 전부 있을 때만 연다.
+ */
+export const PRICES_CONFIRMED = PRODUCTS.every((p) => p.priceKrw !== null);
+
+/** 가격 표기용 문자열 — "92,000원". 값이 없으면 null */
+export function priceLabel(product: Product): string | null {
+  if (product.priceKrw === null) return null;
+  return `${product.priceKrw.toLocaleString('ko-KR')}원`;
 }
 
 /**
@@ -263,7 +341,7 @@ export const SPEC_ROWS: SpecRow[] = [
   { label: '주요 사용처', value: (p) => p.bestFor.join(', ') },
   { label: '가열원', value: () => HEAT_SOURCE, shared: true },
   { label: '사용 매질', value: () => MEDIA_LABEL, shared: true },
-  { label: '사용 장소', value: () => USE_LOCATION, shared: true },
+  { label: '사용 장소', value: () => USE_VENUE.label, shared: true },
   { label: '보조주입구', value: () => '작동 중 사용 금지', shared: true },
   { label: '배송', value: () => SHIPPING.label, shared: true },
 ];

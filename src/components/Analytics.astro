@@ -1,42 +1,44 @@
 ---
-import { GA4_MEASUREMENT_ID } from '../data/site';
+import { GA4_MEASUREMENT_ID, SITE } from '../data/site';
 
 /**
  * GA4 계측.
  *
- * 측정 ID가 실제 값일 때만 gtag.js를 불러온다(자리표시자면 외부 요청 0).
- * 이벤트 바인딩은 항상 출력되므로 ID만 바꾸면 즉시 수집이 시작된다.
+ * 두 가지 조건을 모두 만족할 때만 gtag.js를 불러온다.
+ *  1. 측정 ID가 자리표시자가 아닌 실제 값
+ *  2. 현재 호스트가 운영 도메인
+ *
+ * 2번이 없으면 localhost·프리뷰 배포·스테이징에서 발생한 조회가 운영 통계에 섞인다.
+ * 이 조건은 GA4 관리화면의 내부 트래픽 필터를 대신하지 않는다 — 사무실 IP 필터는 별도로 건다.
  *
  * 수집 이벤트
  *  - purchase_cta_click : utm_content, model, product_id
  *  - model_select       : model, product_id, context
- *  - video_play         : video_id, video_title   (VideoEmbed에서 발생)
- *  - manual_download    : manual_name, file_type
+ *  - video_play         : video_title, video_src   (VideoEmbed에서 발생)
+ *  - safety_print       : manual_name, file_type   (안전수칙 인쇄/PDF 저장 버튼)
  *  - scroll_75          : page_path (페이지당 1회)
  */
 const isRealId = /^G-[A-Z0-9]{6,}$/.test(GA4_MEASUREMENT_ID) && !/^G-X+$/.test(GA4_MEASUREMENT_ID);
 /** 자리표시자 ID는 산출물에 내보내지 않는다 */
 const measurementId = isRealId ? GA4_MEASUREMENT_ID : '';
+/** 계측을 켤 호스트 */
+const analyticsHost = new URL(SITE.url).hostname;
 ---
 
-{
-  isRealId && (
-    <script
-      is:inline
-      async
-      src={`https://www.googletagmanager.com/gtag/js?id=${measurementId}`}
-    />
-  )
-}
-
-<script is:inline define:vars={{ measurementId, isRealId }}>
+<script is:inline define:vars={{ measurementId, isRealId, analyticsHost }}>
   window.dataLayer = window.dataLayer || [];
   function gtag() {
     window.dataLayer.push(arguments);
   }
   window.gtag = window.gtag || gtag;
 
-  if (isRealId) {
+  // 운영 도메인이 아니면 외부 요청 자체를 만들지 않는다.
+  if (isRealId && location.hostname === analyticsHost) {
+    const loader = document.createElement('script');
+    loader.async = true;
+    loader.src = 'https://www.googletagmanager.com/gtag/js?id=' + measurementId;
+    document.head.appendChild(loader);
+
     gtag('js', new Date());
     gtag('config', measurementId, { send_page_view: true });
   }

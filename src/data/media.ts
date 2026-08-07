@@ -26,6 +26,16 @@ export interface VideoAsset {
   caption: string;
 }
 
+/**
+ * 영상이 이 사이트에 게시된 날짜 (ISO).
+ *
+ * schema.org의 uploadDate는 "이 사이트에 업로드된 시점"을 뜻하므로 촬영일이 아니라
+ * 게시일을 쓴다. 전 영상이 2026-08-06에 리포지토리에 추가됐다.
+ * 촬영일·촬영자·게시 동의는 별도로 확인해야 하며, 확인 전에는 "공식"·"제조사 촬영" 같은
+ * 단정 표현을 캡션에 쓰지 않는다.
+ */
+export const VIDEO_PUBLISHED_DATE = '2026-08-06';
+
 /** 공식 사용법 영상 — 원본 1920×1080 113MB를 웹용 1280×720으로 재인코딩 */
 export const HOWTO_VIDEO: VideoAsset = {
   src: '/video/blueguard-fogger-howto.mp4',

@@ -12,23 +12,33 @@ import {
   MEDIA_LABEL,
   PRODUCTS,
   SHIPPING,
+  USE_VENUE,
 } from '../../data/products';
+import { itemListSchema } from '../../lib/schema';
+
+const list = itemListSchema(
+  '/products/',
+  '블루가드 휴대용 연막소독기 라인업',
+  PRODUCTS.map((product) => ({ name: product.name, href: `/products/${product.id}/` })),
+);
 
 const commonFacts = [
   { label: '가열원', value: HEAT_SOURCE },
   { label: '사용 매질', value: MEDIA_LABEL, note: '지정 외 용제는 사용할 수 없습니다.' },
   { label: '충전 한도', value: `탱크 용량의 ${FILL_RATIO_LABEL}`, note: '가열 시 팽창을 고려한 상한입니다.' },
   { label: '보조주입구', value: '작동 중 사용 금지', note: '완전히 끄고 식힌 뒤에만 엽니다.' },
+  { label: '사용 장소', value: USE_VENUE.label, note: USE_VENUE.condition },
   { label: '배송', value: SHIPPING.label, note: SHIPPING.note },
 ];
 ---
 
 <BaseLayout
-  title="연막소독기 제품 라인업"
-  description="블루가드 휴대용 연막소독기 BF-100S, BF-102, BF-102 롱노즐 구성의 사양과 구성품을 한눈에 비교합니다."
+  title="휴대용 연막소독기 제품 라인업"
+  description="블루가드 가정용 휴대용 연막소독기 BF-100S, BF-102, BF-102 롱노즐 구성의 사양과 구성품, 실내외 사용 기준을 비교합니다."
   canonicalPath="/products/"
   ogImage="/og/og-products.png"
   crumbs={[{ name: '제품', href: '/products/' }]}
+  schemaNodes={[list]}
   stickyBuy="generic"
 >
   <p class="eyebrow">제품</p>

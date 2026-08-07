@@ -2,44 +2,73 @@
 import heroImage from '../assets/photo-bf-102.jpg';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ModelCard from '../components/ModelCard.astro';
-import PhotoRequest from '../components/PhotoRequest.astro';
 import Pic from '../components/Pic.astro';
 import SafetyBox from '../components/SafetyBox.astro';
 import ShippingNote from '../components/ShippingNote.astro';
 import StatRow from '../components/StatRow.astro';
 import TrustBar from '../components/TrustBar.astro';
 import VideoEmbed from '../components/VideoEmbed.astro';
-import { MEDIA_LABEL, PRODUCTS } from '../data/products';
-import { CUSTOMER_USE_VIDEOS, HOWTO_VIDEO, QC_VIDEOS } from '../data/media';
-import { HOME_PHOTO_REQUESTS } from '../data/photo-requests';
+import { MEDIA_SPECS, PRODUCTS } from '../data/products';
+import {
+  CUSTOMER_USE_VIDEOS,
+  HOWTO_STEPS,
+  HOWTO_VIDEO,
+  QC_VIDEOS,
+  VIDEO_PUBLISHED_DATE,
+} from '../data/media';
 import { OFFICIAL_STORE_PRODUCT_URL } from '../data/site';
 import { COLLECTION_META, docHref, getPublishedDocs } from '../lib/content';
-import { organizationSchema, websiteSchema } from '../lib/schema';
+import {
+  howToSchema,
+  itemListSchema,
+  organizationSchema,
+  videoSchema,
+  websiteSchema,
+} from '../lib/schema';
 import { withUtm } from '../lib/url';
 
 const guides = (await getPublishedDocs('guides')).slice(0, 4);
 const troubles = (await getPublishedDocs('troubleshooting')).slice(0, 4);
 const evidenceVideos = [...QC_VIDEOS, ...CUSTOMER_USE_VIDEOS];
 const optionUrl = withUtm(OFFICIAL_STORE_PRODUCT_URL, { content: 'home_hero_secondary' });
+
+/** 화면에 렌더링하는 10단계와 같은 순서·문구를 쓴다 */
+const howTo = howToSchema('/', '블루가드 연막소독기 사용방법', HOWTO_STEPS);
+
+const productList = itemListSchema(
+  '/products/',
+  '블루가드 휴대용 연막소독기 라인업',
+  PRODUCTS.map((product) => ({ name: product.name, href: `/products/${product.id}/` })),
+);
+
+/** 대표 사용법 영상 1건만 구조화데이터로 낸다 — 나머지는 보조 클립이라 넣지 않는다 */
+const howToVideo = videoSchema({
+  name: HOWTO_VIDEO.title,
+  description: HOWTO_VIDEO.caption,
+  contentUrl: HOWTO_VIDEO.src,
+  thumbnailUrl: HOWTO_VIDEO.poster.src,
+  durationSec: HOWTO_VIDEO.durationSec,
+  uploadDate: VIDEO_PUBLISHED_DATE,
+});
 ---
 
 <BaseLayout
-  title="블루가드 연막소독기 공식 정보"
-  description="휴대용 부탄가스 연막소독기 BF-100S·BF-102의 사양과 사용법, 안전수칙, 문제해결을 한곳에 모았습니다."
+  title="가정용 휴대용 연막소독기 블루가드"
+  description="가정용·휴대용 연막소독기 블루가드 BF-100S·BF-102 공식 정보. 실내외 매질 기준과 모기 방역 사용법, 안전수칙, 문제해결을 한곳에 모았습니다."
   canonicalPath="/"
   ogImage="/og/og-default.png"
   crumbs={[{ name: '홈', href: '/' }]}
-  schemaNodes={[organizationSchema(), websiteSchema()]}
+  schemaNodes={[organizationSchema(), websiteSchema(), productList, howTo, howToVideo]}
 >
   <Fragment slot="hero">
     <div class="full-bleed hero-band">
       <div class="full-bleed__inner hero">
         <div class="hero__text">
           <p class="eyebrow eyebrow--ink">공식 기술정보</p>
-          <h1>블루가드 연막소독기<br />BF-100S · BF-102</h1>
+          <h1>가정용 휴대용 연막소독기<br />블루가드 BF-100S · BF-102</h1>
           <p class="lede">
-            부탄가스로 작동하는 휴대용 미니 연막기입니다. 모델별 탱크 용량과 노즐 구성, 충전
-            한도와 안전 기준을 공식 사양 그대로 정리했습니다.
+            부탄가스로 작동하는 국산 미니 연막기입니다. 매질을 바꾸면 실내에서도 씁니다. 모델별
+            탱크 용량과 노즐 구성, 충전 한도와 안전 기준을 공식 사양 그대로 정리했습니다.
           </p>
           <div class="hero__actions">
             <a class="hero__cta hero__cta--primary" href="/compare/">모델 차이 비교하기</a>
@@ -54,7 +83,9 @@ const optionUrl = withUtm(OFFICIAL_STORE_PRODUCT_URL, { content: 'home_hero_seco
               공식몰에서 옵션 선택
             </a>
           </div>
-          <p class="hero__media">사용 매질 · {MEDIA_LABEL}</p>
+          <p class="hero__media">
+            {MEDIA_SPECS.map((medium) => `${medium.name} · ${medium.venueLabel}`).join('  /  ')}
+          </p>
         </div>
 
         <div class="hero__figure">
@@ -81,10 +112,11 @@ const optionUrl = withUtm(OFFICIAL_STORE_PRODUCT_URL, { content: 'home_hero_seco
   <SafetyBox title="쓰기 전에 이것만은" compact only={['venue', 'fill-limit', 'aux-inlet']} />
 
   <section aria-labelledby="models">
-    <h2 id="models">모델 고르기</h2>
+    <h2 id="models">어떤 모델을 골라야 하나요?</h2>
     <p class="section-desc">
       본체 구조와 사용 절차는 세 구성이 같습니다. 갈리는 것은 한 번에 담는 양, 들고 다니는 방식,
-      분사구가 닿는 거리입니다.
+      분사구가 닿는 거리입니다. 마당처럼 좁은 곳이면 기본형, 정원·창고처럼 넓은 곳이면 대용량,
+      하수구나 풀숲처럼 손이 닿지 않는 곳이면 롱노즐 구성입니다.
     </p>
     <div class="grid grid--3">
       {PRODUCTS.map((product) => <ModelCard product={product} context="home" />)}
@@ -95,25 +127,64 @@ const optionUrl = withUtm(OFFICIAL_STORE_PRODUCT_URL, { content: 'home_hero_seco
     <ShippingNote />
   </section>
 
-  <section aria-labelledby="evidence">
-    <h2 id="evidence">실물 확인</h2>
+  <section aria-labelledby="venue">
+    <h2 id="venue">실내에서도 쓸 수 있나요?</h2>
     <p class="section-desc">
-      제조 현장과 실제 사용 모습을 담은 촬영본입니다. 아직 확보하지 못한 사진은 자리만 비워
-      두었습니다.
+      쓸 수 있습니다. 다만 <strong>기기가 아니라 매질이 정합니다.</strong> 넣는 매질에 따라 실외
+      전용이 되기도 하고 실내에서도 쓸 수 있게 되기도 합니다.
+    </p>
+    <div class="venue-grid">
+      {
+        MEDIA_SPECS.map((medium) => (
+          <div class="venue-card">
+            <p class="venue-card__where">{medium.venueLabel}</p>
+            <p class="venue-card__name">{medium.name}</p>
+            <p class="venue-card__detail">{medium.detail}</p>
+          </div>
+        ))
+      }
+    </div>
+    <p class="venue-caution">
+      매질을 무엇으로 바꾸든 가열원은 부탄가스 연소입니다. 창문·출입구·환기설비로 공기가 통하는
+      상태에서만 작동시키고, 창이 없는 방이나 환기가 막힌 지하공간에서는 사용하지 마세요.
+      실제 허용 장소와 대상 해충은 함께 쓰는 약제의 표시사항이 정합니다.
+    </p>
+    <p class="section-more">
+      <a href="/guides/choose-media/">매질 고르는 법</a> ·
+      <a href="/guides/fogger-vs-mist-blower/">연막기와 연무기 차이</a>
+    </p>
+  </section>
+
+  <section aria-labelledby="howto">
+    <h2 id="howto">어떻게 사용하나요?</h2>
+    <p class="section-desc">
+      공식 사용법 영상의 10단계입니다. 작업 전 준비부터 점화, 펌핑, 사용 후 세척까지 순서대로
+      따라가면 됩니다.
+    </p>
+    <VideoEmbed video={HOWTO_VIDEO} />
+    <ol class="howto-steps">
+      {
+        HOWTO_STEPS.map((step) => (
+          <li id={`step-${step.no}`}>
+            <strong>{step.title}</strong>
+            <span>{step.body}</span>
+          </li>
+        ))
+      }
+    </ol>
+    <p class="section-more">
+      <a href="/guides/">단계별 상세 문서 보기</a> · <a href="/safety/">안전수칙</a>
+    </p>
+  </section>
+
+  <section aria-labelledby="evidence">
+    <h2 id="evidence">실제로 어떻게 생겼나요?</h2>
+    <p class="section-desc">
+      조립 공정과 실제 분사 장면을 담은 촬영본입니다. 클릭하면 재생됩니다.
     </p>
     <div class="video-row">
       {evidenceVideos.map((video) => <VideoEmbed video={video} />)}
     </div>
-    <PhotoRequest items={HOME_PHOTO_REQUESTS} />
-  </section>
-
-  <section aria-labelledby="howto">
-    <h2 id="howto">공식 사용방법</h2>
-    <p class="section-desc">
-      제조사가 만든 안내 영상입니다. 작업 전 준비부터 약제 충전, 점화, 펌핑, 사용 후 세척까지
-      순서대로 보여줍니다.
-    </p>
-    <VideoEmbed video={HOWTO_VIDEO} />
   </section>
 
   <TrustBar />
@@ -310,6 +381,76 @@ const optionUrl = withUtm(OFFICIAL_STORE_PRODUCT_URL, { content: 'home_hero_seco
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
     gap: 0.9rem;
+  }
+
+  /* 실내외 — 매질 두 개를 나란히 두고 어느 쪽이 어디용인지 한눈에 보이게 한다 */
+  .venue-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 0.9rem;
+    margin-top: 1.25rem;
+  }
+
+  .venue-card {
+    padding: 1.1rem 1.2rem;
+    border: 1px solid var(--c-border);
+    border-radius: 12px;
+    background: var(--c-surface-alt);
+  }
+
+  .venue-card__where {
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--c-accent-ink, var(--c-text));
+  }
+
+  .venue-card__name {
+    margin: 0.3rem 0 0.5rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+  }
+
+  .venue-card__detail {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.65;
+    color: var(--c-text-muted);
+  }
+
+  .venue-caution {
+    margin: 1rem 0 0;
+    padding: 0.9rem 1.05rem;
+    border-left: 3px solid var(--c-border-strong);
+    font-size: 0.88rem;
+    line-height: 1.7;
+    color: var(--c-text-muted);
+  }
+
+  /* 공식 10단계 — 영상 자막을 그대로 옮긴 순서라 번호를 그대로 노출한다 */
+  .howto-steps {
+    margin: 1.5rem 0 0;
+    padding-left: 1.4rem;
+    display: grid;
+    gap: 0.7rem;
+  }
+
+  .howto-steps li {
+    padding-left: 0.2rem;
+  }
+
+  .howto-steps strong {
+    display: block;
+    font-size: 0.97rem;
+  }
+
+  .howto-steps span {
+    display: block;
+    margin-top: 0.2rem;
+    font-size: 0.9rem;
+    line-height: 1.65;
+    color: var(--c-text-muted);
   }
 
   /* 사용법 — 순서가 중요한 콘텐츠라 번호 칩으로 단계처럼 보이게 한다 */

@@ -1,18 +1,26 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import DocList from '../../components/DocList.astro';
-import { COLLECTION_META, getPublishedDocs } from '../../lib/content';
+import { COLLECTION_META, docHref, getPublishedDocs } from '../../lib/content';
+import { itemListSchema } from '../../lib/schema';
 
 const meta = COLLECTION_META.uses;
 const docs = await getPublishedDocs('uses');
+
+const list = itemListSchema(
+  meta.href,
+  meta.title,
+  docs.map((doc) => ({ name: doc.data.title, href: docHref('uses', doc.id) })),
+);
 ---
 
 <BaseLayout
-  title="연막소독기 활용사례"
+  title="장소별 연막소독기 사용법"
   description={meta.description}
   canonicalPath={meta.href}
   ogImage="/og/og-uses.png"
   crumbs={[{ name: meta.label, href: meta.href }]}
+  schemaNodes={[list]}
   noindex={docs.length === 0}
 >
   <h1>{meta.title}</h1>

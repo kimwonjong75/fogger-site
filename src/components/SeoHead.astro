@@ -28,7 +28,14 @@ const {
   updatedDate,
 } = Astro.props;
 
-const TITLE_MAX = 30;
+/**
+ * title 길이 상한.
+ *
+ * 한글 검색결과는 대략 30자 부근에서 잘리지만, 카테고리 키워드("연막소독기")를
+ * 제목에 넣으려면 30자는 너무 빡빡하다. 잘려도 앞부분만으로 뜻이 통하도록 쓰되
+ * 상한 자체는 35자로 둔다. 넘기면 빌드를 세운다 — 조용히 잘리는 것보다 낫다.
+ */
+const TITLE_MAX = 35;
 if ([...title].length > TITLE_MAX) {
   throw new Error(
     `[SeoHead] title은 ${TITLE_MAX}자 이내여야 합니다. (${[...title].length}자) "${title}"`,

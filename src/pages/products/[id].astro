@@ -15,14 +15,17 @@ import {
   MEDIA_LABEL,
   PRODUCTS,
   PRODUCT_TYPE,
+  MEDIA_SPECS,
   SHIPPING,
   STORAGE,
-  USE_LOCATION,
+  USE_VENUE,
   getProduct,
   maxFillLiters,
+  priceLabel,
   type Product,
 } from '../../data/products';
 import { getAllPublishedDocs } from '../../lib/content';
+import { productSchema } from '../../lib/schema';
 import { HOWTO_VIDEO, LONG_NOZZLE_VIDEO } from '../../data/media';
 
 export const getStaticPaths = (() =>
@@ -55,25 +58,29 @@ const facts = [
   { label: '작동 방식', value: HEAT_SOURCE },
   { label: '사용 매질', value: MEDIA_LABEL },
   { label: '효능', value: EFFICACY },
-  { label: '사용 장소', value: USE_LOCATION, note: '공식 상세페이지 사양 표기입니다.' },
+  { label: '사용 장소', value: USE_VENUE.label, note: USE_VENUE.condition },
   { label: '보관 방법', value: STORAGE },
   { label: '보조주입구', value: '작동 중 사용 금지' },
   { label: '배송', value: SHIPPING.label, note: SHIPPING.note },
 ];
+
+const price = priceLabel(product);
+if (price) facts.splice(3, 0, { label: '공식몰 정가', value: price });
 
 const base = product.basedOn ? getProduct(product.basedOn) : null;
 const related = (await getAllPublishedDocs()).slice(0, 3);
 ---
 
 <BaseLayout
-  title={`${product.model} 사양과 구성`}
-  description={`${product.name}의 탱크 용량과 최대 충전량, 구성품, 사용 매질과 안전 기준을 정리했습니다.`}
+  title={`휴대용 연막소독기 ${product.model} 사양`}
+  description={`${product.name}의 탱크 용량과 최대 충전량, 구성품, 실내외 사용 매질과 안전 기준을 공식 사양 그대로 정리했습니다.`}
   canonicalPath={url}
   ogImage="/og/og-products.png"
   crumbs={[
     { name: '제품', href: '/products/' },
     { name: product.model, href: url },
   ]}
+  schemaNodes={[productSchema(product)]}
   stickyBuy={product.id}
 >
   <article>
@@ -129,9 +136,18 @@ const related = (await getAllPublishedDocs()).slice(0, 3);
               <li>{item}</li>
             ))}
           </ul>
+          <h3 class="venue-heading">실내에서도 쓸 수 있나요?</h3>
+          <ul class="venue-list">
+            {MEDIA_SPECS.map((medium) => (
+              <li>
+                <strong>{medium.name}</strong> — {medium.venueLabel}
+                <span>{medium.detail}</span>
+              </li>
+            ))}
+          </ul>
           <p class="venue-note">
-            공식 사양의 사용 장소는 <strong>{USE_LOCATION}</strong>입니다. 함께 쓰는 약제의
-            표시사항에 적힌 허용 장소와 사용 조건을 반드시 먼저 확인하세요.
+            {USE_VENUE.condition} 실제 허용 장소와 대상 해충은 함께 쓰는 약제의 표시사항이
+            정하므로, 작업 전에 라벨을 먼저 확인하세요.
           </p>
         </>
       )
@@ -201,6 +217,34 @@ const related = (await getAllPublishedDocs()).slice(0, 3);
     padding-left: 1.2rem;
     display: grid;
     gap: 0.3rem;
+  }
+
+  .venue-heading {
+    margin: 1.5rem 0 0.6rem;
+    font-size: 1rem;
+  }
+
+  .venue-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .venue-list li {
+    padding: 0.75rem 0.9rem;
+    border: 1px solid var(--c-border);
+    border-radius: 10px;
+    background: var(--c-surface-alt);
+    font-size: 0.9rem;
+  }
+
+  .venue-list span {
+    display: block;
+    margin-top: 0.3rem;
+    font-size: 0.84rem;
+    color: var(--c-text-muted);
   }
 
   .venue-note {

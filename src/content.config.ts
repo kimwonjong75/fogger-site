@@ -27,7 +27,11 @@ const docSchema = ({ image }: SchemaContext) =>
       /** 공개 여부 — false면 라우트·사이트맵·RSS·내부링크에서 모두 제외 */
       published: z.boolean(),
 
-      /** 문서 하단 FAQ — 4~6개 (화면 표시용, FAQPage 스키마는 넣지 않는다) */
+      /**
+       * 문서 하단 FAQ — 4~6개.
+       * 화면(Faq 컴포넌트)과 FAQPage 구조화데이터가 같은 배열을 쓴다.
+       * 화면에 없는 질문을 스키마에만 넣지 않기 위해 소스를 하나로 유지한다.
+       */
       faq: z
         .array(
           z.object({

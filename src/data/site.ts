@@ -85,6 +85,7 @@ export const NAV = [
   { label: '제품', href: '/products/' },
   { label: '모델비교', href: '/compare/' },
   { label: '사용법', href: '/guides/' },
+  { label: '활용사례', href: '/uses/' },
   { label: '문제해결', href: '/troubleshooting/' },
   { label: '안전수칙', href: '/safety/' },
 ] as const;

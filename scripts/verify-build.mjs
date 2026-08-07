@@ -27,7 +27,27 @@ const CONTENT = join(ROOT, 'src', 'content');
 const SITE = 'https://fogger.blueguard.kr';
 const PAGE_BUDGET = 1.2 * 1024 * 1024;
 
-const FORBIDDEN_SCHEMA = ['Offer', 'Product', 'AggregateRating', 'aggregateRating', 'FAQPage', 'HowTo'];
+/**
+ * 구조화데이터 금지 목록.
+ *
+ * Product / FAQPage / HowTo 는 허용으로 바뀌었다 — 화면에 같은 내용이 실제로 있고
+ * 검색·생성형 답변이 제품과 절차를 엔티티로 인식하는 데 필요하다.
+ *
+ * 남겨 둔 것들은 성격이 다르다.
+ *  - Offer / offers / price : 이 사이트는 결제·주문 기능이 없다. 구매할 수 없는 URL에
+ *    Offer를 붙이면 검색엔진이 여기를 판매 페이지로 잘못 인식한다. 가격 구조화데이터는
+ *    실제 거래가 일어나는 공식몰 상품 페이지 쪽에 넣는다.
+ *  - AggregateRating / Review : 확보된 후기 데이터가 없다. 없는 별점을 만들지 않는다.
+ */
+const FORBIDDEN_SCHEMA = [
+  'Offer',
+  'offers',
+  'price',
+  'AggregateRating',
+  'aggregateRating',
+  'Review',
+  'review',
+];
 
 /**
  * 산출물에 남으면 배포를 막아야 하는 자리표시자·잘못된 목적지.
@@ -155,6 +175,8 @@ const titles = new Map();
 /* ---------- 페이지별 검사 ---------- */
 
 const report = [];
+/** noindex가 붙은 페이지의 URL 경로 — 사이트맵과의 모순 검사에 재사용 */
+const noindexPaths = [];
 
 for (const file of pages) {
   const html = readFileSync(file, 'utf8');
@@ -434,6 +456,7 @@ for (const file of pages) {
   if (!hasNoindex && isEmptyIndex) {
     fail(`${where} 공개 문서가 0건인 인덱스인데 noindex가 없습니다 (얇은 페이지)`);
   }
+  if (hasNoindex) noindexPaths.push(urlPath);
 }
 
 /* ---------- 제품 실사 존재 확인 ---------- */
@@ -528,7 +551,14 @@ for (const id of UNPUBLISHED) {
 }
 if (sitemapUrls.some((u) => u.includes('/404'))) fail('[sitemap] 404가 사이트맵에 포함됨');
 
-const expected = pages.map(urlPathFor).filter((p) => p !== '/404/');
+// noindex 페이지가 사이트맵에 있으면 "색인하지 마라"와 "여기 있다"가 서로 모순된다
+for (const path of noindexPaths) {
+  if (sitemapUrls.includes(`${SITE}${path}`)) {
+    fail(`[sitemap] noindex 페이지가 사이트맵에 포함됨: ${path}`);
+  }
+}
+
+const expected = pages.map(urlPathFor).filter((p) => p !== '/404/' && !noindexPaths.includes(p));
 for (const path of expected) {
   if (!sitemapUrls.includes(`${SITE}${path}`)) fail(`[sitemap] 누락: ${path}`);
 }

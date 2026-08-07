@@ -3,10 +3,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import DocList from '../../components/DocList.astro';
 import SafetyBox from '../../components/SafetyBox.astro';
 import { BUSINESS } from '../../data/site';
-import { COLLECTION_META, getPublishedDocs } from '../../lib/content';
+import { COLLECTION_META, docHref, getPublishedDocs } from '../../lib/content';
+import { itemListSchema } from '../../lib/schema';
 
 const meta = COLLECTION_META.troubleshooting;
 const docs = await getPublishedDocs('troubleshooting');
+
+const list = itemListSchema(
+  meta.href,
+  meta.title,
+  docs.map((doc) => ({ name: doc.data.title, href: docHref('troubleshooting', doc.id) })),
+);
 ---
 
 <BaseLayout
@@ -15,6 +22,7 @@ const docs = await getPublishedDocs('troubleshooting');
   canonicalPath={meta.href}
   ogImage="/og/og-troubleshooting.png"
   crumbs={[{ name: meta.label, href: meta.href }]}
+  schemaNodes={[list]}
 >
   <h1>{meta.title}</h1>
   <p class="lede">{meta.description}</p>
