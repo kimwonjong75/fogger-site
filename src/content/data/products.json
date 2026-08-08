@@ -1,0 +1,157 @@
+{
+  "common": {
+    "productType": "미니 연막기",
+    "heatSource": "부탄가스",
+    "sprayModes": "연막·연무 겸용",
+    "efficacy": "각종 보행·비행해충의 구제",
+    "storage": "서늘한 곳 보관",
+    "fillRatioPercent": 90,
+    "domesticPartsPercent": 100,
+    "meshThicknessMm": 2,
+    "coilTempC": 400
+  },
+
+  "useVenue": {
+    "label": "실내·실외 (매질에 따라 구분)",
+    "condition": "가열원이 부탄가스 연소이므로 공기가 통하는 상태에서만 사용합니다."
+  },
+
+  "workReference": {
+    "chargeMl": 1500,
+    "minutes": 30,
+    "pyeong": 300,
+    "note": "충전량 1,500mL 기준의 대략적인 값이며 매질·분사량·현장 조건에 따라 달라집니다."
+  },
+
+  "shipping": {
+    "label": "무료배송",
+    "note": "주문 옵션과 도서·산간 지역에 따라 배송비가 차등 부과될 수 있으며, 반품 시 왕복 배송비 10,000원이 청구됩니다."
+  },
+
+  "designFeatures": [
+    { "title": "전도 방지", "detail": "저중심 설계" },
+    { "title": "통증 방지", "detail": "소프트 트리거" },
+    { "title": "코일 막힘 최소화", "detail": "구조 개선" },
+    { "title": "보조주입구", "detail": "장착" }
+  ],
+
+  "buildQuality": [
+    {
+      "id": "tank",
+      "part": "연료통",
+      "claim": "속이 비치는 신재 원료",
+      "detail": "남은 양이 밖에서 그대로 보입니다.",
+      "howToCheck": "통 너머가 비치는지 보세요. 뿌옇게 탁하면 재생 원료가 섞인 것일 수 있습니다.",
+      "image": "/src/assets/photo-part-tank.jpg",
+      "imageAlt": "블루가드 연막소독기 연료통 클로즈업 — 속이 비치는 신재 원료 통 표면과 주입구"
+    },
+    {
+      "id": "mesh",
+      "part": "철망",
+      "claim": "{{철망두께}}mm 두께",
+      "detail": "가열부는 {{가열온도}}℃가 넘는 자리라 눌러도 주저앉지 않는 두께를 씁니다.",
+      "howToCheck": "엄지로 눌러 보세요. 쑥 들어가면 얇은 것입니다.",
+      "image": "/src/assets/photo-part-mesh.jpg",
+      "imageAlt": "블루가드 연막소독기 철망 클로즈업 — 스테인리스 철망과 체결 나사"
+    },
+    {
+      "id": "nozzle",
+      "part": "노즐",
+      "claim": "황동 조립 부품",
+      "detail": "열전도가 빠른 금속이라 가열식 분사구에 씁니다.",
+      "howToCheck": "노란빛 금속 부품이 조립돼 있으면 황동, 은색 파이프 하나뿐이면 아닙니다.",
+      "image": "/src/assets/photo-part-nozzle.jpg",
+      "imageAlt": "블루가드 연막소독기 노즐 클로즈업 — 황동 조립 부품과 배럴 연결부"
+    },
+    {
+      "id": "piston",
+      "part": "피스톤",
+      "claim": "스테인리스 + 쇠구슬",
+      "detail": "연료를 끌어올리는 부위를 플라스틱으로 만들지 않았습니다.",
+      "howToCheck": "분해해야 보이는 자리입니다. 그래서 저희가 열어서 찍어 두었습니다.",
+      "image": "/src/assets/photo-part-piston.jpg",
+      "imageAlt": "블루가드 연막소독기 피스톤 클로즈업 — 스테인리스 부품과 쇠구슬"
+    },
+    {
+      "id": "gas-joint",
+      "part": "가스 연결부",
+      "claim": "금속 체결",
+      "detail": "가스통이 걸리는 자리를 금속으로 만들었습니다.",
+      "howToCheck": "가스통을 끼우는 부분이 금속인지 플라스틱인지 만져 보세요."
+    }
+  ],
+
+  "mediaSpecs": [
+    {
+      "id": "diesel",
+      "name": "경유",
+      "mode": "연막",
+      "indoor": false,
+      "venueLabel": "실외 전용",
+      "detail": "기름계 매질이라 흰 연막이 짙게 형성됩니다. 연소 잔류물과 기름 성분이 남으므로 실외에서만 사용하세요."
+    },
+    {
+      "id": "diffuser",
+      "name": "글리세린 50% 이상 확산제",
+      "mode": "연무",
+      "indoor": true,
+      "venueLabel": "실내·실외",
+      "detail": "수용성 매질이라 잔류물이 적고 냄새가 덜합니다. 실내에서도 사용하되, 가열원은 그대로 부탄가스 연소이므로 환기 조건은 실외와 동일하게 지킵니다."
+    }
+  ],
+
+  "models": [
+    {
+      "id": "bf-100s",
+      "officialLabel": "기본형",
+      "name": "블루가드 연막소독기 기본형",
+      "tagline": "탱크가 가장 작은 기본형. 세척용 받침대가 함께 들어 있습니다.",
+      "tankLiters": 1.8,
+      "dimensionsMm": "465×265×180",
+      "nozzle": "기본 노즐",
+      "sprayMode": "일반 분사",
+      "shoulderStrap": false,
+      "longNozzle": false,
+      "includes": ["본체", "세척용 받침대"],
+      "bestFor": ["가정용 — 마당·베란다 등 좁은 공간"],
+      "priceKrw": 92000,
+      "image": "/src/assets/photo-bf-100s.jpg",
+      "imageAlt": "블루가드 연막소독기 기본형 — 검은 세척용 받침대를 끼운 본체를 비스듬히 촬영한 제품 사진"
+    },
+    {
+      "id": "bf-102",
+      "officialLabel": "대용량",
+      "name": "블루가드 연막소독기 대용량",
+      "tagline": "탱크가 크고 전용 어깨스트랩이 들어 있어 오래 들고 작업합니다.",
+      "tankLiters": 2.5,
+      "dimensionsMm": "465×360×170",
+      "nozzle": "기본 노즐",
+      "sprayMode": "일반 분사",
+      "shoulderStrap": true,
+      "longNozzle": false,
+      "includes": ["본체", "전용 어깨스트랩"],
+      "bestFor": ["정원·창고·축사 등 넓은 공간"],
+      "priceKrw": 103000,
+      "image": "/src/assets/photo-bf-102.jpg",
+      "imageAlt": "블루가드 연막소독기 대용량 — 흰색 대용량 연료통을 단 본체를 비스듬히 촬영한 제품 사진"
+    },
+    {
+      "id": "bf-102-long-nozzle",
+      "officialLabel": "대용량+롱노즐",
+      "name": "블루가드 연막소독기 대용량+롱노즐",
+      "tagline": "대용량 본체에 50cm 롱노즐을 더해 아래에서 위로 침투 분사합니다.",
+      "tankLiters": 2.5,
+      "dimensionsMm": "465×360×170",
+      "nozzle": "기본 노즐 + 롱노즐 50cm",
+      "sprayMode": "하부침투분사 (아래에서 위로 확산)",
+      "shoulderStrap": true,
+      "longNozzle": true,
+      "includes": ["본체", "전용 어깨스트랩", "50cm 롱노즐", "스패너 2개", "코팅장갑", "설명서"],
+      "bestFor": ["하수구·풀숲 등 깊거나 손이 닿지 않는 곳"],
+      "priceKrw": 113000,
+      "basedOn": "bf-102",
+      "image": "/src/assets/photo-bf-102-long-nozzle.jpg",
+      "imageAlt": "블루가드 연막소독기 대용량 롱노즐 구성 — 50cm 롱노즐을 체결한 본체를 옆에서 촬영한 제품 사진"
+    }
+  ]
+}

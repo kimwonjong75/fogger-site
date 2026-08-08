@@ -14,17 +14,11 @@
  */
 import type { ImageMetadata } from 'astro';
 
-import photoBf100s from '../assets/photo-bf-100s.jpg';
-import photoBf102 from '../assets/photo-bf-102.jpg';
-import photoBf102Long from '../assets/photo-bf-102-long-nozzle.jpg';
-import photoPartTank from '../assets/photo-part-tank.jpg';
-import photoPartMesh from '../assets/photo-part-mesh.jpg';
-import photoPartNozzle from '../assets/photo-part-nozzle.jpg';
-import photoPartPiston from '../assets/photo-part-piston.jpg';
 import photoCleaningBase from '../assets/photo-cleaning-base.jpg';
 
 import { HOME_PAGE } from './pages';
-import { assetFileName } from '../lib/page-content';
+import { BUILD_QUALITY, PRODUCTS } from './products';
+import { assetFileName } from '../lib/assets';
 
 import {
   CUSTOMER_USE_VIDEOS,
@@ -96,79 +90,35 @@ export const PHOTO_SLOTS: PhotoSlotEntry[] = [
     image: HOME_PAGE.works.image.meta,
     editIn: '홈 화면 → 현장 사진 → 사진',
   },
-  {
-    no: '③',
+  /*
+   * 부품 네 칸과 모델 카드는 목록을 손으로 적지 않는다.
+   * 제품 정보(products.json)에서 그대로 읽어 오므로, 사장님이 편집 화면에서 사진을
+   * 바꾸거나 부품을 하나 더 넣어도 이 지도가 저절로 따라온다.
+   */
+  ...BUILD_QUALITY.filter((part) => part.image).map((part, i) => ({
+    no: ['③', '④', '⑤', '⑥'][i] ?? null,
     page: '/',
-    where: '"겉은 비슷해도, 안쪽은 다릅니다" 네 칸 중 1번째',
-    what: '연료통 클로즈업',
+    where: `"겉은 비슷해도, 안쪽은 다릅니다" ${i + 1}번째 칸`,
+    what: `${part.part} 클로즈업`,
     ratio: '1:1',
-    status: 'final',
-    file: 'photo-part-tank.jpg',
-    image: photoPartTank,
-  },
-  {
-    no: '④',
-    page: '/',
-    where: '"겉은 비슷해도, 안쪽은 다릅니다" 네 칸 중 2번째',
-    what: '철망 클로즈업',
-    ratio: '1:1',
-    status: 'final',
-    file: 'photo-part-mesh.jpg',
-    image: photoPartMesh,
-  },
-  {
-    no: '⑤',
-    page: '/',
-    where: '"겉은 비슷해도, 안쪽은 다릅니다" 네 칸 중 3번째',
-    what: '노즐 클로즈업',
-    ratio: '1:1',
-    status: 'final',
-    file: 'photo-part-nozzle.jpg',
-    image: photoPartNozzle,
-  },
-  {
-    no: '⑥',
-    page: '/',
-    where: '"겉은 비슷해도, 안쪽은 다릅니다" 네 칸 중 4번째',
-    what: '피스톤 분해 컷',
-    ratio: '1:1',
-    status: 'final',
-    file: 'photo-part-piston.jpg',
-    image: photoPartPiston,
-  },
-  {
-    no: '⑨',
+    status: 'final' as const,
+    file: assetFileName(part.imagePath!),
+    image: part.image,
+    editIn: `제품 정보 → 부품 사양 → ${part.part} → 사진`,
+  })),
+
+  ...PRODUCTS.map((product, i) => ({
+    no: ['⑨', '⑩', '⑪'][i] ?? null,
     page: '/, /products/, /compare/',
-    where: '모델 카드 — 기본형',
-    what: '기본형 제품 컷',
+    where: `모델 카드 — ${product.officialLabel}`,
+    what: `${product.officialLabel} 제품 컷`,
     ratio: '1:1',
-    status: 'temporary',
-    file: 'photo-bf-100s.jpg',
-    image: photoBf100s,
+    status: 'temporary' as const,
+    file: assetFileName(product.imagePath),
+    image: product.image,
+    editIn: `제품 정보 → 모델 → ${product.officialLabel} → 사진`,
     note: '⑨⑩⑪ 세 컷을 같은 배경·조명·거리로 다시 찍으면 나란히 놓았을 때 어긋나지 않습니다.',
-  },
-  {
-    no: '⑩',
-    page: '/, /products/, /compare/',
-    where: '모델 카드 — 대용량',
-    what: '대용량 제품 컷',
-    ratio: '1:1',
-    status: 'temporary',
-    file: 'photo-bf-102.jpg',
-    image: photoBf102,
-    note: '⑨⑩⑪ 세 컷을 한 번에 찍어 주세요.',
-  },
-  {
-    no: '⑪',
-    page: '/, /products/, /compare/',
-    where: '모델 카드 — 대용량+롱노즐',
-    what: '대용량+롱노즐 제품 컷',
-    ratio: '1:1',
-    status: 'temporary',
-    file: 'photo-bf-102-long-nozzle.jpg',
-    image: photoBf102Long,
-    note: '⑨⑩⑪ 세 컷을 한 번에 찍어 주세요.',
-  },
+  })),
   {
     no: '②',
     page: '/products/기본형/, /products/대용량/, /products/대용량+롱노즐/',

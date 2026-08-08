@@ -7,7 +7,6 @@ import Pic from '../../components/Pic.astro';
 import RelatedGuides from '../../components/RelatedGuides.astro';
 import SafetyBox from '../../components/SafetyBox.astro';
 import VideoEmbed from '../../components/VideoEmbed.astro';
-import { PRODUCT_IMAGES, PRODUCT_IMAGE_ALT } from '../../data/product-images';
 import {
   EFFICACY,
   FILL_RATIO_LABEL,
@@ -101,8 +100,8 @@ const related = (await getAllPublishedDocs()).slice(0, 3);
     <p class="lede">{product.tagline}</p>
 
     <Pic
-      src={PRODUCT_IMAGES[product.id]}
-      alt={PRODUCT_IMAGE_ALT[product.id]}
+      src={product.image}
+      alt={product.imageAlt}
       width={560}
       height={560}
       priority

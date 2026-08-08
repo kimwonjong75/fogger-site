@@ -724,6 +724,9 @@ for (const file of pages) {
 
     for (const collection of config?.collections ?? []) {
       for (const entry of collection.files ?? []) {
+        // 목록 사이에 넣은 구분선 — 편집 항목이 아니다
+        if ('divider' in entry) continue;
+
         const filePath = join(ROOT, entry.file);
         if (size(filePath) === null) {
           fail(`[admin] "${entry.label}" 이 가리키는 ${entry.file} 파일이 없습니다`);
@@ -740,6 +743,63 @@ for (const file of pages) {
 
         compare(entry.fields, value, `"${entry.label}"`, '');
       }
+    }
+  }
+}
+
+/* ---------- 부품 문구 광고 규칙 ----------
+ *
+ * 부품 사양 문구는 원래 코드 주석에 "타사·화재·성능우위를 쓰지 말 것"이라고만 적혀
+ * 있었다. 개발자가 읽고 지키는 전제였는데, 2026-08-08에 이 문구를 편집 화면으로 열면서
+ * 그 전제가 사라졌다 — 사장님은 코드 주석을 보지 않는다.
+ *
+ * 그래서 규칙을 기계가 막게 옮겼다. 근거: 2026-08-07 사장님 지시
+ * (타사 화재사례 사용 금지, 고객 글·영상 인용 금지, 시험 자료 없는 성능 우위 주장 금지).
+ *
+ * 여기서 막는 것은 **부품 사양 문구 안에서만**이다. 안전수칙에서 화재·사고를 말하는 것은
+ * 당연히 정상이므로 검사 대상이 아니다.
+ */
+{
+  const productsPath = join(CONTENT, 'data', 'products.json');
+  if (size(productsPath) !== null) {
+    let products = null;
+    try {
+      products = JSON.parse(readFileSync(productsPath, 'utf8'));
+    } catch (error) {
+      fail(`[제품 정보] products.json 을 읽을 수 없습니다: ${error.message}`);
+    }
+
+    /** 부품 문구에 나오면 안 되는 말 — 왜 안 되는지까지 함께 적는다 */
+    const FORBIDDEN_PART_WORDS = [
+      { pattern: /타사|경쟁사|다른 ?제품|중국산|저가 ?제품|짝퉁|싸구려/, why: '다른 회사 제품을 비교 대상으로 말하면 비교광고가 되어 근거 자료를 요구받습니다' },
+      { pattern: /화재|불이 ?나|폭발|사고|터[졌지]|녹아내/, why: '사고·화재를 암시하면 근거 없는 위해성 주장이 됩니다 (안전수칙 화면에서는 정상입니다)' },
+      { pattern: /몇 ?배|[0-9]+ ?배 (더|이상)|최고|최강|1위|국내 ?유일|world ?best/i, why: '시험 자료 없이 성능 우위를 주장할 수 없습니다' },
+      { pattern: /후기|리뷰|고객[이님]? ?(말|글|올린)|별점/, why: '고객 글·영상 인용은 2026-08-07 지시로 금지돼 있습니다' },
+    ];
+
+    for (const part of products?.buildQuality ?? []) {
+      for (const field of ['claim', 'detail', 'howToCheck']) {
+        const value = part[field];
+        if (typeof value !== 'string') continue;
+        for (const { pattern, why } of FORBIDDEN_PART_WORDS) {
+          const hit = value.match(pattern);
+          if (!hit) continue;
+          fail(
+            `[제품 정보] 부품 "${part.part}" 문구에 "${hit[0]}" 이(가) 들어 있습니다 — ${why}. ` +
+              `편집 화면 → 제품 정보 → 부품 사양 에서 고쳐 주세요`,
+          );
+        }
+      }
+    }
+
+    // "무료배송"을 조건 없이 단독으로 쓰면 표시광고법상 문제가 된다.
+    // 배송 문구를 편집 화면에 열었으므로 조건 문구가 비지 않았는지 확인한다.
+    const shipping = products?.shipping;
+    if (shipping && (!shipping.note || shipping.note.trim().length < 10)) {
+      fail(
+        '[제품 정보] 배송 조건 문구가 비어 있거나 너무 짧습니다 — ' +
+          '"무료배송"만 단독으로 쓰면 도서·산간 추가비와 반품비를 고지하지 않은 것이 됩니다',
+      );
     }
   }
 }
@@ -816,14 +876,18 @@ for (const file of pages) {
    * 지도가 화면 문구 파일에서 파일명을 읽어가기 때문이다 (media-map.ts 의 assetFileName 참조).
    * 그래서 "어딘가에서 쓰이고 있는가"를 볼 때 화면 문구 파일도 함께 본다.
    */
-  const pagesDir = join(CONTENT, 'pages');
   let pageContentText = '';
-  try {
-    for (const file of readdirSync(pagesDir).filter((f) => f.endsWith('.json'))) {
-      pageContentText += readFileSync(join(pagesDir, file), 'utf8');
+  const collectJson = (dir) => {
+    for (const item of readdirSync(dir, { withFileTypes: true })) {
+      const path = join(dir, item.name);
+      if (item.isDirectory()) collectJson(path);
+      else if (item.name.endsWith('.json')) pageContentText += readFileSync(path, 'utf8');
     }
+  };
+  try {
+    collectJson(CONTENT);
   } catch {
-    fail('[화면 문구] src/content/pages 폴더를 찾을 수 없습니다');
+    fail('[편집 내용] src/content 폴더를 읽을 수 없습니다');
   }
 
   const referenced = (name) => map.includes(name) || pageContentText.includes(name);

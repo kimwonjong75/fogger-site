@@ -2,7 +2,6 @@
 import BuyCTA from './BuyCTA.astro';
 import Pic from './Pic.astro';
 import { maxFillLiters, priceLabel, type Product } from '../data/products';
-import { PRODUCT_IMAGES, PRODUCT_IMAGE_ALT } from '../data/product-images';
 import { BUY_CTA_LABEL_SHORT } from '../data/site';
 
 interface Props {
@@ -27,8 +26,8 @@ const price = priceLabel(product);
 <article class:list={['model-card', compact && 'model-card--compact']}>
   <a class="model-card__figure" href={href} tabindex="-1" aria-hidden="true">
     <Pic
-      src={PRODUCT_IMAGES[product.id]}
-      alt={PRODUCT_IMAGE_ALT[product.id]}
+      src={product.image}
+      alt={product.imageAlt}
       width={320}
       height={320}
       sizes="(max-width: 900px) 90vw, 320px"

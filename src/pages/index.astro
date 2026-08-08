@@ -1,9 +1,4 @@
 ---
-import type { ImageMetadata } from 'astro';
-import partTank from '../assets/photo-part-tank.jpg';
-import partMesh from '../assets/photo-part-mesh.jpg';
-import partNozzle from '../assets/photo-part-nozzle.jpg';
-import partPiston from '../assets/photo-part-piston.jpg';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import BuyCTA from '../components/BuyCTA.astro';
 import ModelCard from '../components/ModelCard.astro';
@@ -32,22 +27,14 @@ import { itemListSchema, organizationSchema, videoSchema, websiteSchema } from '
  */
 const page = HOME_PAGE;
 
-/** 홈에는 눈으로 확인 가능한 네 곳만 낸다. 가스 연결부는 제품 상세에서 다룬다 */
-const HOME_PARTS = BUILD_QUALITY.slice(0, 4);
-
-/** BUILD_QUALITY 의 id 와 짝지어 둔다 — 배열 순서가 바뀌어도 사진이 같이 밀리지 않는다 */
-const PART_IMAGES: Record<string, ImageMetadata> = {
-  tank: partTank,
-  mesh: partMesh,
-  nozzle: partNozzle,
-  piston: partPiston,
-};
-const PART_ALT: Record<string, string> = {
-  tank: '블루가드 연막소독기 연료통 클로즈업 — 속이 비치는 신재 원료 통 표면과 주입구',
-  mesh: '블루가드 연막소독기 철망 클로즈업 — 스테인리스 철망과 체결 나사',
-  nozzle: '블루가드 연막소독기 노즐 클로즈업 — 황동 조립 부품과 배럴 연결부',
-  piston: '블루가드 연막소독기 피스톤 클로즈업 — 스테인리스 부품과 쇠구슬',
-};
+/**
+ * 홈의 부품 칸은 **사진이 있는 부품**만 최대 네 개까지 낸다.
+ *
+ * 사진과 설명은 편집 화면(/admin/ → "제품 정보 → 부품 사양")에서 온다.
+ * 사진 없이 글만 있는 부품(가스 연결부)은 여기 네 칸의 격자가 무너지므로 빼고,
+ * 제품 목록 화면의 글 목록에서 계속 보여 준다.
+ */
+const HOME_PARTS = BUILD_QUALITY.filter((part) => part.image).slice(0, 4);
 
 const videoMin = Math.floor(INTRO_VIDEO.durationSec / 60);
 const videoSec = INTRO_VIDEO.durationSec % 60;
@@ -180,8 +167,8 @@ const introVideo = videoSchema({
         HOME_PARTS.map((part) => (
           <article class="part">
             <Pic
-              src={PART_IMAGES[part.id]}
-              alt={PART_ALT[part.id]}
+              src={part.image!}
+              alt={part.imageAlt!}
               width={900}
               height={900}
               sizes="(max-width: 640px) 45vw, 220px"

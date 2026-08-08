@@ -6,6 +6,10 @@
  * (포스터 이미지만 lazy 로드).
  */
 import type { ImageMetadata } from 'astro';
+
+import { PRODUCTS } from './products';
+import howToRaw from '../content/data/howto.json';
+
 import posterIntro from '../assets/video-poster-intro.jpg';
 import posterHowto from '../assets/video-poster-howto.jpg';
 import posterQc1 from '../assets/video-poster-qc1.jpg';
@@ -295,12 +299,18 @@ export const QC_VIDEOS: VideoAsset[] = [
  * 값을 바꿀 때는 누가 언제 확인했는지 함께 갱신한다.
  */
 export const HOWTO_APPROVAL = {
-  /** 적용 구성 — 공식 옵션명으로만 적는다 */
-  appliesTo: ['기본형', '대용량', '대용량+롱노즐'] as string[] | null,
+  /**
+   * 적용 구성 — 공식 옵션명으로만 적는다.
+   * 편집 화면에서 비워 두면 제품 정보의 구성 이름을 순서대로 가져온다. 모델 이름을
+   * 바꿔도 이 줄이 옛 이름으로 남지 않게 하려는 것이다.
+   */
+  appliesTo: (howToRaw.approval.appliesTo.length
+    ? howToRaw.approval.appliesTo
+    : PRODUCTS.map((p) => p.officialLabel)) as string[] | null,
   /** 검토·승인한 사람 */
-  approvedBy: '김원종' as string | null,
+  approvedBy: (howToRaw.approval.approvedBy || null) as string | null,
   /** 승인일 (YYYY-MM-DD) */
-  approvedDate: '2026-08-07' as string | null,
+  approvedDate: (howToRaw.approval.approvedDate || null) as string | null,
 } as const;
 
 /** 승인 표기 문자열 — 승인자와 날짜가 모두 있을 때만 반환 */
@@ -311,55 +321,10 @@ export function howToApprovalLabel(): string | null {
   return `${scope} · ${approvedBy} 검토 (${approvedDate})`;
 }
 
-export const HOWTO_STEPS = [
-  {
-    no: 1,
-    title: '작업 전 준비',
-    body: '작업 전 미리 깨끗한 물을 준비해 주세요. 확산제와 살충제 비율은 50:1입니다. 확산제 1L당 살충제 20ml만 사용하세요.',
-  },
-  {
-    no: 2,
-    title: '작동 전 확인',
-    body: '약제통 결합 후 2~3회 펌핑을 하여 약제가 잘 나오는지 미리 확인합니다.',
-  },
-  {
-    no: 3,
-    title: '부탄가스 장착',
-    body: '위쪽에 부탄가스가 걸리는 부분을 확인하시고 위치를 잘 맞춰서 장착해 주세요.',
-  },
-  {
-    no: 4,
-    title: '가스밸브 열기',
-    body: '가스밸브를 반정도만 연 뒤, 칙~ 하는 소리를 확인하세요.',
-  },
-  {
-    no: 5,
-    title: '점화',
-    body: '점화스위치를 누른 뒤 연기가 나올 때까지 4~10초 정도 손대지 말고 가만히 기다려 주세요.',
-  },
-  {
-    no: 6,
-    title: '계속 펌핑',
-    body: '펌핑을 멈추면 코일 속의 약제가 탄화되어 코일이 막히게 됩니다.',
-  },
-  {
-    no: 7,
-    title: '작업이 끝나면',
-    body: '작업이 끝나면 가스밸브를 돌려서 잠궈주세요.',
-  },
-  {
-    no: 8,
-    title: '부탄가스 분리',
-    body: '부탄가스를 분리해서 보관해 주세요.',
-  },
-  {
-    no: 9,
-    title: '연기 제거',
-    body: '코일 속 연기가 완전히 빠지고 약제만 나올 때까지 계속 펌핑해 주세요.',
-  },
-  {
-    no: 10,
-    title: '물로 청소',
-    body: '미리 준비해둔 깨끗한 물로 코일 속을 청소해 주세요.',
-  },
-] as const;
+/**
+ * 공식 사용법 10단계.
+ *
+ * 번호는 목록 순서에서 자동으로 매긴다 — 편집 화면에서 단계를 옮겼는데 번호가 그대로
+ * 남는 사고를 막기 위해서다. 화면의 step-{번호} 앵커와 HowTo 구조화데이터가 같은 번호를 쓴다.
+ */
+export const HOWTO_STEPS = howToRaw.steps.map((step, i) => ({ no: i + 1, ...step }));

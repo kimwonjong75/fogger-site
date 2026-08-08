@@ -3,55 +3,205 @@
  *
  * 규칙: 사이트의 모든 페이지·컴포넌트는 제품 수치를 이 파일에서만 읽는다.
  * 마크다운 본문을 포함해 어디에서도 용량·비율 등을 하드코딩하지 않는다.
+ *
+ * **값 자체는 `src/content/pages/../data/products.json` 에 있다.**
+ * 2026-08-08에 사장님이 편집 화면(/admin/ → "제품 정보")에서 직접 고칠 수 있도록 옮겼다.
+ * 이 파일은 그 값을 검사하고, 파생값(최대 충전량·매질 표기 등)을 계산해서 내보낸다.
+ *
+ * ⚠️ 옮기기 전 이 파일에는 값마다 "무엇을 보고 확인했는지"가 주석으로 붙어 있었다.
+ *    그 근거는 지운 것이 아니라 두 곳으로 갈라 두었다 —
+ *      · 사장님이 볼 것 → `public/admin/config.yml` 의 각 입력칸 안내문
+ *      · 기계가 막을 것 → `scripts/verify-build.mjs` 의 검사 규칙
+ *    새 값을 넣을 때는 반드시 공식 상세페이지 원문을 직접 확인한다.
  */
+import { z } from 'zod';
+
+import { resolveImage, ASSET_PREFIX } from '../lib/assets';
+import { substitute } from '../lib/tokens';
 import { OFFICIAL_STORE_PRODUCT_URL } from './site';
+import raw from '../content/data/products.json';
+
+const WHERE = '제품 정보';
+
+/* ------------------------------------------------------------------ *
+ * 검사 규칙
+ * ------------------------------------------------------------------ */
+
+const text = z.string().trim().min(1, '빈칸으로 둘 수 없습니다.');
+
+const imagePath = z
+  .string()
+  .trim()
+  .startsWith(ASSET_PREFIX, `사진 경로는 ${ASSET_PREFIX} 로 시작해야 합니다.`);
+
+const imageAltText = z
+  .string()
+  .trim()
+  .min(1)
+  .refine((v) => v.includes(' — '), {
+    message: '사진 설명은 "{무엇} — {어떤 장면}" 형식으로 적어 주세요 (가운데 줄표 앞뒤에 빈칸).',
+  });
+
+const schema = z.object({
+  common: z.object({
+    productType: text,
+    heatSource: text,
+    sprayModes: text,
+    efficacy: text,
+    storage: text,
+    /**
+     * 탱크 충전 한도(%). 가열 시 매질이 팽창하므로 가득 채우면 넘침·역류 위험이 있다.
+     * 안전 수치라 100 을 넣을 수 없게 막는다.
+     */
+    fillRatioPercent: z
+      .number()
+      .int()
+      .min(50, '충전 한도를 50% 미만으로 내릴 이유가 없습니다.')
+      .max(95, '충전 한도는 95%를 넘길 수 없습니다 — 가열 시 팽창분이 넘칠 위험이 있습니다.'),
+    domesticPartsPercent: z.number().int().min(0).max(100),
+    meshThicknessMm: z.number().positive(),
+    coilTempC: z.number().int().positive(),
+  }),
+
+  useVenue: z.object({ label: text, condition: text }),
+
+  workReference: z.object({
+    chargeMl: z.number().int().positive(),
+    minutes: z.number().int().positive(),
+    pyeong: z.number().int().positive(),
+    note: text,
+  }),
+
+  shipping: z.object({ label: text, note: text }),
+
+  designFeatures: z.array(z.object({ title: text, detail: text })).min(1),
+
+  buildQuality: z
+    .array(
+      z
+        .object({
+          id: z.string().regex(/^[a-z][a-z-]*$/, 'id 는 영문 소문자와 붙임표(-)만 씁니다.'),
+          part: text,
+          claim: text,
+          detail: text,
+          howToCheck: text,
+          image: imagePath.optional(),
+          imageAlt: imageAltText.optional(),
+        })
+        // 사진만 넣고 설명을 비우면 화면에 설명 없는 사진이 나간다.
+        // 눈이 안 보이는 분에게는 그 칸이 통째로 사라지는 것과 같다.
+        .refine((part) => !part.image || !!part.imageAlt, {
+          message: '사진을 넣었으면 사진 설명도 채워 주세요.',
+          path: ['imageAlt'],
+        }),
+    )
+    .min(1),
+
+  mediaSpecs: z
+    .array(
+      z.object({
+        id: z.string().regex(/^[a-z][a-z-]*$/),
+        name: text,
+        mode: text,
+        /** 이 매질을 썼을 때 실내에서 쓸 수 있는지. 환기 조건은 별개 축이라 그대로 적용된다 */
+        indoor: z.boolean(),
+        venueLabel: text,
+        detail: text,
+      }),
+    )
+    .min(1),
+
+  models: z
+    .array(
+      z.object({
+        /** 주소에 그대로 쓰인다 — 바꾸면 그 제품 페이지의 주소가 바뀌고 기존 링크가 끊긴다 */
+        id: z.string().regex(/^[a-z0-9][a-z0-9-]*$/, 'id 는 영문 소문자·숫자·붙임표(-)만 씁니다.'),
+        officialLabel: text,
+        name: text,
+        tagline: text,
+        tankLiters: z.number().positive(),
+        dimensionsMm: z.string().regex(/^\d+×\d+×\d+$/, '"465×265×180" 형식으로 적어 주세요.'),
+        nozzle: text,
+        sprayMode: text,
+        shoulderStrap: z.boolean(),
+        longNozzle: z.boolean(),
+        includes: z.array(text).min(1),
+        bestFor: z.array(text).min(1),
+        /** null 이면 화면·구조화데이터 어디에도 가격을 표시하지 않는다 */
+        priceKrw: z.number().int().positive().nullable().default(null),
+        basedOn: z.string().optional(),
+        image: imagePath,
+        imageAlt: imageAltText,
+      }),
+    )
+    .min(1),
+});
+
+const parsed = (() => {
+  const result = schema.safeParse(raw);
+  if (!result.success) {
+    const detail = result.error.issues
+      .map((issue) => `  · ${issue.path.join(' → ') || '(전체)'}: ${issue.message}`)
+      .join('\n');
+    throw new Error(
+      `[${WHERE}] 편집 화면에서 저장한 값이 규칙에 맞지 않습니다.\n${detail}\n` +
+        `(파일: src/content/data/products.json)`,
+    );
+  }
+  return result.data;
+})();
 
 /* ------------------------------------------------------------------ *
  * 전 모델 공통 사양
  * ------------------------------------------------------------------ */
 
+const { common } = parsed;
+
 /** 제품 형식 (공식 상세페이지 표기) */
-export const PRODUCT_TYPE = '미니 연막기' as const;
+export const PRODUCT_TYPE = common.productType;
 
 /** 가열원 */
-export const HEAT_SOURCE = '부탄가스' as const;
+export const HEAT_SOURCE = common.heatSource;
 
 /**
  * 분사 모드.
  * 공식 상세페이지 표기: "연막·연무 한 대로 겸용".
  * 한 기기로 두 모드를 내며, 무엇을 넣느냐로 모드가 갈린다.
  */
-export const SPRAY_MODES = '연막·연무 겸용' as const;
+export const SPRAY_MODES = common.sprayModes;
+
+/** 효능 (공식 상세페이지 표기) */
+export const EFFICACY = common.efficacy;
+
+/** 보관 방법 (공식 상세페이지 표기) */
+export const STORAGE = common.storage;
+
+/** 부품 국산 비율 — "국내 조립"과 "부품 100% 국산"은 전혀 다른 주장이다 */
+export const DOMESTIC_PARTS_PERCENT = common.domesticPartsPercent;
+
+/** 철망 두께(mm) */
+export const MESH_THICKNESS_MM = common.meshThicknessMm;
+
+/** 가열부 도달 온도(℃) — 철망 두께와 노즐 재질이 중요한 이유 */
+export const COIL_TEMP_C = common.coilTempC;
+
+/** 탱크 충전 한도 (탱크 용량 대비 비율) */
+export const FILL_RATIO = common.fillRatioPercent / 100;
+
+/** 충전 한도 표기용 문자열 — "90%" */
+export const FILL_RATIO_LABEL = `${common.fillRatioPercent}%`;
 
 /**
  * 사용 장소는 하나의 값이 아니라 세 축이 겹쳐서 정해진다.
  *
- *   1) 실내에서 쓸 수 있는가 → **매질**이 정한다
- *        경유   : 연막 모드. 기름 성분과 연소 잔류물이 남으므로 실외 전용
- *        확산제 : 연무 모드. 글리세린계 수용성 매질이므로 실내에서도 사용
- *
- *   2) 어떤 환기 상태여야 하는가 → **가열원**이 정한다
- *        매질을 무엇으로 바꾸든 부탄가스를 연소시키는 기기다.
- *        본체 라벨의 "USE IN WELL VENTILATED SPACES"는 매질이 아니라 이 연소에 대한 조건이다.
- *        따라서 확산제를 써도 밀폐공간에서는 사용하지 않는다.
- *
+ *   1) 실내에서 쓸 수 있는가 → **매질**이 정한다 (mediaSpecs 의 indoor)
+ *   2) 어떤 환기 상태여야 하는가 → **가열원**이 정한다 (아래 condition)
  *   3) 무엇을 뿌려도 되는가 → **약제 표시사항**이 정한다
- *        위 두 축을 통과해도 최종 허용 장소·대상은 살충제 라벨이 정한다.
  *
  * 화면 문구는 이 세 축 중 하나라도 빠뜨리지 않는다.
  * "실내 사용 가능"만 단독으로 쓰면 2번과 3번이 사라져 위험한 문장이 된다.
- *
- * ⚠️ 이 파일에 한때 `USE_LOCATION = '실외'` 상수가 "공식 상세페이지 사양표 표기"라는
- *    근거와 함께 있었으나, 2026-08-07 상세페이지를 직접 확인한 결과 본문 텍스트에는
- *    '실외'도 '실내'도 없었다(사양표가 이미지 안에 있음). 근거가 확인되지 않은 주석이었다.
- *    사양 값을 적을 때는 반드시 원문을 직접 확인하고 무엇을 봤는지 함께 남긴다.
  */
-export const USE_VENUE = {
-  /** 사양표 한 줄 표기 */
-  label: '실내·실외 (매질에 따라 구분)',
-  /** 매질과 무관하게 항상 함께 붙는 조건 */
-  condition: '가열원이 부탄가스 연소이므로 공기가 통하는 상태에서만 사용합니다.',
-} as const;
+export const USE_VENUE = parsed.useVenue;
 
 /**
  * 공식 상세페이지 상단 표기 — "1,500ml로 약 30분 · 300평 작업".
@@ -59,183 +209,97 @@ export const USE_VENUE = {
  * 탱크 용량이 아니라 **작업 기준량**이다. 이 값을 사양(탱크 용량)으로 오독한 사례가 있어
  * (생성형 검색 답변이 "용량 1.5L"로 표시) 화면에서는 조건을 반드시 함께 노출한다.
  */
-export const WORK_REFERENCE = {
-  chargeMl: 1500,
-  minutes: 30,
-  pyeong: 300,
-  note: '충전량 1,500mL 기준의 대략적인 값이며 매질·분사량·현장 조건에 따라 달라집니다.',
-} as const;
-
-/** 효능 (공식 상세페이지 표기) */
-export const EFFICACY = '각종 보행·비행해충의 구제' as const;
-
-/** 보관 방법 (공식 상세페이지 표기) */
-export const STORAGE = '서늘한 곳 보관' as const;
-
-/**
- * 제품 설계 특징 (공식 상세페이지 표기).
- * 마케팅 수식어가 아니라 표기된 문구 그대로 옮긴다.
- */
-export const DESIGN_FEATURES = [
-  { title: '전도 방지', detail: '저중심 설계' },
-  { title: '통증 방지', detail: '소프트 트리거' },
-  { title: '코일 막힘 최소화', detail: '구조 개선' },
-  { title: '보조주입구', detail: '장착' },
-] as const;
-
-/* ------------------------------------------------------------------ *
- * 부품 사양 — 2026-08-07 사장님 확인
- * ------------------------------------------------------------------ */
-
-/**
- * 부품 국산 비율.
- *
- * "국내 조립"과 "부품 100% 국산"은 전혀 다른 주장이다. 저가 부품을 들여와 국내에서
- * 조립만 하고 '국내산'으로 파는 사례가 있어, 이 값이 100 미만으로 바뀌면 화면 문구도
- * 함께 낮춰야 한다. 근거: 2026-08-07 사장님 확인.
- */
-export const DOMESTIC_PARTS_PERCENT = 100;
-
-/** 철망 두께(mm) — 2026-08-07 사장님 확인 */
-export const MESH_THICKNESS_MM = 2;
-
-/**
- * 가열부 도달 온도(℃).
- * 이 온도가 철망 두께와 노즐 재질이 중요한 이유다. 근거: 2026-08-07 사장님 확인.
- */
-export const COIL_TEMP_C = 400;
-
-/**
- * 눈으로 확인할 수 있는 부품 사양.
- *
- * 고객이 올린 비교 글(부위 4곳)이 계기가 됐지만 **그 글은 근거가 아니다.**
- * 아래 값은 전부 사장님이 실물로 확인해 답한 내용이며(2026-08-07), 확인되지 않은 항목은
- * 넣지 않는다.
- *
- * ⚠️ 문구 규칙 — 어기면 광고 리스크가 코드에서 화면으로 그대로 흘러간다.
- *   1) `claim`·`detail`은 **자사 사양만** 말한다. 타사·중국산·화재·사고를 언급하지 않는다.
- *   2) `howToCheck`는 우리 제품이 아니어도 쓸 수 있는 **일반적인 육안 확인법**으로 쓴다.
- *      "우리 것이 낫다"가 아니라 "이렇게 확인하세요"라서 비교 주장이 되지 않는다.
- *   3) 성능 우위("연막이 몇 배 풍성하다" 등)는 시험 자료 없이 쓰지 않는다.
- *
- * (2026-08-07 사장님 지시: 타사 화재사례 사용 금지, 고객 글·영상 인용 금지)
- */
-export const BUILD_QUALITY = [
-  {
-    id: 'tank',
-    part: '연료통',
-    claim: '속이 비치는 신재 원료',
-    detail: '남은 양이 밖에서 그대로 보입니다.',
-    howToCheck: '통 너머가 비치는지 보세요. 뿌옇게 탁하면 재생 원료가 섞인 것일 수 있습니다.',
-  },
-  {
-    id: 'mesh',
-    part: '철망',
-    claim: `${MESH_THICKNESS_MM}mm 두께`,
-    detail: `가열부는 ${COIL_TEMP_C}℃가 넘는 자리라 눌러도 주저앉지 않는 두께를 씁니다.`,
-    howToCheck: '엄지로 눌러 보세요. 쑥 들어가면 얇은 것입니다.',
-  },
-  {
-    id: 'nozzle',
-    part: '노즐',
-    claim: '황동 조립 부품',
-    detail: '열전도가 빠른 금속이라 가열식 분사구에 씁니다.',
-    howToCheck: '노란빛 금속 부품이 조립돼 있으면 황동, 은색 파이프 하나뿐이면 아닙니다.',
-  },
-  {
-    id: 'piston',
-    part: '피스톤',
-    claim: '스테인리스 + 쇠구슬',
-    detail: '연료를 끌어올리는 부위를 플라스틱으로 만들지 않았습니다.',
-    howToCheck: '분해해야 보이는 자리입니다. 그래서 저희가 열어서 찍어 두었습니다.',
-  },
-  {
-    id: 'gas-joint',
-    part: '가스 연결부',
-    claim: '금속 체결',
-    detail: '가스통이 걸리는 자리를 금속으로 만들었습니다.',
-    howToCheck: '가스통을 끼우는 부분이 금속인지 플라스틱인지 만져 보세요.',
-  },
-] as const;
-
-/**
- * 사용 가능 매질.
- *
- * `indoor`는 그 매질을 썼을 때 실내 사용이 가능한지만 뜻한다.
- * indoor: true 여도 USE_VENUE.condition(환기)은 그대로 적용된다 — 둘은 별개 축이다.
- */
-export const MEDIA_SPECS = [
-  {
-    id: 'diesel',
-    name: '경유',
-    mode: '연막',
-    indoor: false,
-    venueLabel: '실외 전용',
-    detail:
-      '기름계 매질이라 흰 연막이 짙게 형성됩니다. 연소 잔류물과 기름 성분이 남으므로 실외에서만 사용하세요.',
-  },
-  {
-    id: 'diffuser',
-    name: '글리세린 50% 이상 확산제',
-    mode: '연무',
-    indoor: true,
-    venueLabel: '실내·실외',
-    detail:
-      '수용성 매질이라 잔류물이 적고 냄새가 덜합니다. 실내에서도 사용하되, 가열원은 그대로 부탄가스 연소이므로 환기 조건은 실외와 동일하게 지킵니다.',
-  },
-] as const;
-
-/** 매질명만 필요한 자리 */
-export const MEDIA = MEDIA_SPECS.map((m) => m.name);
-
-/** 매질 표기용 문자열 — "경유 또는 글리세린 50% 이상 확산제" */
-export const MEDIA_LABEL = MEDIA.join(' 또는 ');
-
-/** 실내 작업에 쓸 수 있는 매질 (없으면 실내 안내를 렌더링하지 않는다) */
-export const INDOOR_MEDIA = MEDIA_SPECS.filter((m) => m.indoor);
-
-/** 탱크 충전 한도 (탱크 용량 대비 비율) */
-export const FILL_RATIO = 0.9;
-
-/** 충전 한도 표기용 문자열 — "90%" */
-export const FILL_RATIO_LABEL = `${Math.round(FILL_RATIO * 100)}%`;
+export const WORK_REFERENCE = parsed.workReference;
 
 /**
  * 배송 정책.
  * `label`만 단독으로 쓰지 말고 조건이 들어갈 자리에는 반드시 `note`를 함께 노출한다.
+ * (검증기가 "무료배송"이 나온 페이지에 조건 문구가 있는지 검사한다)
  */
-export const SHIPPING = {
-  free: true,
-  label: '무료배송',
-  note: '주문 옵션과 도서·산간 지역에 따라 배송비가 차등 부과될 수 있으며, 반품 시 왕복 배송비 10,000원이 청구됩니다.',
-} as const;
+export const SHIPPING = { free: true, ...parsed.shipping } as const;
+
+/** 제품 설계 특징 (공식 상세페이지 표기) */
+export const DESIGN_FEATURES = parsed.designFeatures;
+
+/* ------------------------------------------------------------------ *
+ * 자리표시자 — 제품 데이터 안에서 쓸 수 있는 이름
+ * ------------------------------------------------------------------ */
+
+/** 매질명만 필요한 자리 */
+export const MEDIA = parsed.mediaSpecs.map((m) => m.name);
+
+/** 매질 표기용 문자열 — "경유 또는 글리세린 50% 이상 확산제" */
+export const MEDIA_LABEL = MEDIA.join(' 또는 ');
 
 /**
- * 전 모델 공통 안전 규칙은 이 파일에 없다.
- *
- * 2026-08-08에 `src/content/pages/safety.json` 으로 옮겼다 — 사장님이 편집 화면에서
- * 직접 고칠 수 있어야 했기 때문이다. 숫자(충전 한도·가열원 등)는 여전히 이 파일에서
- * 오고, 문구 쪽에는 `{{충전한도}}` 같은 자리표시자로 들어간다.
- *
- * 읽을 때는 `import { SAFETY_RULES } from './pages'` 를 쓴다.
- * 화면이 id 로 지목하는 규칙 목록은 `REQUIRED_RULE_IDS` 참조.
+ * 제품 데이터 문구 안에서 쓸 수 있는 자리표시자.
+ * 화면 문구 쪽 표(`src/lib/page-content.ts` 의 TOKENS)가 이것을 그대로 물려받는다.
  */
+export const PRODUCT_TOKENS: Record<string, string> = {
+  가열원: HEAT_SOURCE,
+  분사모드: SPRAY_MODES,
+  매질: MEDIA_LABEL,
+  충전한도: FILL_RATIO_LABEL,
+  국산비율: String(DOMESTIC_PARTS_PERCENT),
+  철망두께: String(MESH_THICKNESS_MM),
+  가열온도: String(COIL_TEMP_C),
+  사용장소: USE_VENUE.label,
+  환기조건: USE_VENUE.condition,
+  배송: SHIPPING.label,
+  배송조건: SHIPPING.note,
+};
+
+const fill = (value: string) => substitute(value, PRODUCT_TOKENS, WHERE);
+
+/* ------------------------------------------------------------------ *
+ * 부품 사양
+ * ------------------------------------------------------------------ */
+
+/**
+ * 눈으로 확인할 수 있는 부품 사양.
+ *
+ * ⚠️ 문구 규칙 — 어기면 광고 리스크가 데이터에서 화면으로 그대로 흘러간다.
+ *   1) `claim`·`detail`은 **자사 사양만** 말한다. 타사·중국산·화재·사고를 언급하지 않는다.
+ *   2) `howToCheck`는 우리 제품이 아니어도 쓸 수 있는 **일반적인 육안 확인법**으로 쓴다.
+ *   3) 성능 우위("연막이 몇 배 풍성하다" 등)는 시험 자료 없이 쓰지 않는다.
+ *
+ * (2026-08-07 사장님 지시: 타사 화재사례 사용 금지, 고객 글·영상 인용 금지)
+ *
+ * 편집 화면을 열면서 이 규칙을 사람이 기억하는 것에 맡길 수 없게 됐다.
+ * `scripts/verify-build.mjs` 의 "부품 문구 광고 규칙" 검사가 기계로 막는다.
+ */
+export const BUILD_QUALITY = parsed.buildQuality.map((part) => ({
+  ...part,
+  claim: fill(part.claim),
+  detail: fill(part.detail),
+  howToCheck: fill(part.howToCheck),
+  image: part.image ? resolveImage(part.image, WHERE) : undefined,
+  imagePath: part.image,
+}));
+
+/* ------------------------------------------------------------------ *
+ * 매질
+ * ------------------------------------------------------------------ */
+
+export const MEDIA_SPECS = parsed.mediaSpecs.map((medium) => ({
+  ...medium,
+  detail: fill(medium.detail),
+}));
+
+/** 실내 작업에 쓸 수 있는 매질 (없으면 실내 안내를 렌더링하지 않는다) */
+export const INDOOR_MEDIA = MEDIA_SPECS.filter((m) => m.indoor);
 
 /* ------------------------------------------------------------------ *
  * 모델
  * ------------------------------------------------------------------ */
 
-export type ProductId = 'bf-100s' | 'bf-102' | 'bf-102-long-nozzle';
+export type ProductId = string;
 
 /**
  * 탱크 용량 확인 완료 (2026-08-06).
  *
- *   BF-100S 기본형  탱크 1.8L  → 90% 미만 권장이므로 최대 1.62L
- *   BF-102  대용량  탱크 2.5L  → 90% 미만 권장이므로 최대 2.25L
- *
  * 근거: 공식 상세페이지 사양표("기본형 연료통 최대 1800ml / 대용량 최대 2500ml"),
  *       모델별 비교표("용량 1.8L / 2.5L"), 사용설명서 책자 파일명(BF-100S_102_사용설명서).
- * 값을 바꿀 때는 근거 문서를 함께 갱신한다.
  */
 export const TANK_SPEC_CONFIRMED = true;
 
@@ -247,49 +311,24 @@ export interface Product {
    * 공식몰 옵션 드롭다운 표기(기본형 / 대용량 / 대용량+롱노즐)와 글자 단위로 일치시킨다.
    * 내부 도면상의 모델 번호(BF-…)는 화면 어디에도 쓰지 않는다 — 고객이 주문할 때
    * 보는 이름과 사이트가 부르는 이름이 다르면 같은 제품인지 확인이 안 된다.
-   * 이 규칙 때문에 `model` 필드는 의도적으로 두지 않았다.
    */
   officialLabel: string;
-  /** 화면 표기용 전체 이름 */
   name: string;
-  /** 모델 간 차이를 사양으로만 설명한 한 줄 요약 (사용 장소를 권하지 않는다) */
   tagline: string;
-  /** 탱크 총 용량(L) — TANK_SPEC_CONFIRMED 참조 */
   tankLiters: number;
-  /** 외형 치수 (가로×세로×높이, mm) — 공식 상세페이지 표기 */
   dimensionsMm: string;
-  /** 노즐 구성 — 공식 상세페이지 표기 */
   nozzle: string;
-  /** 분사 방식 — 공식 상세페이지 표기 */
   sprayMode: string;
-  /** 어깨끈 포함 여부 */
   shoulderStrap: boolean;
-  /** 롱노즐 포함 여부 */
   longNozzle: boolean;
-  /** 구성품 — 공식 상세페이지 "구성품" 표기 그대로 */
   includes: string[];
-  /**
-   * 주요 사용처.
-   *
-   * 공식 상세페이지의 "주요 사용처" 표기를 기준으로 하되, 실내·실외를 단정하는 표현은 쓰지 않는다.
-   * 장소를 쓰는 자리에는 USE_VENUE.condition(환기)과 매질 조건이 항상 함께 노출되어야 한다.
-   */
   bestFor: string[];
-  /**
-   * 공식몰 정가(원).
-   *
-   * null이면 화면·구조화데이터 어디에도 가격을 표시하지 않는다.
-   * 검색 AI가 잘못된 가격을 인용하는 것을 막으려면 여기를 채워야 한다.
-   * 값을 넣을 때는 공식몰 상품 페이지의 옵션별 판매가와 글자 단위로 일치시킬 것.
-   */
   priceKrw: number | null;
-  /** 번들 구성이면 기준 모델 id */
-  basedOn?: ProductId;
-  /**
-   * 공식몰 구매 URL.
-   * 현재 세 모델 모두 같은 상품 페이지의 옵션으로 판매되므로 동일 URL을 가리킨다.
-   */
+  basedOn?: string;
   buyUrl: string;
+  image: import('astro').ImageMetadata;
+  imageAlt: string;
+  imagePath: string;
 }
 
 /** 탱크 용량으로부터 최대 충전량(L)을 계산 — 소수 둘째 자리 반올림 */
@@ -297,62 +336,21 @@ export function maxFillLiters(tankLiters: number): number {
   return Math.round(tankLiters * FILL_RATIO * 100) / 100;
 }
 
-/**
- * 모델 데이터.
- * tagline을 제외한 모든 값은 공식 상세페이지 표기를 그대로 옮긴 것이다.
- * 확인되지 않은 값은 추가하지 않는다.
- */
-export const PRODUCTS: Product[] = [
-  {
-    id: 'bf-100s',
-    officialLabel: '기본형',
-    name: '블루가드 연막소독기 기본형',
-    tagline: '탱크가 가장 작은 기본형. 세척용 받침대가 함께 들어 있습니다.',
-    tankLiters: 1.8,
-    dimensionsMm: '465×265×180',
-    nozzle: '기본 노즐',
-    sprayMode: '일반 분사',
-    shoulderStrap: false,
-    longNozzle: false,
-    includes: ['본체', '세척용 받침대'],
-    bestFor: ['가정용 — 마당·베란다 등 좁은 공간'],
-    priceKrw: 92000,
-    buyUrl: OFFICIAL_STORE_PRODUCT_URL,
-  },
-  {
-    id: 'bf-102',
-    officialLabel: '대용량',
-    name: '블루가드 연막소독기 대용량',
-    tagline: '탱크가 크고 전용 어깨스트랩이 들어 있어 오래 들고 작업합니다.',
-    tankLiters: 2.5,
-    dimensionsMm: '465×360×170',
-    nozzle: '기본 노즐',
-    sprayMode: '일반 분사',
-    shoulderStrap: true,
-    longNozzle: false,
-    includes: ['본체', '전용 어깨스트랩'],
-    bestFor: ['정원·창고·축사 등 넓은 공간'],
-    priceKrw: 103000,
-    buyUrl: OFFICIAL_STORE_PRODUCT_URL,
-  },
-  {
-    id: 'bf-102-long-nozzle',
-    officialLabel: '대용량+롱노즐',
-    name: '블루가드 연막소독기 대용량+롱노즐',
-    tagline: '대용량 본체에 50cm 롱노즐을 더해 아래에서 위로 침투 분사합니다.',
-    tankLiters: 2.5,
-    dimensionsMm: '465×360×170',
-    nozzle: '기본 노즐 + 롱노즐 50cm',
-    sprayMode: '하부침투분사 (아래에서 위로 확산)',
-    shoulderStrap: true,
-    longNozzle: true,
-    includes: ['본체', '전용 어깨스트랩', '50cm 롱노즐', '스패너 2개', '코팅장갑', '설명서'],
-    bestFor: ['하수구·풀숲 등 깊거나 손이 닿지 않는 곳'],
-    priceKrw: 113000,
-    basedOn: 'bf-102',
-    buyUrl: OFFICIAL_STORE_PRODUCT_URL,
-  },
-];
+export const PRODUCTS: Product[] = parsed.models.map((model) => ({
+  ...model,
+  tagline: fill(model.tagline),
+  includes: model.includes.map(fill),
+  bestFor: model.bestFor.map(fill),
+  image: resolveImage(model.image, WHERE),
+  imageAlt: model.imageAlt,
+  imagePath: model.image,
+  /**
+   * 공식몰 구매 URL.
+   * 세 모델 모두 같은 상품 페이지의 옵션으로 팔리므로 동일 URL을 가리킨다.
+   * 이 주소는 편집 화면에 열지 않았다 — 검증기가 상품번호를 대조해서 막고 있다.
+   */
+  buyUrl: OFFICIAL_STORE_PRODUCT_URL,
+}));
 
 /* ------------------------------------------------------------------ *
  * 조회 헬퍼
@@ -375,12 +373,6 @@ export function priceLabel(product: Product): string | null {
   if (product.priceKrw === null) return null;
   return `${product.priceKrw.toLocaleString('ko-KR')}원`;
 }
-
-/**
- * 기본 추천 모델은 두지 않는다.
- * 공식몰이 단일 상품 + 옵션 선택 구조이고, 어떤 모델을 권할 근거도 확정되지 않았다.
- * 모델이 특정되지 않은 CTA는 모델명 없이 옵션 선택 페이지로 보낸다.
- */
 
 /** 비교표 행 정의 — 모델비교 페이지와 제품 페이지 FactTable이 공유 */
 export interface SpecRow {

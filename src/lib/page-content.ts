@@ -15,22 +15,15 @@
  * 셋 다 **빌드 때** 돈다. 잘못된 값이 저장되면 빌드가 실패하고, 빌드가 실패하면
  * 배포가 안 되므로 사이트는 직전 버전 그대로 남는다 (vercel.json 참조).
  */
-import type { ImageMetadata } from 'astro';
 import { z } from 'zod';
 
+import { ASSET_PREFIX, resolveImage } from './assets';
+import { substitute } from './tokens';
 import { BUSINESS } from '../data/site';
 import {
-  COIL_TEMP_C,
-  DOMESTIC_PARTS_PERCENT,
-  FILL_RATIO_LABEL,
-  HEAT_SOURCE,
-  MEDIA_LABEL,
   MEDIA_SPECS,
-  MESH_THICKNESS_MM,
   PRODUCTS,
-  SHIPPING,
-  SPRAY_MODES,
-  USE_VENUE,
+  PRODUCT_TOKENS,
   WORK_REFERENCE,
   maxFillLiters,
 } from '../data/products';
@@ -52,33 +45,36 @@ import {
  * 새 자리표시자가 필요하면 여기 한 줄을 더하고 config.yml 의 안내문도 같이 고친다.
  */
 export const TOKENS: Record<string, string> = {
-  /* 제품 구성 이름 (공식 옵션명) */
+  /* 제품 정보 쪽에서 이미 정의한 것 — 가열원·매질·충전한도·국산비율·배송 등 */
+  ...PRODUCT_TOKENS,
+
+  /**
+   * 모델별 값.
+   *
+   * 첫 번째·두 번째 모델을 "기본형"·"대용량"으로 부르는 것이 아니라, 제품 정보에 적힌
+   * 순서대로 1·2·3번을 가리킨다. 이름표를 바꿔도 자리표시자는 따라온다.
+   */
+  ...Object.fromEntries(
+    PRODUCTS.flatMap((product, i) => [
+      [`${i + 1}번모델`, product.officialLabel],
+      [`${i + 1}번모델탱크`, `${product.tankLiters}L`],
+      [`${i + 1}번모델최대충전`, `${maxFillLiters(product.tankLiters)}L`],
+      [`${i + 1}번모델최장변`, product.dimensionsMm.split('×')[0]!],
+    ]),
+  ),
+
+  /* 지금 쓰고 있는 이름 그대로도 쓸 수 있게 둔다 — 기존 문구를 깨지 않기 위해 */
   기본형: PRODUCTS[0]!.officialLabel,
-  대용량: PRODUCTS[1]!.officialLabel,
-  롱노즐구성: PRODUCTS[2]!.officialLabel,
-
-  /* 용량 */
+  대용량: PRODUCTS[1]?.officialLabel ?? PRODUCTS[0]!.officialLabel,
+  롱노즐구성: PRODUCTS[2]?.officialLabel ?? PRODUCTS[0]!.officialLabel,
   기본형탱크: `${PRODUCTS[0]!.tankLiters}L`,
-  대용량탱크: `${PRODUCTS[1]!.tankLiters}L`,
+  대용량탱크: `${PRODUCTS[1]?.tankLiters ?? PRODUCTS[0]!.tankLiters}L`,
   기본형최대충전: `${maxFillLiters(PRODUCTS[0]!.tankLiters)}L`,
-  대용량최대충전: `${maxFillLiters(PRODUCTS[1]!.tankLiters)}L`,
-  충전한도: FILL_RATIO_LABEL,
-
-  /* 크기 — "465×265×180" 의 가장 긴 변 */
+  대용량최대충전: `${maxFillLiters(PRODUCTS[1]?.tankLiters ?? PRODUCTS[0]!.tankLiters)}L`,
   기본형최장변: PRODUCTS[0]!.dimensionsMm.split('×')[0]!,
 
-  /* 공통 사양 */
-  분사모드: SPRAY_MODES,
-  가열원: HEAT_SOURCE,
-  매질: MEDIA_LABEL,
+  /* 매질별 사용 장소를 한 줄로 — "경유 실외 전용, 확산제 실내·실외" */
   매질별장소: MEDIA_SPECS.map((m) => `${m.name} ${m.venueLabel}`).join(', '),
-  사용장소: USE_VENUE.label,
-  환기조건: USE_VENUE.condition,
-
-  /* 부품 */
-  국산비율: String(DOMESTIC_PARTS_PERCENT),
-  철망두께: String(MESH_THICKNESS_MM),
-  가열온도: String(COIL_TEMP_C),
 
   /* 작업 기준량 — 탱크 용량이 아니라 "1,500mL로 약 30분·300평" 쪽 값이다 */
   작업기준량: WORK_REFERENCE.chargeMl.toLocaleString('ko-KR'),
@@ -86,77 +82,16 @@ export const TOKENS: Record<string, string> = {
   작업면적: String(WORK_REFERENCE.pyeong),
   작업기준주석: WORK_REFERENCE.note,
 
-  /* 배송·연락처 */
-  배송: SHIPPING.label,
-  배송조건: SHIPPING.note,
+  /* 연락처 */
   이메일: BUSINESS.email,
 };
 
 /** 편집 화면 안내문에 그대로 붙이는 목록 — 쓸 수 있는 이름을 사장님이 볼 수 있어야 한다 */
 export const TOKEN_NAMES = Object.keys(TOKENS);
 
-const TOKEN_PATTERN = /\{\{\s*([^}\s]+)\s*\}\}/g;
-
-/**
- * `{{이름}}` 을 실제 값으로 바꾼다.
- * 모르는 이름이면 조용히 남기지 않고 빌드를 세운다 — 화면에 `{{오타}}` 가 그대로
- * 찍히는 것보다 배포가 막히는 편이 낫다.
- */
+/** `{{이름}}` 을 실제 값으로 바꾼다. 모르는 이름이면 빌드를 세운다. */
 export function fillTokens(text: string, where: string): string {
-  return text.replace(TOKEN_PATTERN, (whole, name: string) => {
-    const value = TOKENS[name];
-    if (value === undefined) {
-      throw new Error(
-        `[${where}] 쓸 수 없는 자리표시자 "${whole}" 입니다.\n` +
-          `쓸 수 있는 이름: ${TOKEN_NAMES.join(', ')}`,
-      );
-    }
-    return value;
-  });
-}
-
-/* ------------------------------------------------------------------ *
- * 2. 사진 경로 해석
- * ------------------------------------------------------------------ */
-
-/**
- * `src/assets` 안의 모든 사진을 미리 읽어 둔다.
- *
- * astro:assets 는 원래 파일마다 `import` 문을 적어야 하는데, 그러면 편집 화면에서
- * 올린 사진은 import 문이 없으니 화면에 붙지 않는다. glob 으로 폴더 전체를 미리
- * 잡아 두면 **경로 문자열만으로** 사진을 찾을 수 있어 편집 화면에서 올린 사진이
- * 바로 반영된다. 크기 최적화(AVIF/WebP 변환)는 그대로 적용된다.
- */
-const ASSETS = import.meta.glob<{ default: ImageMetadata }>(
-  '/src/assets/**/*.{jpg,jpeg,png,webp,JPG,JPEG,PNG,WEBP}',
-  { eager: true },
-);
-
-/** 편집 화면이 저장하는 경로 형태 — public_folder 설정과 짝을 이룬다 */
-const ASSET_PREFIX = '/src/assets/';
-
-/**
- * 저장된 경로("/src/assets/photo-bf-102.jpg")를 실제 이미지로 바꾼다.
- * 파일이 없으면 빌드를 세운다 — 깨진 사진이 사이트에 나가지 않게 한다.
- */
-export function resolveImage(path: string, where: string): ImageMetadata {
-  const found = ASSETS[path];
-  if (!found) {
-    const available = Object.keys(ASSETS)
-      .map((p) => p.replace(ASSET_PREFIX, ''))
-      .join(', ');
-    throw new Error(
-      `[${where}] 사진 "${path}" 을(를) 찾을 수 없습니다.\n` +
-        `편집 화면에서 사진을 다시 고르거나 올려 주세요.\n` +
-        `지금 있는 사진: ${available}`,
-    );
-  }
-  return found.default;
-}
-
-/** 페이지 JSON 이 참조하는 사진 경로 전부 — 미디어 지도가 이 목록을 쓴다 */
-export function assetFileName(path: string): string {
-  return path.replace(ASSET_PREFIX, '');
+  return substitute(text, TOKENS, where);
 }
 
 /* ------------------------------------------------------------------ *
