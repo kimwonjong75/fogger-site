@@ -7,6 +7,19 @@ import sitemap from '@astrojs/sitemap';
 const SITE_URL = 'https://fogger.blueguard.kr';
 
 /**
+ * 문서 묶음 폴더 이름.
+ *
+ * `src/content/` 밑을 통째로 훑으면 안 된다 — 그 아래에는 문서가 아닌 폴더도 있다
+ * (`pages`·`data`는 편집 화면이 쓰는 JSON, `uploads`는 본문 사진). 훑으면 그것들이
+ * "공개 문서가 0건인 컬렉션"으로 잡혀 `/pages/`·`/data/`·`/uploads/`가 사이트맵
+ * 제외 목록에 들어간다. 지금은 그런 주소가 없어 아무 일도 안 일어나지만, 나중에
+ * 같은 이름의 페이지를 만들면 이유 없이 사이트맵에서 빠진다.
+ *
+ * `src/content.config.ts`의 collections 키와 같아야 한다.
+ */
+const DOC_COLLECTIONS = ['guides', 'uses', 'troubleshooting'];
+
+/**
  * 공개 문서가 0건인 컬렉션 인덱스 경로.
  *
  * 해당 페이지들은 lib/content.ts와 동일한 조건(`docs.length === 0`)으로 noindex 처리된다
@@ -17,13 +30,12 @@ const SITE_URL = 'https://fogger.blueguard.kr';
 function collectionsWithNoPublishedDocs() {
   const contentRoot = fileURLToPath(new URL('./src/content/', import.meta.url));
   const empty = [];
-  for (const collection of readdirSync(contentRoot, { withFileTypes: true })) {
-    if (!collection.isDirectory()) continue;
-    const dir = `${contentRoot}${collection.name}/`;
+  for (const name of DOC_COLLECTIONS) {
+    const dir = `${contentRoot}${name}/`;
     const hasPublished = readdirSync(dir)
       .filter((f) => f.endsWith('.md'))
       .some((f) => /^published:\s*true\s*$/m.test(readFileSync(`${dir}${f}`, 'utf8')));
-    if (!hasPublished) empty.push(`/${collection.name}/`);
+    if (!hasPublished) empty.push(`/${name}/`);
   }
   return empty;
 }
@@ -41,16 +53,15 @@ function docLastmodByPath() {
   const contentRoot = fileURLToPath(new URL('./src/content/', import.meta.url));
   /** @type {Record<string, string>} */
   const map = {};
-  for (const collection of readdirSync(contentRoot, { withFileTypes: true })) {
-    if (!collection.isDirectory()) continue;
-    const dir = `${contentRoot}${collection.name}/`;
+  for (const name of DOC_COLLECTIONS) {
+    const dir = `${contentRoot}${name}/`;
     for (const file of readdirSync(dir)) {
       if (!file.endsWith('.md')) continue;
       const source = readFileSync(`${dir}${file}`, 'utf8');
       if (!/^published:\s*true\s*$/m.test(source)) continue;
       const updated = source.match(/^updatedDate:\s*(\d{4}-\d{2}-\d{2})/m)?.[1];
       if (!updated) continue;
-      map[`/${collection.name}/${file.replace(/\.md$/, '')}/`] = new Date(updated).toISOString();
+      map[`/${name}/${file.replace(/\.md$/, '')}/`] = new Date(updated).toISOString();
     }
   }
   return map;

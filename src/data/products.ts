@@ -29,6 +29,16 @@ const WHERE = '제품 정보';
 
 const text = z.string().trim().min(1, '빈칸으로 둘 수 없습니다.');
 
+/**
+ * 선택 항목 — 값이 없을 때를 "없음"으로 통일한다.
+ *
+ * 편집 화면은 채웠다 지운 칸을 **빈 문자열로 남겨 둔다.** 그냥 `.optional()` 만 붙이면
+ * 빈 문자열이 값으로 들어와 검사에 걸리고, 사장님은 "지웠는데 왜 오류가 나지" 하게 된다.
+ * (사진을 넣었다 뺀 부품에서 실제로 재현됨 — 2026-08-08)
+ */
+const optional = <T extends z.ZodType>(schema: T) =>
+  z.preprocess((v) => (v === '' || v === null ? undefined : v), schema.optional());
+
 const imagePath = z
   .string()
   .trim()
@@ -85,8 +95,8 @@ const schema = z.object({
           claim: text,
           detail: text,
           howToCheck: text,
-          image: imagePath.optional(),
-          imageAlt: imageAltText.optional(),
+          image: optional(imagePath),
+          imageAlt: optional(imageAltText),
         })
         // 사진만 넣고 설명을 비우면 화면에 설명 없는 사진이 나간다.
         // 눈이 안 보이는 분에게는 그 칸이 통째로 사라지는 것과 같다.
@@ -128,8 +138,8 @@ const schema = z.object({
         includes: z.array(text).min(1),
         bestFor: z.array(text).min(1),
         /** null 이면 화면·구조화데이터 어디에도 가격을 표시하지 않는다 */
-        priceKrw: z.number().int().positive().nullable().default(null),
-        basedOn: z.string().optional(),
+        priceKrw: z.preprocess((v) => (v === '' ? null : v), z.number().int().positive().nullable().default(null)),
+        basedOn: optional(z.string()),
         image: imagePath,
         imageAlt: imageAltText,
       }),

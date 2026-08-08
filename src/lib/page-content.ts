@@ -190,11 +190,15 @@ const factRow = (where: string) =>
   z.object({
     label: line(where),
     value: line(where),
-    note: z
-      .string()
-      .trim()
-      .transform((value) => fillTokens(value, where))
-      .optional(),
+    // 편집 화면은 채웠다 지운 칸을 빈 문자열로 남긴다 — "없음"으로 통일한다
+    note: z.preprocess(
+      (v) => (v === '' || v === null ? undefined : v),
+      z
+        .string()
+        .trim()
+        .transform((value) => fillTokens(value, where))
+        .optional(),
+    ),
   });
 
 export const field = {

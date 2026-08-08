@@ -7,8 +7,40 @@
  */
 import type { ImageMetadata } from 'astro';
 
+import { z } from 'zod';
+
 import { PRODUCTS } from './products';
-import howToRaw from '../content/data/howto.json';
+import howToRawJson from '../content/data/howto.json';
+
+/**
+ * 10단계 파일의 검사 규칙.
+ *
+ * **JSON 을 그대로 쓰지 않고 한 번 거르는 이유가 있다.** TypeScript 는 JSON 을 직접
+ * import 하면 "지금 그 파일에 들어 있는 모양"을 타입으로 삼는다. 그래서 사장님이 편집
+ * 화면에서 선택 항목을 비워 그 항목이 파일에서 사라지면, 코드는 그대로인데 타입 검사가
+ * 깨진다 — 즉 **내용을 지웠다는 이유로 배포가 막힌다.**
+ * zod 로 한 번 거르면 파일 내용과 무관하게 타입이 고정된다.
+ */
+const howToSchema = z.object({
+  approval: z.object({
+    appliesTo: z.array(z.string()).default([]),
+    approvedBy: z.string().default(''),
+    approvedDate: z.string().default(''),
+  }),
+  steps: z
+    .array(z.object({ title: z.string().min(1), body: z.string().min(1) }))
+    .min(1, '사용 순서는 최소 한 단계가 있어야 합니다.'),
+});
+
+const howToParsed = howToSchema.safeParse(howToRawJson);
+if (!howToParsed.success) {
+  throw new Error(
+    `[사용법 10단계] 저장한 값이 규칙에 맞지 않습니다.\n` +
+      howToParsed.error.issues.map((i) => `  · ${i.path.join(' → ')}: ${i.message}`).join('\n') +
+      `\n(파일: src/content/data/howto.json)`,
+  );
+}
+const howToRaw = howToParsed.data;
 
 import posterIntro from '../assets/video-poster-intro.jpg';
 import posterHowto from '../assets/video-poster-howto.jpg';
