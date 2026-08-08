@@ -5,37 +5,29 @@ import { BUY_CTA_LABEL_SHORT } from '../data/site';
 import ModelSpecTable from '../components/ModelSpecTable.astro';
 import SafetyBox from '../components/SafetyBox.astro';
 import ShippingNote from '../components/ShippingNote.astro';
-import {
-  FILL_RATIO_LABEL,
-  MEDIA_LABEL,
-  PRODUCTS,
-  maxFillLiters,
-} from '../data/products';
+import { PRODUCTS, maxFillLiters } from '../data/products';
+import { COMPARE_PAGE } from '../data/pages';
+import { inlineParts } from '../lib/page-content';
 
-const [small, large] = PRODUCTS;
+/** 문구는 편집 화면(/admin/ → "모델비교 화면")에서 고친다 — src/content/pages/compare.json */
+const page = COMPARE_PAGE;
 ---
 
 <BaseLayout
-  title="연막소독기 기본형·대용량 비교"
-  description="탱크 용량과 최대 충전량, 어깨끈과 롱노즐 유무를 나란히 두고 현장에 맞는 모델을 고르는 기준을 정리했습니다."
+  title={page.seo.title}
+  description={page.seo.description}
   canonicalPath="/compare/"
   ogImage="/og/og-compare.png"
   crumbs={[{ name: '모델비교', href: '/compare/' }]}
   stickyBuy="generic"
 >
-  <p class="eyebrow">모델비교</p>
-  <h1>기본형과 대용량, 무엇이 다른가</h1>
-  <p class="lede">
-    본체 구조와 사용 절차는 세 구성 모두 같습니다. 실제로 갈리는 지점은 한 번에 담는 양, 들고
-    다니는 방식, 노즐이 닿는 거리입니다.
-  </p>
+  <p class="eyebrow">{page.eyebrow}</p>
+  <h1>{page.heading}</h1>
+  <p class="lede">{page.lede}</p>
 
-  <ModelSpecTable
-    caption="기본형 · 대용량 · 대용량+롱노즐"
-    footnote={`최대 충전량은 탱크 용량의 ${FILL_RATIO_LABEL}를 적용한 값이며, 매질은 전 모델 공통으로 ${MEDIA_LABEL}만 사용합니다.`}
-  />
+  <ModelSpecTable caption={page.specTableCaption} footnote={page.specTableFootnote} />
 
-  <h2>어떻게 고르나</h2>
+  <h2>{page.pickerHeading}</h2>
   <div class="picker">
     {
       PRODUCTS.map((product) => (
@@ -55,7 +47,7 @@ const [small, large] = PRODUCTS;
               data-ga-product-id={product.id}
               data-ga-context="compare"
             >
-              사양 자세히
+              {page.pickerDetailLabel}
             </a>
             <BuyCTA productId={product.id} content={`compare_${product.id}`} label={BUY_CTA_LABEL_SHORT} variant="secondary" />
           </div>
@@ -64,24 +56,23 @@ const [small, large] = PRODUCTS;
     }
   </div>
 
-  <h2>한 줄 요약</h2>
+  <h2>{page.summaryHeading}</h2>
   <ul class="summary">
-    <li>
-      한 공간을 짧게 처리한다면 <strong>{small!.officialLabel}</strong>. 가볍고 준비가 빠릅니다.
-    </li>
-    <li>
-      이동 거리가 길고 면적이 넓다면 <strong>{large!.officialLabel}</strong>. 탱크가 크고 어깨끈이 있어 중간
-      재충전 횟수가 줍니다.
-    </li>
-    <li>
-      천장·배관 뒤처럼 손이 닿지 않는 지점이 있다면 <strong>롱노즐 구성</strong>. 사람이 올라가지
-      않고도 닿습니다.
-    </li>
+    {
+      /* **별표** 로 감싼 부분이 굵게 나온다 — page-content.ts 의 inlineParts 참조 */
+      page.summary.map((text) => (
+        <li>
+          {inlineParts(text).map((part) =>
+            part.kind === 'bold' ? <strong>{part.text}</strong> : part.text,
+          )}
+        </li>
+      ))
+    }
   </ul>
 
   <ShippingNote />
 
-  <SafetyBox title="모델과 무관하게 공통 적용" />
+  <SafetyBox title={page.safetyBoxTitle} />
 </BaseLayout>
 
 <style>

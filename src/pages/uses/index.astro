@@ -2,10 +2,15 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import DocList from '../../components/DocList.astro';
 import { COLLECTION_META, docHref, getPublishedDocs } from '../../lib/content';
+import { USES_PAGE } from '../../data/pages';
+import { inlineParts } from '../../lib/page-content';
 import { itemListSchema } from '../../lib/schema';
 
 const meta = COLLECTION_META.uses;
 const docs = await getPublishedDocs('uses');
+
+/** 문구는 편집 화면(/admin/ → "활용사례 목록 화면")에서 고친다 — src/content/pages/uses.json */
+const page = USES_PAGE;
 
 const list = itemListSchema(
   meta.href,
@@ -15,22 +20,25 @@ const list = itemListSchema(
 ---
 
 <BaseLayout
-  title="장소별 연막소독기 사용법"
-  description={meta.description}
+  title={page.seo.title}
+  description={page.lede}
   canonicalPath={meta.href}
   ogImage="/og/og-uses.png"
   crumbs={[{ name: meta.label, href: meta.href }]}
   schemaNodes={[list]}
   noindex={docs.length === 0}
 >
-  <h1>{meta.title}</h1>
-  <p class="lede">{meta.description}</p>
+  <h1>{page.heading}</h1>
+  <p class="lede">{page.lede}</p>
 
   <DocList docs={docs} />
 
   <p class="more">
-    기본 작업 순서는 <a href="/guides/">사용법</a>에, 모델 선택 기준은
-    <a href="/compare/">모델비교</a>에 있습니다.
+    {
+      inlineParts(page.moreText).map((part) =>
+        part.kind === 'link' ? <a href={part.href}>{part.text}</a> : part.text,
+      )
+    }
   </p>
 </BaseLayout>
 

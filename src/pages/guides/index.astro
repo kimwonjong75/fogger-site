@@ -5,10 +5,20 @@ import SafetyBox from '../../components/SafetyBox.astro';
 import VideoEmbed from '../../components/VideoEmbed.astro';
 import { HOWTO_STEPS, HOWTO_VIDEO, VIDEO_PUBLISHED_DATE, howToApprovalLabel } from '../../data/media';
 import { COLLECTION_META, docHref, getPublishedDocs } from '../../lib/content';
+import { GUIDES_PAGE } from '../../data/pages';
+import { inlineParts } from '../../lib/page-content';
 import { howToSchema, itemListSchema, videoSchema } from '../../lib/schema';
 
 const meta = COLLECTION_META.guides;
 const docs = await getPublishedDocs('guides');
+
+/**
+ * 문구는 편집 화면(/admin/ → "사용법 목록 화면")에서 고친다 — src/content/pages/guides.json
+ *
+ * 아래 10단계(HOWTO_STEPS)는 예외로 코드에 남겼다. 소개 영상의 자막을 그대로 옮긴
+ * 순서라 글만 고치면 영상과 어긋나기 때문이다. 영상을 다시 찍으면 함께 고친다.
+ */
+const page = GUIDES_PAGE;
 
 const approval = howToApprovalLabel();
 
@@ -48,24 +58,21 @@ const howToVideo = videoSchema({
 ---
 
 <BaseLayout
-  title="연막소독기 사용법과 선택 가이드"
-  description={meta.description}
+  title={page.seo.title}
+  description={page.lede}
   canonicalPath={meta.href}
   ogImage="/og/og-guides.png"
   crumbs={[{ name: meta.label, href: meta.href }]}
   schemaNodes={[list, howTo, howToVideo]}
 >
-  <h1>{meta.title}</h1>
-  <p class="lede">{meta.description}</p>
+  <h1>{page.heading}</h1>
+  <p class="lede">{page.lede}</p>
 
-  <SafetyBox title="모든 작업에 공통" compact only={['fill-limit', 'aux-inlet']} />
+  <SafetyBox title={page.safetyBoxTitle} compact only={['fill-limit', 'aux-inlet']} />
 
   <section aria-labelledby="howto">
-    <h2 id="howto">공식 사용 순서 10단계</h2>
-    <p class="section-desc">
-      작업 전 준비부터 점화, 펌핑, 사용 후 세척까지 순서대로 따라가면 됩니다.
-      아래 순서는 이 영상의 자막을 그대로 옮긴 것입니다.
-    </p>
+    <h2 id="howto">{page.howtoHeading}</h2>
+    <p class="section-desc">{page.howtoDesc}</p>
 
     <VideoEmbed video={HOWTO_VIDEO} />
 
@@ -82,12 +89,15 @@ const howToVideo = videoSchema({
     {approval && <p class="howto-approval">{approval}</p>}
   </section>
 
-  <h2>단계별 상세 문서</h2>
+  <h2>{page.docsHeading}</h2>
   <DocList docs={docs} />
 
   <p class="more">
-    증상별 점검이 필요하면 <a href="/troubleshooting/">문제해결</a>, 현장별 운용은
-    <a href="/uses/">활용사례</a>를 참고하세요.
+    {
+      inlineParts(page.moreText).map((part) =>
+        part.kind === 'link' ? <a href={part.href}>{part.text}</a> : part.text,
+      )
+    }
   </p>
 </BaseLayout>
 

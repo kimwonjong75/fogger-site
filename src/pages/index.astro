@@ -1,7 +1,5 @@
 ---
 import type { ImageMetadata } from 'astro';
-import heroImage from '../assets/photo-bf-102.jpg';
-import workLivestockBarn from '../assets/photo-work-livestock-barn.jpg';
 import partTank from '../assets/photo-part-tank.jpg';
 import partMesh from '../assets/photo-part-mesh.jpg';
 import partNozzle from '../assets/photo-part-nozzle.jpg';
@@ -12,14 +10,9 @@ import ModelCard from '../components/ModelCard.astro';
 import Pic from '../components/Pic.astro';
 import SafetyBox from '../components/SafetyBox.astro';
 import VideoEmbed from '../components/VideoEmbed.astro';
-import {
-  BUILD_QUALITY,
-  DOMESTIC_PARTS_PERCENT,
-  MEDIA_SPECS,
-  PRODUCTS,
-  SPRAY_MODES,
-  WORK_REFERENCE,
-} from '../data/products';
+import { BUILD_QUALITY, PRODUCTS } from '../data/products';
+import { HOME_PAGE } from '../data/pages';
+import { numeralParts } from '../lib/page-content';
 import { INTRO_VIDEO, VIDEO_PUBLISHED_DATE } from '../data/media';
 import { itemListSchema, organizationSchema, videoSchema, websiteSchema } from '../lib/schema';
 
@@ -33,7 +26,11 @@ import { itemListSchema, organizationSchema, videoSchema, websiteSchema } from '
  *
  * 배경: 개편 전 홈은 한글 2,369자·모바일 13.5화면이었고 사진 비중은 29%였다.
  * 정보가 부족해서가 아니라 읽어야 해서 이탈한다는 판단(2026-08-07 사장님 지시).
+ *
+ * **화면 문구와 두 장의 사진은 편집 화면(/admin/ → "홈 화면")에서 고친다.**
+ * 값은 src/content/pages/home.json 에 있고 src/data/pages.ts 가 검사해서 넘겨준다.
  */
+const page = HOME_PAGE;
 
 /** 홈에는 눈으로 확인 가능한 네 곳만 낸다. 가스 연결부는 제품 상세에서 다룬다 */
 const HOME_PARTS = BUILD_QUALITY.slice(0, 4);
@@ -51,11 +48,6 @@ const PART_ALT: Record<string, string> = {
   nozzle: '블루가드 연막소독기 노즐 클로즈업 — 황동 조립 부품과 배럴 연결부',
   piston: '블루가드 연막소독기 피스톤 클로즈업 — 스테인리스 부품과 쇠구슬',
 };
-
-const base = PRODUCTS[0];
-const large = PRODUCTS[1];
-/** 외형 표기 "465×265×180" 의 가장 긴 변 — 소형화 주장의 근거 수치 */
-const longestSideMm = base.dimensionsMm.split('×')[0];
 
 const videoMin = Math.floor(INTRO_VIDEO.durationSec / 60);
 const videoSec = INTRO_VIDEO.durationSec % 60;
@@ -83,8 +75,8 @@ const introVideo = videoSchema({
 ---
 
 <BaseLayout
-  title="가정용 휴대용 연막소독기 블루가드"
-  description="차량 장비가 들어가기 어려운 좁은 현장을 위해 소형화한 국산 휴대용 연막소독기. 연막·연무 겸용 사양과 눈으로 확인하는 부품 기준을 정리했습니다."
+  title={page.seo.title}
+  description={page.seo.description}
   canonicalPath="/"
   ogImage="/og/og-default.png"
   crumbs={[{ name: '홈', href: '/' }]}
@@ -95,29 +87,33 @@ const introVideo = videoSchema({
     <div class="full-bleed hero-band">
       <div class="full-bleed__inner hero">
         <div class="hero__text">
-          <p class="eyebrow eyebrow--ink">부품 {DOMESTIC_PARTS_PERCENT}% 국산</p>
-          <h1>차량 장비가 못 들어가는 곳까지,<br /><span>손에 드는 국산 연막소독기</span></h1>
+          <p class="eyebrow eyebrow--ink">{page.hero.eyebrow}</p>
+          <h1>{page.hero.headlineTop}<br /><span>{page.hero.headlineAccent}</span></h1>
           <p class="lede">
-            마당부터 창고·축사·하수구까지, 필요한 현장으로 직접 들고 갑니다.<br />
-            국산 부품과 단단한 구조로 오래 쓰는 휴대용 방역 장비입니다.
+            {
+              page.hero.lede.map((text, i) => (
+                <>
+                  {i > 0 && <br />}
+                  {text}
+                </>
+              ))
+            }
           </p>
           <div class="hero__actions">
             <a class="hero__cta hero__cta--primary" href="#works">
-              소개 영상 보기 <span>· {videoLength}</span>
+              {page.hero.videoButtonLabel} <span>· {videoLength}</span>
             </a>
-            <a class="hero__cta hero__cta--secondary" href="#models">내게 맞는 모델 찾기</a>
+            <a class="hero__cta hero__cta--secondary" href="#models">
+              {page.hero.modelButtonLabel}
+            </a>
           </div>
-          <p class="hero__media">
-            한 손 휴대 · {SPRAY_MODES} · {base.officialLabel} {base.tankLiters}L / {
-              large.officialLabel
-            } {large.tankLiters}L
-          </p>
+          <p class="hero__media">{page.hero.specLine}</p>
         </div>
 
         <div class="hero__figure">
           <Pic
-            src={heroImage}
-            alt="블루가드 연막소독기 대용량 — 흰색 연료통과 스테인리스 배럴이 보이는 본체 제품 사진"
+            src={page.hero.image.meta}
+            alt={page.hero.imageAlt}
             width={440}
             height={440}
             priority
@@ -131,58 +127,53 @@ const introVideo = videoSchema({
 
   <!-- S2 소형화 — 사장님이 가장 강조하고 싶어 한 메시지 -->
   <section id="works" aria-labelledby="works-h">
-    <h2 id="works-h">차량까지 동원할 필요 없는 현장을 위해</h2>
-    <p class="section-desc">
-      대형 장비가 들어가기 어려운 좁은 곳에서도 작업자가 직접 들고 이동합니다.
-    </p>
+    <h2 id="works-h">{page.works.heading}</h2>
+    <p class="section-desc">{page.works.desc}</p>
 
     <div class="works">
       <Pic
-        src={workLivestockBarn}
-        alt="블루가드 연막소독기 실제 작업 전경 — 소를 키우는 축사 통로에서 작업자가 한 손으로 들고 연막을 분사하는 전신 컷"
+        src={page.works.image.meta}
+        alt={page.works.imageAlt}
         width={960}
         height={720}
         sizes="(max-width: 900px) 90vw, 540px"
         class="work-photo"
       />
       <ul class="benefits">
-        <li>
-          <strong>한 손으로 듭니다</strong>
-          <span>가장 긴 변 {longestSideMm}mm. 오래 작업할 때는 어깨끈을 씁니다.</span>
-        </li>
-        <li>
-          <strong>{SPRAY_MODES}</strong>
-          <span>
-            넣는 매질만 바꾸면 모드가 바뀝니다 — {
-              MEDIA_SPECS.map((m) => `${m.name} ${m.venueLabel}`).join(', ')
-            }.
-          </span>
-        </li>
-        <li>
-          <strong>
-            <span class="num">{WORK_REFERENCE.chargeMl.toLocaleString('ko-KR')}</span>mL로 약
-            <span class="num">{WORK_REFERENCE.minutes}</span>분 ·
-            <span class="num">{WORK_REFERENCE.pyeong}</span>평
-          </strong>
-          <span>{WORK_REFERENCE.note}</span>
-        </li>
+        {
+          page.works.benefits.map((benefit) => (
+            <li>
+              {/* 숫자는 자동으로 숫자 글꼴이 적용된다 — page-content.ts 의 numeralParts 참조 */}
+              <strong>
+                {numeralParts(benefit.title).map((part) =>
+                  part.isNum ? <span class="num">{part.text}</span> : part.text,
+                )}
+              </strong>
+              <span>{benefit.body}</span>
+            </li>
+          ))
+        }
       </ul>
     </div>
 
     <VideoEmbed video={INTRO_VIDEO} />
 
     <p class="section-more">
-      <a href="/guides/">사용 순서 10단계 보기</a> ·
-      <a href="/guides/choose-media/">매질 고르는 법</a>
+      {
+        page.works.moreLinks.map((link, i) => (
+          <>
+            {i > 0 && ' · '}
+            <a href={link.href}>{link.label}</a>
+          </>
+        ))
+      }
     </p>
   </section>
 
   <!-- S3 부품 — 이번 개편의 핵심 섹션 -->
   <section class="panel panel--ink parts" aria-labelledby="parts-h">
-    <h2 id="parts-h">겉은 비슷해도, 안쪽은 다릅니다</h2>
-    <p class="parts__desc">
-      가격표보다 먼저 확인할 네 곳입니다. 저희 것부터 열어서 보여드립니다.
-    </p>
+    <h2 id="parts-h">{page.parts.heading}</h2>
+    <p class="parts__desc">{page.parts.desc}</p>
 
     <div class="parts__grid">
       {
@@ -208,15 +199,13 @@ const introVideo = videoSchema({
       }
     </div>
 
-    <p class="parts__close">1~2만원의 차이보다, 오래 쓸 구조를 먼저 보세요.</p>
+    <p class="parts__close">{page.parts.closing}</p>
   </section>
 
   <!-- S4 모델 -->
   <section id="models" aria-labelledby="models-h">
-    <h2 id="models-h">어디에 쓰실 건가요</h2>
-    <p class="section-desc">
-      마당이면 기본형, 넓은 곳이면 대용량, 손이 안 닿는 곳이면 롱노즐입니다.
-    </p>
+    <h2 id="models-h">{page.models.heading}</h2>
+    <p class="section-desc">{page.models.desc}</p>
     <div class="grid grid--3">
       {
         PRODUCTS.map((product) => (
@@ -225,24 +214,39 @@ const introVideo = videoSchema({
       }
     </div>
     <p class="section-more">
-      <a href="/compare/">세 구성 비교표 보기</a> · <a href="/products/">제품 전체 보기</a>
+      {
+        page.models.moreLinks.map((link, i) => (
+          <>
+            {i > 0 && ' · '}
+            <a href={link.href}>{link.label}</a>
+          </>
+        ))
+      }
     </p>
   </section>
 
   <!-- S5 안전 + 구매 -->
   <section aria-labelledby="close-h">
-    <h2 id="close-h">사진만 보지 말고, 부품과 작동 모습을 확인하세요</h2>
-    <p class="section-desc">
-      실제 구조와 분사 영상을 확인한 뒤 현장에 맞는 구성을 고르시면 됩니다.
-    </p>
-    <SafetyBox title="쓰기 전에 이것만은" compact only={['venue', 'fill-limit', 'aux-inlet']} />
+    <h2 id="close-h">{page.closing.heading}</h2>
+    <p class="section-desc">{page.closing.desc}</p>
+    <SafetyBox
+      title={page.closing.safetyBoxTitle}
+      compact
+      only={['venue', 'fill-limit', 'aux-inlet']}
+    />
     <div class="close-actions">
       <BuyCTA content="home_close" />
-      <a class="close-actions__link" href="/safety/">전체 안전수칙 보기 →</a>
+      <a class="close-actions__link" href="/safety/">{page.closing.safetyLinkLabel}</a>
     </div>
     <p class="section-more section-more--quiet">
-      <a href="/guides/">사용법</a> · <a href="/uses/">활용사례</a> ·
-      <a href="/troubleshooting/">문제해결</a>
+      {
+        page.closing.moreLinks.map((link, i) => (
+          <>
+            {i > 0 && ' · '}
+            <a href={link.href}>{link.label}</a>
+          </>
+        ))
+      }
     </p>
   </section>
 </BaseLayout>

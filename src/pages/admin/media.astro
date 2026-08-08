@@ -117,6 +117,13 @@ const fmtDuration = (sec: number) => {
                     <span>{slot.where}</span>
                   </p>
                   {slot.file && <p class="file">{slot.file}</p>}
+                  {
+                    slot.editIn && (
+                      <p class="edit-in">
+                        <a href="/admin/">편집 화면</a>에서 바꿀 수 있습니다 — {slot.editIn}
+                      </p>
+                    )
+                  }
                   {slot.note && <p class="note">{slot.note}</p>}
                 </div>
               </li>
@@ -429,6 +436,15 @@ const fmtDuration = (sec: number) => {
         font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
         font-size: 0.76rem;
         color: var(--faint);
+      }
+
+      /* 이 자리는 사장님이 직접 바꿀 수 있다는 표시 — 개발자를 부를 필요가 없는 자리 */
+      .edit-in {
+        margin: 0.5rem 0 0;
+        font-size: 0.82rem;
+        line-height: 1.6;
+        font-weight: 600;
+        color: var(--navy);
       }
 
       .note {

@@ -4,10 +4,14 @@ import DocList from '../../components/DocList.astro';
 import SafetyBox from '../../components/SafetyBox.astro';
 import { BUSINESS } from '../../data/site';
 import { COLLECTION_META, docHref, getPublishedDocs } from '../../lib/content';
+import { TROUBLESHOOTING_PAGE } from '../../data/pages';
 import { itemListSchema } from '../../lib/schema';
 
 const meta = COLLECTION_META.troubleshooting;
 const docs = await getPublishedDocs('troubleshooting');
+
+/** 문구는 편집 화면(/admin/ → "문제해결 목록 화면")에서 고친다 — src/content/pages/troubleshooting.json */
+const page = TROUBLESHOOTING_PAGE;
 
 const list = itemListSchema(
   meta.href,
@@ -17,31 +21,24 @@ const list = itemListSchema(
 ---
 
 <BaseLayout
-  title="연막소독기 문제해결"
-  description={meta.description}
+  title={page.seo.title}
+  description={page.lede}
   canonicalPath={meta.href}
   ogImage="/og/og-troubleshooting.png"
   crumbs={[{ name: meta.label, href: meta.href }]}
   schemaNodes={[list]}
 >
-  <h1>{meta.title}</h1>
-  <p class="lede">{meta.description}</p>
+  <h1>{page.heading}</h1>
+  <p class="lede">{page.lede}</p>
 
-  <SafetyBox
-    title="점검 전 반드시"
-    compact
-    only={['aux-inlet', 'heat']}
-  />
+  <SafetyBox title={page.safetyBoxTitle} compact only={['aux-inlet', 'heat']} />
 
   <DocList docs={docs} />
 
   <section class="as">
-    <h2>문서로 해결되지 않는다면</h2>
-    <p>
-      점화·가스 계통은 임의로 분해하지 마세요. 모델명, 증상, 사용한 매질, 이미 시도한 조치를 함께
-      보내주시면 진단이 빨라집니다.
-    </p>
-    <p><a href={`mailto:${BUSINESS.email}`}>{BUSINESS.email}</a> 로 접수해 주세요.</p>
+    <h2>{page.asHeading}</h2>
+    <p>{page.asBody}</p>
+    <p><a href={`mailto:${BUSINESS.email}`}>{BUSINESS.email}</a> {page.asContactSuffix}</p>
   </section>
 </BaseLayout>
 

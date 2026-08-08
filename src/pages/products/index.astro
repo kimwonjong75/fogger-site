@@ -7,19 +7,13 @@ import ShippingNote from '../../components/ShippingNote.astro';
 import StatRow from '../../components/StatRow.astro';
 import TrustBar from '../../components/TrustBar.astro';
 import VideoEmbed from '../../components/VideoEmbed.astro';
-import {
-  BUILD_QUALITY,
-  DOMESTIC_PARTS_PERCENT,
-  FILL_RATIO_LABEL,
-  HEAT_SOURCE,
-  MEDIA_LABEL,
-  PRODUCTS,
-  SHIPPING,
-  SPRAY_MODES,
-  USE_VENUE,
-} from '../../data/products';
+import { BUILD_QUALITY, PRODUCTS } from '../../data/products';
+import { PRODUCTS_PAGE } from '../../data/pages';
 import { CUSTOMER_USE_VIDEOS, QC_VIDEOS, SPRAY_TEST_VIDEO } from '../../data/media';
 import { itemListSchema } from '../../lib/schema';
+
+/** 문구는 편집 화면(/admin/ → "제품 목록 화면")에서 고친다 — src/content/pages/products.json */
+const page = PRODUCTS_PAGE;
 
 /**
  * 조립·분사 촬영본과 신뢰 블록은 2026-08-07에 홈에서 이 페이지로 옮겼다.
@@ -34,32 +28,20 @@ const list = itemListSchema(
   PRODUCTS.map((product) => ({ name: product.name, href: `/products/${product.id}/` })),
 );
 
-const commonFacts = [
-  { label: '분사 모드', value: SPRAY_MODES, note: '매질을 바꿔 연막·연무를 전환합니다.' },
-  { label: '가열원', value: HEAT_SOURCE },
-  { label: '사용 매질', value: MEDIA_LABEL, note: '지정 외 용제는 사용할 수 없습니다.' },
-  { label: '충전 한도', value: `탱크 용량의 ${FILL_RATIO_LABEL}`, note: '가열 시 팽창을 고려한 상한입니다.' },
-  { label: '보조주입구', value: '작동 중 사용 금지', note: '완전히 끄고 식힌 뒤에만 엽니다.' },
-  { label: '사용 장소', value: USE_VENUE.label, note: USE_VENUE.condition },
-  { label: '배송', value: SHIPPING.label, note: SHIPPING.note },
-];
 ---
 
 <BaseLayout
-  title="휴대용 연막소독기 제품 라인업"
-  description="블루가드 가정용 휴대용 연막소독기 기본형·대용량·대용량+롱노즐의 사양과 구성품, 실내외 사용 기준을 한눈에 비교합니다."
+  title={page.seo.title}
+  description={page.seo.description}
   canonicalPath="/products/"
   ogImage="/og/og-products.png"
   crumbs={[{ name: '제품', href: '/products/' }]}
   schemaNodes={[list]}
   stickyBuy="generic"
 >
-  <p class="eyebrow">제품</p>
-  <h1>연막소독기 제품 라인업</h1>
-  <p class="lede">
-    기본형, 대용량, 대용량+롱노즐. 본체 구조와 사용 절차는 같고 탱크 용량, 휴대 방식,
-    분사구 도달 거리에서 갈립니다.
-  </p>
+  <p class="eyebrow">{page.eyebrow}</p>
+  <h1>{page.heading}</h1>
+  <p class="lede">{page.lede}</p>
 
   <StatRow />
 
@@ -71,11 +53,8 @@ const commonFacts = [
     }
   </div>
 
-  <h2>눈으로 확인하는 부품 사양</h2>
-  <p class="section-desc">
-    부품 {DOMESTIC_PARTS_PERCENT}% 국산입니다. 구매 전에 직접 확인하실 수 있는 기준을 함께
-    적었습니다.
-  </p>
+  <h2>{page.partsHeading}</h2>
+  <p class="section-desc">{page.partsDesc}</p>
   <dl class="parts">
     {
       BUILD_QUALITY.map((part) => (
@@ -84,20 +63,22 @@ const commonFacts = [
           <dd>
             <strong>{part.claim}</strong>
             <span>{part.detail}</span>
-            <span class="parts__check">확인법 — {part.howToCheck}</span>
+            <span class="parts__check">
+              {page.partsCheckLabel} — {part.howToCheck}
+            </span>
           </dd>
         </div>
       ))
     }
   </dl>
 
-  <h2>전 모델 공통 사양</h2>
-  <FactTable rows={commonFacts} footnote="모델별로 다른 값은 각 제품 페이지와 모델 비교표에서 확인하세요." />
+  <h2>{page.commonHeading}</h2>
+  <FactTable rows={page.commonFacts} footnote={page.commonFootnote} />
 
   <ShippingNote />
 
-  <h2>조립과 분사 촬영본</h2>
-  <p class="section-desc">클릭하면 재생됩니다.</p>
+  <h2>{page.videoHeading}</h2>
+  <p class="section-desc">{page.videoDesc}</p>
   <div class="video-row">
     {evidenceVideos.map((video) => <VideoEmbed video={video} />)}
   </div>
@@ -106,7 +87,7 @@ const commonFacts = [
 
   <TrustBar />
 
-  <p class="more"><a href="/compare/">모델 비교표에서 나란히 보기 →</a></p>
+  <p class="more"><a href={page.moreLink.href}>{page.moreLink.label}</a></p>
 </BaseLayout>
 
 <style>

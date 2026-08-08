@@ -1,33 +1,39 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 
+import { GUIDES_PAGE, TROUBLESHOOTING_PAGE, USES_PAGE } from '../data/pages';
+
 export const DOC_COLLECTIONS = ['guides', 'uses', 'troubleshooting'] as const;
 export type DocCollection = (typeof DOC_COLLECTIONS)[number];
 export type DocEntry = CollectionEntry<DocCollection>;
 
+/**
+ * 세 문서 묶음의 이름·주소·소개 문구.
+ *
+ * 이름과 문구는 편집 화면에서 고치는 값이라 `src/content/pages/{묶음}.json` 에서 온다.
+ * 주소(`href`)만 여기 남긴 것은 파일 경로·사이트맵·내부 링크가 전부 이 값에 묶여 있어
+ * 편집 화면에서 바꾸면 사이트 링크가 통째로 끊기기 때문이다.
+ */
 export const COLLECTION_META: Record<
   DocCollection,
   { label: string; href: string; title: string; description: string }
 > = {
   guides: {
-    label: '사용법',
+    label: GUIDES_PAGE.label,
     href: '/guides/',
-    title: '연막소독기 사용법과 선택 가이드',
-    description:
-      '약제 충전부터 예열·분사·세척까지, 연막기와 연무기 차이와 모기 방역 순서까지 연막소독기를 안전하게 쓰는 방법을 정리했습니다.',
+    title: GUIDES_PAGE.heading,
+    description: GUIDES_PAGE.lede,
   },
   uses: {
-    label: '활용사례',
+    label: USES_PAGE.label,
     href: '/uses/',
-    title: '장소별 연막소독기 사용법',
-    description:
-      '창고·축사·비닐하우스·지하주차장 등 장소별로 연막방역기를 어떻게 운용하는지 매질 선택과 작업 순서, 환기 기준을 정리했습니다.',
+    title: USES_PAGE.heading,
+    description: USES_PAGE.lede,
   },
   troubleshooting: {
-    label: '문제해결',
+    label: TROUBLESHOOTING_PAGE.label,
     href: '/troubleshooting/',
-    title: '연막소독기 문제해결',
-    description:
-      '점화 불량, 연막량 부족, 노즐 막힘 등 연막기에 자주 생기는 증상의 원인과 점검 순서를 정리했습니다.',
+    title: TROUBLESHOOTING_PAGE.heading,
+    description: TROUBLESHOOTING_PAGE.lede,
   },
 };
 

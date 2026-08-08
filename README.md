@@ -105,46 +105,61 @@ FOGGER_PHOTO_SOURCE=... npm run photos   # 다른 경로에서 가져오기
 3. `media.ts`에 `VideoAsset` 항목 추가
 4. 문서에서 쓰려면 `content.config.ts`의 `videoKey` enum에 키를 추가하고 frontmatter에 지정
 
-## 문서 편집 화면 (`/admin/`)
+## 편집 화면 (`/admin/`)
 
-사장님이 `src/content/**` 문서를 브라우저에서 직접 고치는 화면. Sveltia CMS(버전 고정).
+사장님이 사이트 내용을 브라우저에서 직접 고치는 화면. Sveltia CMS(버전 고정).
 
 | 파일 | 역할 |
 | :--- | :--- |
 | `public/admin/index.html` | 편집기 로더. `noindex` 필수 (검증기가 검사) |
-| `public/admin/config.yml` | 입력칸 정의. `src/content.config.ts` 의 zod 스키마를 옮긴 것 |
+| `public/admin/config.yml` | 입력칸 정의. 아래 두 스키마를 손으로 옮긴 것 |
+| `src/data/pages.ts` | "화면 문구" 스키마 — `src/content/pages/*.json` 을 검사 |
+| `src/content.config.ts` | "문서" 스키마 — `src/content/{guides,uses,troubleshooting}` |
+| `src/lib/page-content.ts` | 자리표시자 치환 · 사진 경로 해석 · 공통 검사 규칙 |
+
+**두 묶음**
+
+- **화면 문구** — 홈 / 제품 목록 / 모델비교 / 안전수칙 / 문서 목록 3종의 글과 사진.
+  값은 JSON, 사진은 `"/src/assets/파일명"` 경로로 저장되고 `import.meta.glob`이 해석한다.
+- **문서** — 사용법·활용사례·문제해결 마크다운.
 
 **흐름**
 
 ```
-편집 화면 저장 → draft 브랜치 커밋 → open-draft-pr 워크플로가 PR 유지
-  → verify 워크플로 검사 → 초록불이면 병합 → main
+편집 화면 저장 → main 커밋 → Vercel 빌드(= npm run build:verify)
+  → 검증 통과해야 배포 / 걸리면 배포 안 함(직전 버전 유지)
 ```
 
-`main`이 아니라 `draft`를 바라보는 이유: Sveltia CMS는 저장 시 PR을 만드는 editorial
-workflow를 **지원하지 않는다**(구현하지 않을 기능으로 명시). 그대로 두면 검증을 거치지 않은
-문서가 `main`에 직행한다.
+**입력칸을 빠뜨리면 내용이 지워진다.** Sveltia는 설정에 적힌 입력칸만 파일에 다시 쓰므로,
+JSON에 있는 항목을 `config.yml`에 안 적어 두면 사장님이 그 화면을 저장하는 순간 그 항목이
+사라진다. 검증기가 양쪽 항목 이름을 통째로 맞춰 보는 이유가 이것이다.
 
 **편집 화면에 없는 것과 그 이유**
 
-- 제품 사양·가격·안전수칙 — 근거 주석이 달린 검증된 값이다. 폼으로 열면 근거 추적이 끊긴다.
-- 히어로 이미지 — `image()` 스키마는 마크다운 기준 상대경로를 요구하는데 CMS는 `/uploads/`
-  절대경로를 쓴다. 현재 이 필드를 쓰는 문서가 없어 편집 화면에서 뺐다.
-- 본문 이미지 — 검증기가 모든 `<img>`에 width/height와 `{주제} — {구체 장면}` alt를 요구하는데
-  마크다운 이미지는 이를 채우지 못한다. 넣으면 CI가 막는다(사이트에는 반영되지 않는다).
+- 제품 사양·가격 — 근거 주석이 달린 검증된 값이다. 폼으로 열면 근거 추적이 끊긴다.
+  (안전수칙 **문구**는 2026-08-08에 열었다. 숫자는 자리표시자로 `products.ts`에서 온다)
+- 사용법 10단계 — 소개 영상 자막을 그대로 옮긴 것이라 글만 고치면 영상과 어긋난다.
+- 문서 히어로 이미지 — `image()` 스키마는 마크다운 기준 상대경로를 요구한다. 현재 이 필드를
+  쓰는 문서가 없어 편집 화면에서 뺐다.
+- 문서 본문 이미지 — 검증기가 모든 `<img>`에 width/height와 `{주제} — {구체 장면}` alt를
+  요구하는데 마크다운 이미지는 이를 채우지 못한다.
 
-`config.yml`과 `content.config.ts`가 어긋나면 "화면에서는 저장되는데 빌드가 깨지는" 상태가
-조용히 생긴다. 검증기가 저장소의 모든 문서를 편집 화면 규칙에 통과시켜 보는 방식으로 막는다.
+## 배포와 CI
 
-## CI
+배포는 **Vercel**이 `main`을 보고 자동으로 한다. 편집 화면(`/admin/`)의 저장도 `main`에
+직접 커밋하므로, 저장 → 2~3분 → 사이트 반영이다.
+
+**검증은 배포 과정 안에 있다.** [vercel.json](vercel.json)의 `buildCommand`가
+`npm run build:verify`라서, 검증에 걸리면 빌드가 실패하고 Vercel은 배포하지 않는다 —
+사이트는 직전 버전 그대로 남는다. 이 한 줄이 유일한 게이트다.
 
 | 워크플로 | 언제 | 하는 일 |
 | :--- | :--- | :--- |
 | `verify` | `main` push, 모든 PR | `astro check` → 빌드 → 산출물 검증 |
-| `open-draft-pr` | `draft` push | `draft → main` PR을 열어 두고 갱신 |
 
-배포는 수동(GitHub Desktop)이므로, 검증을 사람이 기억해서 돌리는 대신 CI가 강제한다.
-`verify`가 빨간불인 PR은 병합하지 않는다.
+`verify` 워크플로는 배포를 막지 않는다(그건 Vercel이 한다). Vercel 빌드 로그는 사장님이
+열어 볼 자리가 아니므로, 같은 검사를 GitHub 커밋 목록에 초록불/빨간불로 남기는 역할이다.
+공개 저장소라 실행 시간은 무제한 무료다.
 
 ## 검증
 

@@ -21,8 +21,10 @@ import photoPartTank from '../assets/photo-part-tank.jpg';
 import photoPartMesh from '../assets/photo-part-mesh.jpg';
 import photoPartNozzle from '../assets/photo-part-nozzle.jpg';
 import photoPartPiston from '../assets/photo-part-piston.jpg';
-import photoWorkLivestockBarn from '../assets/photo-work-livestock-barn.jpg';
 import photoCleaningBase from '../assets/photo-cleaning-base.jpg';
+
+import { HOME_PAGE } from './pages';
+import { assetFileName } from '../lib/page-content';
 
 import {
   CUSTOMER_USE_VIDEOS,
@@ -60,6 +62,13 @@ export interface PhotoSlotEntry {
   image?: ImageMetadata;
   /** 비었거나 임시일 때, 무엇을 어떻게 찍어야 하는가 */
   note?: string;
+  /**
+   * 편집 화면(/admin/)에서 직접 바꿀 수 있는 자리면, 어디를 열어야 하는지.
+   * 예: '홈 화면 → 첫 화면 → 사진'
+   *
+   * 비어 있는 자리는 아직 코드에 박혀 있어서 개발자를 거쳐야 한다.
+   */
+  editIn?: string;
 }
 
 export const PHOTO_SLOTS: PhotoSlotEntry[] = [
@@ -70,8 +79,10 @@ export const PHOTO_SLOTS: PhotoSlotEntry[] = [
     what: '성인이 한 손으로 들고 선 컷',
     ratio: '세로 3:4',
     status: 'temporary',
-    file: 'photo-bf-102.jpg',
-    image: photoBf102,
+    // 파일명을 손으로 적지 않는다 — 편집 화면에서 사진을 바꾸면 이 목록도 같이 따라온다
+    file: assetFileName(HOME_PAGE.hero.image.path),
+    image: HOME_PAGE.hero.image.meta,
+    editIn: '홈 화면 → 첫 화면 → 사진',
     note: '지금은 흰 배경 제품 컷이 임시로 들어가 있습니다. 어두운 배경에 사람이 들고 선 컷으로 바꾸면 크기가 몸으로 증명됩니다. 얼굴은 안 나와도 됩니다.',
   },
   {
@@ -81,8 +92,9 @@ export const PHOTO_SLOTS: PhotoSlotEntry[] = [
     what: '사람이 들고 이동하며 분사하는 전신',
     ratio: '가로 4:3',
     status: 'final',
-    file: 'photo-work-livestock-barn.jpg',
-    image: photoWorkLivestockBarn,
+    file: assetFileName(HOME_PAGE.works.image.path),
+    image: HOME_PAGE.works.image.meta,
+    editIn: '홈 화면 → 현장 사진 → 사진',
   },
   {
     no: '③',

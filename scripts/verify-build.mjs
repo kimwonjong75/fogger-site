@@ -566,6 +566,9 @@ for (const file of pages) {
 
     const collections = config?.collections ?? [];
     for (const collection of collections) {
+      // 화면 문구(files 컬렉션)는 폴더 문서와 구조가 달라 아래 "화면 문구" 검사에서 따로 본다
+      if (collection.files) continue;
+
       const fields = collection.fields ?? [];
       const byName = new Map(fields.map((f) => [f.name, f]));
 
@@ -649,6 +652,118 @@ for (const file of pages) {
   }
 }
 
+/* ---------- 편집 화면 입력칸 ↔ 화면 문구 파일 대조 ----------
+ *
+ * **이 검사가 없으면 조용히 글이 사라진다.**
+ *
+ * Sveltia CMS 는 저장할 때 "설정에 적힌 입력칸"만 파일에 다시 쓴다. 그래서 화면 문구
+ * JSON 에 있는 항목을 config.yml 에 안 적어 두면, 사장님이 그 화면을 한 번 저장하는
+ * 순간 그 항목이 파일에서 지워진다 — 화면에서 문구가 통째로 사라지고, 사장님은
+ * 자기가 건드린 적 없는 곳이라 원인을 알 수 없다.
+ *
+ * 반대 방향(설정에만 있고 파일에 없는 입력칸)은 저장 전까지 화면이 빈칸으로 보이거나
+ * 필수 항목이라며 저장을 막는다.
+ *
+ * 그래서 양쪽 항목 이름을 통째로 맞춰 본다.
+ */
+{
+  const configPath = join(DIST, 'admin', 'config.yml');
+  if (size(configPath) !== null) {
+    let config = null;
+    try {
+      config = parseYaml(readFileSync(configPath, 'utf8'));
+    } catch {
+      // 위 블록에서 이미 보고했다
+    }
+
+    /** 설정의 입력칸 정의에서 "이 자리에 올 항목 이름" 집합을 뽑는다 */
+    const fieldNames = (fields) => new Set((fields ?? []).map((f) => f.name));
+
+    /**
+     * 설정(fields)과 실제 값(value)을 같은 깊이에서 나란히 훑는다.
+     * 객체는 항목 이름을 맞춰 보고, 목록은 첫 번째 값의 모양으로 대표해서 본다.
+     */
+    const compare = (fields, value, where, label) => {
+      if (value === null || typeof value !== 'object' || Array.isArray(value)) return;
+
+      const declared = fieldNames(fields);
+      const actual = new Set(Object.keys(value));
+
+      for (const name of actual) {
+        if (!declared.has(name)) {
+          fail(
+            `[admin] ${where} 의 "${label}${name}" 이(가) 편집 화면 설정에 없습니다 — ` +
+              `사장님이 이 화면을 저장하면 그 내용이 파일에서 사라집니다. ` +
+              `public/admin/config.yml 에 입력칸을 추가하세요`,
+          );
+        }
+      }
+      for (const name of declared) {
+        const field = (fields ?? []).find((f) => f.name === name);
+        if (!actual.has(name)) {
+          // 선택 항목은 값이 없어도 정상이다
+          if (field?.required === false) continue;
+          fail(
+            `[admin] ${where} 에 편집 화면이 요구하는 "${label}${name}" 값이 없습니다 — ` +
+              `편집 화면에서 이 화면을 열면 빈칸이거나 저장이 막힙니다`,
+          );
+          continue;
+        }
+
+        const child = value[name];
+        if (field?.widget === 'object') {
+          compare(field.fields, child, where, `${label}${name} → `);
+        } else if (field?.widget === 'list' && Array.isArray(child) && field.fields) {
+          // 목록 안 항목들의 모양은 서로 같아야 하므로 전부 확인한다
+          child.forEach((item, i) => {
+            compare(field.fields, item, where, `${label}${name}[${i + 1}] → `);
+          });
+        }
+      }
+    };
+
+    for (const collection of config?.collections ?? []) {
+      for (const entry of collection.files ?? []) {
+        const filePath = join(ROOT, entry.file);
+        if (size(filePath) === null) {
+          fail(`[admin] "${entry.label}" 이 가리키는 ${entry.file} 파일이 없습니다`);
+          continue;
+        }
+
+        let value = null;
+        try {
+          value = JSON.parse(readFileSync(filePath, 'utf8'));
+        } catch (error) {
+          fail(`[admin] ${entry.file} 을(를) 읽을 수 없습니다: ${error.message}`);
+          continue;
+        }
+
+        compare(entry.fields, value, `"${entry.label}"`, '');
+      }
+    }
+  }
+}
+
+/* ---------- 화면 문구 안의 숫자 자리표시자 ----------
+ *
+ * `{{충전한도}}` 처럼 적은 것은 빌드할 때 실제 값으로 바뀐다. 바뀌지 않고 산출물까지
+ * 흘러갔다면 이름을 잘못 적은 것이고, 방문자 화면에 중괄호가 그대로 찍힌다.
+ * (src/lib/page-content.ts 가 빌드를 세우므로 여기까지 올 일은 없지만, 검사 비용이
+ *  거의 없고 잡히면 화면이 망가진 상태라 마지막 그물로 둔다)
+ */
+{
+  for (const file of pages) {
+    const html = readFileSync(file, 'utf8');
+    const leftover = html.match(/\{\{\s*[^}\s]+\s*\}\}/);
+    if (leftover) {
+      fail(
+        `[${urlPathFor(file)}] 자리표시자 "${leftover[0]}" 가 그대로 화면에 나왔습니다 — ` +
+          `이름을 잘못 적었습니다`,
+      );
+    }
+  }
+}
+
 /* ---------- 설정 파일의 자리표시자 (산출물에는 안 나오지만 배포를 막아야 하는 것) ---------- */
 {
   const siteConfig = readFileSync(join(ROOT, 'src', 'data', 'site.ts'), 'utf8');
@@ -696,18 +811,42 @@ for (const file of pages) {
   const mapPath = join(ROOT, 'src', 'data', 'media-map.ts');
   const map = readFileSync(mapPath, 'utf8');
 
+  /**
+   * 편집 화면에서 고른 사진은 지도에 파일명이 적혀 있지 않다.
+   * 지도가 화면 문구 파일에서 파일명을 읽어가기 때문이다 (media-map.ts 의 assetFileName 참조).
+   * 그래서 "어딘가에서 쓰이고 있는가"를 볼 때 화면 문구 파일도 함께 본다.
+   */
+  const pagesDir = join(CONTENT, 'pages');
+  let pageContentText = '';
+  try {
+    for (const file of readdirSync(pagesDir).filter((f) => f.endsWith('.json'))) {
+      pageContentText += readFileSync(join(pagesDir, file), 'utf8');
+    }
+  } catch {
+    fail('[화면 문구] src/content/pages 폴더를 찾을 수 없습니다');
+  }
+
+  const referenced = (name) => map.includes(name) || pageContentText.includes(name);
+
   const assetsDir = join(ROOT, 'src', 'assets');
   const photos = readdirSync(assetsDir).filter((f) => /^photo-.*\.(jpg|png)$/.test(f));
   for (const photo of photos) {
-    if (!map.includes(photo)) {
-      fail(
-        `[media-map.ts] src/assets/${photo} 가 미디어 지도에 없습니다 — ` +
-          `PHOTO_SLOTS 에 추가하세요 (안 그러면 /admin/media/ 에서 안 보입니다)`,
+    if (!referenced(photo)) {
+      // 실패가 아니라 경고다.
+      //
+      // 편집 화면에서 사진을 바꾸면 예전 사진 파일은 src/assets 에 그대로 남는다.
+      // 이것을 실패로 잡으면 "사진을 바꿨더니 사이트가 배포되지 않는" 상황이 되고,
+      // 사장님은 원인을 알 수 없다. 안 쓰는 파일이 남는 것은 화면을 망가뜨리지 않으므로
+      // 알려만 주고 배포는 막지 않는다.
+      warn(
+        `src/assets/${photo} 를 아무 화면도 쓰고 있지 않습니다 — ` +
+          `사진을 바꾸면서 남은 예전 파일이면 지워도 됩니다`,
       );
     }
   }
 
-  // 반대 방향 — 지도가 가리키는 파일이 실제로 있는가
+  // 반대 방향 — 지도가 가리키는 파일이 실제로 있는가.
+  // 이쪽은 실패다. 없는 파일을 가리키면 /admin/media/ 화면이 현실과 어긋난다.
   for (const [, name] of map.matchAll(/file:\s*'(photo-[^']+)'/g)) {
     if (!photos.includes(name)) {
       fail(`[media-map.ts] 지도에 적힌 src/assets/${name} 파일이 없습니다`);
