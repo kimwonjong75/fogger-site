@@ -73,6 +73,8 @@ export default defineConfig({
       filter: (page) => {
         const path = new URL(page).pathname;
         if (path === '/404/' || path === '/404') return false;
+        // 사장님 작업용 화면(미디어 지도)은 noindex라 사이트맵에도 넣지 않는다
+        if (path.startsWith('/admin/')) return false;
         if (noindexCollectionPaths.includes(path)) return false;
         return true;
       },

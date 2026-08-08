@@ -1,0 +1,467 @@
+---
+/**
+ * 미디어 지도 — 사장님이 "이 사진이 어디 있는지 / 어디가 비었는지" 보는 화면.
+ *
+ * 사진 자리표시자는 개발 서버에서만 보이는데 사장님은 개발 서버를 켜지 않는다.
+ * 그래서 실제 사이트에 올라가는 화면으로 만들되, 검색에는 안 잡히게 한다.
+ * 문서 편집 화면(/admin/)과 같은 자리에 둬서 한 군데서 다 보이게 했다.
+ *
+ * BaseLayout을 쓰지 않는다 — 헤더·푸터·구매바가 붙으면 지도를 보는 데 방해가 되고,
+ * 이 화면은 방문자용이 아니라 사장님 작업용이기 때문이다.
+ */
+import { Image } from 'astro:assets';
+import {
+  PHOTO_SLOTS,
+  PHOTO_SOURCE_FOLDER,
+  STATUS_LABEL,
+  VIDEO_SLOTS,
+  type SlotStatus,
+} from '../../data/media-map';
+import { SITE } from '../../data/site';
+
+const order: Record<SlotStatus, number> = { empty: 0, temporary: 1, final: 2 };
+const photos = [...PHOTO_SLOTS].sort((a, b) => order[a.status] - order[b.status]);
+
+const counts = {
+  empty: PHOTO_SLOTS.filter((s) => s.status === 'empty').length,
+  temporary: PHOTO_SLOTS.filter((s) => s.status === 'temporary').length,
+  final: PHOTO_SLOTS.filter((s) => s.status === 'final').length,
+};
+
+const fmtDuration = (sec: number) => {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return m > 0 ? `${m}분 ${s}초` : `${s}초`;
+};
+---
+
+<!doctype html>
+<html lang={SITE.lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>미디어 지도 — {SITE.name}</title>
+    {/* 사장님 작업용 화면이라 검색에 잡히면 안 된다 */}
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="stylesheet" href="/fonts/pretendard/pretendard.css" />
+  </head>
+
+  <body>
+    <main>
+      <header class="head">
+        <p class="kicker">Blue Guard / Media Map</p>
+        <h1>사진·영상이 어디에 있는지</h1>
+        <p class="lede">
+          사이트에 들어가는 사진과 영상을 전부 모아 놓은 화면입니다.
+          바꾸고 싶은 것이 있으면 <strong>번호나 사진 이름</strong>을 알려 주세요.
+        </p>
+
+        <ul class="tally">
+          <li class="tally--empty"><b>{counts.empty}</b><span>비어 있음</span></li>
+          <li class="tally--temp"><b>{counts.temporary}</b><span>임시 사진</span></li>
+          <li class="tally--final"><b>{counts.final}</b><span>완료</span></li>
+        </ul>
+      </header>
+
+      <section aria-labelledby="how">
+        <h2 id="how">새 사진을 넣으시려면</h2>
+        <ol class="how">
+          <li>아래에서 <strong>비어 있음</strong>이나 <strong>임시 사진</strong>인 자리를 찾습니다.</li>
+          <li>
+            사진을 이 폴더에 넣습니다.
+            <code class="path">{PHOTO_SOURCE_FOLDER}</code>
+          </li>
+          <li>
+            <strong>파일 이름에 무엇인지 적어 주세요.</strong> 예: <code>블루가드 연막기 노즐.jpg</code>
+            — 이름이 <code>20260808_1234.jpg</code> 같으면 어느 사진인지 알 수 없어 되묻게 됩니다.
+          </li>
+          <li>“③에 넣어 주세요” 또는 “노즐 사진 바꿔 주세요”라고 알려 주시면 넣습니다.</li>
+        </ol>
+      </section>
+
+      <section aria-labelledby="photos">
+        <h2 id="photos">사진 {PHOTO_SLOTS.length}자리</h2>
+        <p class="hint">비어 있는 자리가 위로 옵니다.</p>
+
+        <ul class="grid">
+          {
+            photos.map((slot) => (
+              <li class:list={['card', `card--${slot.status}`]}>
+                <div class="thumb">
+                  {slot.image ? (
+                    <Image
+                      src={slot.image}
+                      alt={`${slot.what} 현재 사진`}
+                      width={260}
+                      height={260}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ) : (
+                    <span class="thumb__none">사진 없음</span>
+                  )}
+                </div>
+
+                <div class="body">
+                  <p class="tags">
+                    {slot.no && <span class="tag tag--no">{slot.no}</span>}
+                    <span class:list={['tag', `tag--${slot.status}`]}>
+                      {STATUS_LABEL[slot.status]}
+                    </span>
+                    <span class="tag tag--ratio">{slot.ratio}</span>
+                  </p>
+
+                  <p class="what">{slot.what}</p>
+                  <p class="place">
+                    <b>{slot.page}</b>
+                    <span>{slot.where}</span>
+                  </p>
+                  {slot.file && <p class="file">{slot.file}</p>}
+                  {slot.note && <p class="note">{slot.note}</p>}
+                </div>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <section aria-labelledby="videos">
+        <h2 id="videos">영상 {VIDEO_SLOTS.length}개</h2>
+        <p class="hint">
+          영상은 클릭하기 전까지 재생되지 않으므로 페이지 속도에 영향이 없습니다.
+          <strong>검색 데이터</strong>가 붙은 영상은 그 화면에서 검색 노출에 쓰입니다.
+        </p>
+
+        <ul class="grid">
+          {
+            VIDEO_SLOTS.map((slot) => (
+              <li class="card card--video">
+                <div class="thumb">
+                  <Image
+                    src={slot.video.poster}
+                    alt={`${slot.video.title} 대표 이미지`}
+                    width={260}
+                    height={260}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+                <div class="body">
+                  <p class="tags">
+                    <span class="tag tag--ratio">{fmtDuration(slot.video.durationSec)}</span>
+                    {slot.schemaOn && <span class="tag tag--schema">검색 데이터</span>}
+                  </p>
+                  <p class="what">{slot.video.title}</p>
+                  <p class="place">
+                    <b>{slot.pages.join(', ')}</b>
+                    <span>{slot.where}</span>
+                  </p>
+                  <p class="file">{slot.video.src.replace('/video/', '')}</p>
+                </div>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <footer class="foot">
+        <p>
+          이 화면은 검색에 잡히지 않습니다. 주소를 아는 사람만 볼 수 있고, 여기서 무언가를
+          고칠 수는 없습니다 — 보기만 하는 화면입니다.
+        </p>
+        <p><a href="/admin/">← 문서 편집 화면으로</a> · <a href="/">사이트 홈</a></p>
+      </footer>
+    </main>
+
+    <style is:global>
+      :root {
+        --navy: #004282;
+        --cyan: #008fd5;
+        --ink: #0c1b33;
+        --muted: #46586f;
+        --faint: #7c8ca1;
+        --line: #dce4ee;
+        --page: #f4f7fb;
+        --empty: #b91c1c;
+        --temp: #b45309;
+        --final: #047857;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--ink);
+        font-family: 'Pretendard Variable', Pretendard, system-ui, 'Malgun Gothic', sans-serif;
+        line-height: 1.7;
+        word-break: keep-all;
+        overflow-wrap: anywhere;
+      }
+
+      main {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 0 20px 5rem;
+      }
+
+      .head {
+        padding: 3.5rem 0 0;
+      }
+
+      .kicker {
+        margin: 0 0 0.6rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--cyan);
+      }
+
+      h1 {
+        margin: 0 0 0.8rem;
+        font-size: clamp(1.9rem, 4.5vw, 2.6rem);
+        font-weight: 700;
+        letter-spacing: -0.025em;
+        line-height: 1.25;
+      }
+
+      .lede {
+        margin: 0;
+        max-width: 60ch;
+        color: var(--muted);
+      }
+
+      .tally {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        list-style: none;
+        margin: 1.75rem 0 0;
+        padding: 0;
+      }
+
+      .tally li {
+        display: flex;
+        align-items: baseline;
+        gap: 0.4rem;
+        padding: 0.5rem 1rem;
+        border-radius: 999px;
+        background: #fff;
+        border: 1px solid var(--line);
+        font-size: 0.9rem;
+      }
+
+      .tally b {
+        font-size: 1.15rem;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .tally--empty b {
+        color: var(--empty);
+      }
+      .tally--temp b {
+        color: var(--temp);
+      }
+      .tally--final b {
+        color: var(--final);
+      }
+
+      h2 {
+        margin: 3.5rem 0 0.4rem;
+        font-size: 1.4rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      .hint {
+        margin: 0 0 1.25rem;
+        color: var(--muted);
+        font-size: 0.92rem;
+        max-width: 62ch;
+      }
+
+      .how {
+        margin: 1rem 0 0;
+        padding-left: 1.3rem;
+        display: grid;
+        gap: 0.6rem;
+        max-width: 66ch;
+        color: var(--muted);
+      }
+
+      .how strong {
+        color: var(--ink);
+      }
+
+      code {
+        font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+        font-size: 0.86em;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 0.1em 0.4em;
+      }
+
+      .path {
+        display: block;
+        margin-top: 0.4rem;
+        padding: 0.55rem 0.7rem;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+
+      .grid {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1rem;
+      }
+
+      .card {
+        display: grid;
+        grid-template-columns: 110px 1fr;
+        gap: 1rem;
+        padding: 0.9rem;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+      }
+
+      .card--empty {
+        border-color: #f3c3c3;
+        background: #fffafa;
+      }
+
+      .thumb {
+        width: 110px;
+        height: 110px;
+        border-radius: 10px;
+        overflow: hidden;
+        background: var(--page);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .thumb__none {
+        font-size: 0.78rem;
+        color: var(--faint);
+        text-align: center;
+      }
+
+      .body {
+        min-width: 0;
+      }
+
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.3rem;
+        margin: 0 0 0.4rem;
+      }
+
+      .tag {
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 0.15rem 0.5rem;
+        border-radius: 4px;
+        background: var(--page);
+        color: var(--muted);
+      }
+
+      .tag--no {
+        background: var(--navy);
+        color: #fff;
+      }
+      .tag--empty {
+        background: #fee2e2;
+        color: var(--empty);
+      }
+      .tag--temporary {
+        background: #fef3c7;
+        color: var(--temp);
+      }
+      .tag--final {
+        background: #d1fae5;
+        color: var(--final);
+      }
+      .tag--schema {
+        background: #e4f1fb;
+        color: var(--navy);
+      }
+
+      .what {
+        margin: 0 0 0.3rem;
+        font-weight: 700;
+        font-size: 0.98rem;
+        letter-spacing: -0.015em;
+      }
+
+      .place {
+        margin: 0;
+        font-size: 0.84rem;
+        color: var(--muted);
+        display: grid;
+        gap: 0.1rem;
+      }
+
+      .place b {
+        color: var(--navy);
+        font-weight: 700;
+      }
+
+      .file {
+        margin: 0.45rem 0 0;
+        font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+        font-size: 0.76rem;
+        color: var(--faint);
+      }
+
+      .note {
+        margin: 0.5rem 0 0;
+        font-size: 0.84rem;
+        line-height: 1.6;
+        color: var(--muted);
+        padding-top: 0.5rem;
+        border-top: 1px dashed var(--line);
+      }
+
+      .foot {
+        margin-top: 4rem;
+        padding-top: 1.25rem;
+        border-top: 1px solid var(--line);
+        font-size: 0.86rem;
+        color: var(--faint);
+      }
+
+      .foot a {
+        color: var(--navy);
+      }
+
+      @media (max-width: 420px) {
+        .card {
+          grid-template-columns: 84px 1fr;
+        }
+
+        .thumb {
+          width: 84px;
+          height: 84px;
+        }
+      }
+    </style>
+  </body>
+</html>

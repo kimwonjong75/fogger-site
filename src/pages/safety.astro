@@ -131,7 +131,7 @@ const limits = [
     margin-top: 1rem;
     height: 40px;
     padding: 0 1rem;
-    border-radius: 8px;
+    border-radius: var(--r-btn);
     border: 1.5px solid var(--c-border-strong);
     background: var(--c-surface);
     color: var(--c-text);
@@ -157,14 +157,13 @@ const limits = [
 
   .rules li {
     padding: 1rem 1.15rem;
-    border: 1px solid var(--c-border);
-    border-left: 4px solid var(--c-warn);
-    border-radius: 8px;
+    border: 1.5px solid var(--c-warn-border);
+    border-radius: var(--r-btn);
     background: var(--c-surface);
   }
 
   .rules li.is-critical {
-    border-left-color: var(--c-danger);
+    border-color: var(--c-danger);
   }
 
   .rules h3 {
@@ -180,7 +179,7 @@ const limits = [
     font-size: 0.72rem;
     font-weight: 700;
     padding: 0.1rem 0.4rem;
-    border-radius: 4px;
+    border-radius: var(--r-tag);
     background: var(--c-warn-soft);
     color: var(--c-warn-text);
   }
@@ -206,7 +205,7 @@ const limits = [
     margin-top: 2.5rem;
     padding: 1.35rem;
     border: 1px solid var(--c-warn-border);
-    border-radius: 10px;
+    border-radius: var(--r-btn);
     background: var(--c-warn-soft);
   }
 

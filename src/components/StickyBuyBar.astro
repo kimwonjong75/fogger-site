@@ -53,7 +53,7 @@ const href = withUtm(product?.buyUrl ?? OFFICIAL_STORE_PRODUCT_URL, { content })
     bottom: 0;
     z-index: 40;
     height: 60px;
-    background: rgb(10 16 28 / 0.96);
+    background: rgb(4 42 96 / 0.96);
     border-top: 1px solid rgb(255 255 255 / 0.1);
     box-shadow: 0 -12px 30px rgb(4 9 18 / 0.2);
     backdrop-filter: blur(14px);
@@ -96,15 +96,15 @@ const href = withUtm(product?.buyUrl ?? OFFICIAL_STORE_PRODUCT_URL, { content })
     align-items: center;
     height: 44px;
     padding: 0 1.25rem;
-    border-radius: 999px;
-    background: linear-gradient(100deg, var(--c-yellow), #ff6a00);
-    color: #17110a;
-    font-weight: 850;
+    border-radius: var(--r-pill);
+    background: var(--grad-cta);
+    color: var(--c-on-cta);
+    font-weight: 700;
     text-decoration: none;
   }
 
   .sticky-bar__cta:hover {
-    background: linear-gradient(100deg, #ffc13b, #ff7b1a);
+    background: var(--grad-cta-hover);
   }
 
   @media (min-width: 721px) {

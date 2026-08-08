@@ -61,6 +61,19 @@ const jsonLd = graph([breadcrumbSchema(allCrumbs), ...schemaNodes]);
       updatedDate={updatedDate}
       jsonLd={jsonLd}
     />
+    {/*
+      브랜드 글꼴. 92개 unicode-range 조각으로 나뉘어 있어 브라우저가 그 페이지에
+      실제로 쓰인 글자가 든 조각만 받는다. 첫 조각(라틴·숫자·기호)만 미리 받아 두면
+      제목이 시스템 글꼴로 한 번 그려졌다가 바뀌는 깜빡임이 줄어든다.
+    */}
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="/fonts/pretendard/woff2/PretendardVariable.subset.0.woff2"
+      crossorigin
+    />
+    <link rel="stylesheet" href="/fonts/pretendard/pretendard.css" />
     <link rel="alternate" type="application/rss+xml" title={SITE.name} href="/rss.xml" />
     <Analytics />
   </head>
@@ -85,30 +98,72 @@ const jsonLd = graph([breadcrumbSchema(allCrumbs), ...schemaNodes]);
 
 <style is:global>
   :root {
-    --c-text: #0f172a;
-    --c-text-muted: #52627a;
-    --c-surface: #ffffff;
-    --c-surface-alt: #f5f6f8;
-    --c-border: #e2e8f0;
-    --c-border-strong: #cbd5e1;
-    --c-accent: #f59e0b;
     /*
-     * 본문 글자·테두리·포커스에 쓰는 진한 주황.
-     * 배경이 흰색(#fff)에서 연회색(#f6f7f9)으로 바뀌면서 이전 값 #b85c00 이 4.29:1 로
-     * 떨어져 WCAG AA(4.5:1)를 못 넘겼다. 지금 값은 연회색 위 4.98:1, 흰 배경 5.34:1,
-     * 어두운 패널(#0a101c) 위 3.56:1 로 밝은 곳과 어두운 곳 모두에서 성립한다.
-     * --c-accent(#f59e0b)는 흰 배경에서 2.15:1 이므로 글자·테두리에는 쓰지 않는다.
+     * ── 블루가드 브랜드 색 ──
+     * 상표권 폴더의 공식 로고에서 뽑은 값이다. 사이트가 쓰는 src/assets/brand/wordmark.png 는
+     * 그 원본과 바이트 단위로 같은 파일이라, 로고와 화면 색이 어긋나면 안 된다.
+     *
+     * 브랜드 색은 네이비·시안 두 파랑과 회색뿐이다. 이전 강조색 #f59e0b 는 Tailwind
+     * 기본 팔레트(amber-500)였고 로고와 무관했다. 제품 본체의 노랑은 사진 안에만 남기고
+     * UI 색으로는 쓰지 않는다 — 안전 경고(--c-warn)와 헷갈리는 것도 막는다.
      */
-    --c-accent-dark: #a85400;
-    --c-accent-soft: #fff3dc;
-    /* 어두운 배경 블록 — 히어로·수치 강조에 사용 */
-    --c-ink: #0a101c;
-    --c-ink-2: #111b2e;
-    --c-on-ink: #f4f7fb;
-    --c-on-ink-dim: #aab5c7;
-    /* 제품 본체 색에서 추출한 브랜드 옐로. 안전경고(--c-warn)와는 명도·용도를 분리해서 쓴다. */
-    --c-yellow: #ffb20b;
-    --c-yellow-dark: #e48700;
+    --c-navy: #004282;
+    --c-cyan: #008fd5;
+    /* 로고 G마크의 중간 톤. 시안과 네이비 사이를 잇는 값이라 그라디언트 끝에 쓴다 */
+    --c-blue: #006cb8;
+    /*
+     * 액센트 바용 그라디언트.
+     * 파랑 계열 안에서만 움직인다 — 디자인 시스템이 여러 색을 섞는 그라디언트를 금한다.
+     */
+    --grad-brand: linear-gradient(100deg, var(--c-cyan), var(--c-blue));
+    /*
+     * 구매 버튼 전용.
+     *
+     * 시안 위에는 흰 글자가 3.57:1 로 AA에 미달해서 진한 네이비 글자를 얹는다.
+     * 그라디언트라 양 끝이 모두 4.5:1 을 넘어야 한다 — 지금 값은 6.05:1 / 4.81:1 이다.
+     *
+     * 디자인 시스템의 hover 규칙은 "한 단계 어둡게"지만 여기서는 반대로 밝힌다.
+     * 시안을 더 어둡게 하면 --c-blue(#006cb8) 쪽으로 가는데 거기서는 진한 글자가
+     * 3.13:1 로 무너진다. 밝히는 쪽은 7.21:1 / 5.15:1 로 오히려 여유가 늘어난다.
+     */
+    --grad-cta: linear-gradient(100deg, #19a3e5, var(--c-cyan));
+    --grad-cta-hover: linear-gradient(100deg, #38b3ec, #0d95d8);
+    --c-on-cta: #001b3d;
+
+    --c-text: #0c1b33;
+    --c-text-muted: #46586f;
+    --c-surface: #ffffff;
+    --c-surface-alt: #f1f5fa;
+    --c-border: #dce4ee;
+    --c-border-strong: #bccbdd;
+
+    /* 채움·아이콘용 시안. 흰 배경 3.57:1 이라 본문 글자에는 쓰지 않는다 */
+    --c-accent: var(--c-cyan);
+    /*
+     * 본문 글자·테두리에 쓰는 진한 파랑.
+     * 흰 배경 9.99:1, 연회색(#f1f5fa) 위 9.2:1. 이전 주황(--c-accent-dark #a85400)이
+     * 5.34:1 로 아슬아슬했던 것과 달리 여유가 크다.
+     */
+    --c-accent-dark: var(--c-navy);
+    --c-accent-soft: #e4f1fb;
+    /*
+     * 포커스 테두리 전용.
+     * --c-accent-dark 는 어두운 패널(--c-ink #042a60) 위에서 1.9:1 이라 쓸 수 없다.
+     * 시안은 밝은 배경 3.57:1, 어두운 패널 위 5.34:1 로 양쪽 다 UI 기준(3:1)을 넘긴다.
+     */
+    --c-focus: var(--c-cyan);
+
+    /* 어두운 배경 블록 — 히어로·수치 강조에 사용. 로고 그림자면의 딥네이비다 */
+    --c-ink: #042a60;
+    --c-ink-2: #04305f;
+    --c-on-ink: #eaf2fb;
+    --c-on-ink-dim: #9fb8d0;
+
+    /*
+     * 안전 경고는 브랜드 색과 분리해서 쓴다.
+     * 디자인 시스템은 "경고에 빨강을 쓰지 말라"고 하지만 그것은 살충제 기준이다.
+     * 연막소독기는 화기·고온 위험이 실재하므로 --c-danger 는 그대로 둔다.
+     */
     --c-warn: #d97706;
     --c-warn-soft: #fffbeb;
     --c-warn-border: #fcd9a4;
@@ -119,13 +174,30 @@ const jsonLd = graph([breadcrumbSchema(allCrumbs), ...schemaNodes]);
     --w-narrow: 760px;
     --pad-x: 20px;
 
-    /* 그림자 — 웹폰트 없이 깊이를 만드는 거의 유일한 수단이라 값을 통일해 쓴다 */
-    --shadow-sm: 0 1px 2px rgb(11 37 69 / 0.06);
-    --shadow-md: 0 18px 50px -24px rgb(11 18 32 / 0.35), 0 2px 8px rgb(11 18 32 / 0.08);
+    /*
+     * 모서리 — 디자인 시스템이 정한 단계. 이 밖의 값은 쓰지 않는다.
+     * 이전에는 사이트 안에 12종이 흩어져 있어 규칙이 없어 보였다.
+     */
+    --r-tag: 4px;
+    --r-sm: 6px;
+    --r-btn: 10px;
+    --r-card: 16px;
+    --r-tile: 20px;
+    --r-panel: 24px;
+    --r-hero: 32px;
+    --r-pill: 999px;
 
-    /* 웹폰트 0 — 시스템 폰트만 사용 */
-    --font-sans: system-ui, -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', '맑은 고딕',
-      'Segoe UI', Roboto, sans-serif;
+    /* 그림자는 중성 검정이 아니라 차가운 네이비 기운으로 — 디자인 시스템 규정 */
+    --shadow-sm: 0 1px 2px rgb(9 32 63 / 0.06);
+    --shadow-md: 0 18px 50px -24px rgb(9 32 63 / 0.35), 0 2px 8px rgb(9 32 63 / 0.08);
+
+    /*
+     * 브랜드 지정 글꼴. public/fonts/pretendard/ 에 자체 호스팅한 변수 폰트를 쓴다.
+     * unicode-range 로 92조각이 나뉘어 있어 브라우저는 그 페이지에 실제로 쓰인
+     * 글자가 든 조각만 내려받는다. 사장님이 편집 화면에서 어떤 글자를 넣어도 빠지지 않는다.
+     */
+    --font-sans: 'Pretendard Variable', Pretendard, system-ui, -apple-system,
+      'Apple SD Gothic Neo', 'Malgun Gothic', '맑은 고딕', 'Segoe UI', Roboto, sans-serif;
     /* 수치 표기 전용 — 폭 고정 숫자로 표가 흔들리지 않게 한다 */
     --font-num: ui-monospace, 'SF Mono', 'Cascadia Mono', Consolas, monospace;
   }
@@ -186,8 +258,14 @@ const jsonLd = graph([breadcrumbSchema(allCrumbs), ...schemaNodes]);
 
   /*
    * 타이포 스케일.
-   * 웹폰트를 못 쓰는 대신 크기·굵기·자간 대비를 크게 벌려 위계를 만든다.
-   * 한글은 라틴보다 자간이 넓어 보이므로 큰 제목일수록 letter-spacing을 더 조인다.
+   *
+   * 이전에는 웹폰트가 없어 굵기 850·750 같은 값으로 위계를 억지로 벌렸다. 시스템 글꼴에는
+   * 그런 굵기가 없어 브라우저가 700으로 눌러 그렸기 때문에 실제로는 문제가 없었다.
+   * 지금은 Pretendard 변수 폰트라 850을 적으면 진짜 850으로 그려져 과하게 뭉친다.
+   * 그래서 제목은 모두 700으로 맞추고 위계는 크기와 자간이 지게 했다.
+   *
+   * 한글은 라틴보다 자간이 넓어 보이므로 조여 주되, 디자인 시스템의 -0.02em 을 기준으로
+   * 큰 제목만 조금 더 당긴다. 이전 -0.05em 은 Pretendard 에서 글자가 붙어 보인다.
    */
   h1,
   h2,
@@ -200,15 +278,15 @@ const jsonLd = graph([breadcrumbSchema(allCrumbs), ...schemaNodes]);
 
   h1 {
     font-size: clamp(2.1rem, 5.2vw, 3.1rem);
-    font-weight: 850;
-    letter-spacing: -0.05em;
+    font-weight: 700;
+    letter-spacing: -0.025em;
     margin: 0.5rem 0 0.9rem;
   }
 
   h2 {
     font-size: clamp(1.75rem, 3.6vw, 2.45rem);
-    font-weight: 850;
-    letter-spacing: -0.045em;
+    font-weight: 700;
+    letter-spacing: -0.025em;
     margin: 5rem 0 1rem;
   }
 
@@ -223,14 +301,14 @@ const jsonLd = graph([breadcrumbSchema(allCrumbs), ...schemaNodes]);
    */
   .shell--narrow h1 {
     font-size: clamp(1.9rem, 5.2vw, 2.65rem);
-    font-weight: 800;
-    letter-spacing: -0.035em;
+    font-weight: 700;
+    letter-spacing: -0.02em;
   }
 
   .shell--narrow h2 {
     font-size: clamp(1.4rem, 3.4vw, 1.75rem);
-    font-weight: 750;
-    letter-spacing: -0.025em;
+    font-weight: 700;
+    letter-spacing: -0.02em;
     margin: 3rem 0 1rem;
   }
 
@@ -248,8 +326,8 @@ const jsonLd = graph([breadcrumbSchema(allCrumbs), ...schemaNodes]);
     display: block;
     width: 42px;
     height: 3px;
-    border-radius: 2px;
-    background: linear-gradient(90deg, var(--c-yellow), #ff6a00);
+    border-radius: var(--r-pill);
+    background: var(--grad-brand);
     margin-bottom: 0.9rem;
   }
 
@@ -282,14 +360,14 @@ const jsonLd = graph([breadcrumbSchema(allCrumbs), ...schemaNodes]);
   }
 
   /*
-   * 포커스 테두리는 --c-accent(#f59e0b)를 쓰지 않는다. 흰 배경에서 2.15:1 이라
-   * UI 요소 기준(3:1)에 미달해 키보드 사용자가 어디에 있는지 안 보인다.
-   * --c-accent-dark 는 밝은 배경 5.34:1, 어두운 패널 3.56:1 로 양쪽 다 성립한다.
+   * 포커스는 밝은 화면과 어두운 패널 양쪽에서 보여야 한다.
+   * --c-accent-dark(네이비)는 흰 배경 9.99:1 로 좋지만 어두운 패널 위에서 1.9:1 이라
+   * 히어로·수치 블록 안에서는 사라진다. --c-focus(시안)는 3.57:1 / 5.34:1 로 양쪽 다 넘긴다.
    */
   a:focus-visible,
   button:focus-visible,
   summary:focus-visible {
-    outline: 3px solid var(--c-accent-dark);
+    outline: 3px solid var(--c-focus);
     outline-offset: 2px;
   }
 
@@ -307,13 +385,13 @@ const jsonLd = graph([breadcrumbSchema(allCrumbs), ...schemaNodes]);
   code {
     background: var(--c-surface-alt);
     padding: 0.1em 0.35em;
-    border-radius: 4px;
+    border-radius: var(--r-tag);
     font-size: 0.9em;
   }
 
   /*
-   * 키보드 사용자가 가장 먼저 만나는 요소다. 주황(#f59e0b) 위 흰 글자는 2.15:1 이라
-   * 정작 눈에 안 띄었다. 어두운 바탕에 흰 글자로 바꿔 18:1 을 확보한다.
+   * 키보드 사용자가 가장 먼저 만나는 요소라 대비를 넉넉히 둔다.
+   * 어두운 네이비 바탕에 흰 글자로 13.9:1 이다.
    */
   .skip-link {
     position: absolute;
@@ -348,7 +426,7 @@ const jsonLd = graph([breadcrumbSchema(allCrumbs), ...schemaNodes]);
     margin: 4rem 0;
     padding: clamp(1.5rem, 4vw, 3rem);
     border: 1px solid var(--c-border);
-    border-radius: 24px;
+    border-radius: var(--r-panel);
     background: var(--c-surface);
     box-shadow: var(--shadow-sm);
   }

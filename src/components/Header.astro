@@ -68,7 +68,7 @@ const isActive = (href: string) => current === href || (href !== '/' && current.
     top: 0;
     z-index: 50;
     border-bottom: 1px solid rgb(255 255 255 / 0.08);
-    background: rgb(8 14 25 / 0.94);
+    background: rgb(4 42 96 / 0.94);
     backdrop-filter: saturate(140%) blur(16px);
   }
 
@@ -129,7 +129,7 @@ const isActive = (href: string) => current === href || (href !== '/' && current.
 
   .site-header__nav a[aria-current='page'] {
     color: #fff;
-    border-bottom-color: var(--c-yellow);
+    border-bottom-color: var(--c-cyan);
   }
 
   .site-header__actions {
@@ -140,12 +140,12 @@ const isActive = (href: string) => current === href || (href !== '/' && current.
   }
 
   .site-header__actions :global(.buy-cta) {
-    border-radius: 999px !important;
-    background: linear-gradient(100deg, var(--c-yellow), #ff6a00) !important;
-    color: #17110a !important;
-    box-shadow: 0 8px 24px rgb(245 117 11 / 0.25);
+    border-radius: var(--r-pill) !important;
+    background: var(--grad-cta) !important;
+    color: var(--c-on-cta) !important;
+    box-shadow: 0 8px 24px rgb(0 143 213 / 0.28);
     font-size: 0.88rem !important;
-    font-weight: 850 !important;
+    font-weight: 700 !important;
   }
 
   /* 모바일 토글 — <details>/<summary> 만으로 구현해 JS가 필요 없다 */
@@ -160,7 +160,7 @@ const isActive = (href: string) => current === href || (href !== '/' && current.
     justify-content: center;
     width: 44px;
     height: 44px;
-    border-radius: 8px;
+    border-radius: var(--r-btn);
     border: 1px solid rgb(255 255 255 / 0.24);
     cursor: pointer;
     list-style: none;
@@ -219,7 +219,7 @@ const isActive = (href: string) => current === href || (href !== '/' && current.
     min-width: 200px;
     background: var(--c-surface);
     border: 1px solid var(--c-border);
-    border-radius: 10px;
+    border-radius: var(--r-btn);
     box-shadow: var(--shadow-md);
     padding: 0.4rem;
   }
@@ -236,7 +236,7 @@ const isActive = (href: string) => current === href || (href !== '/' && current.
     align-items: center;
     min-height: 44px;
     padding: 0 0.75rem;
-    border-radius: 6px;
+    border-radius: var(--r-sm);
     font-size: 0.95rem;
     font-weight: 600;
     color: var(--c-text);

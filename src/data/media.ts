@@ -6,6 +6,7 @@
  * (포스터 이미지만 lazy 로드).
  */
 import type { ImageMetadata } from 'astro';
+import posterIntro from '../assets/video-poster-intro.jpg';
 import posterHowto from '../assets/video-poster-howto.jpg';
 import posterQc1 from '../assets/video-poster-qc1.jpg';
 import posterQc2 from '../assets/video-poster-qc2.jpg';
@@ -71,6 +72,21 @@ export interface VideoProvenance {
 }
 
 export const VIDEO_PROVENANCE: VideoProvenance[] = [
+  {
+    /*
+     * 홈 대표 영상. 확인 없이 게시된 상태가 가장 오래 노출되는 자리라 우선순위가 가장 높다.
+     * hasPeople 은 프레임을 눈으로 확인해 true 로 둔다 — 22초 부근에서 얼굴이 식별된다.
+     */
+    file: 'blueguard-fogger-intro.mp4',
+    shotBy: null,
+    shotDate: null,
+    shotPlace: null,
+    copyrightHolder: null,
+    webConsent: null,
+    hasPeople: true,
+    verifiedBy: null,
+    verifiedDate: null,
+  },
   {
     file: 'blueguard-fogger-howto.mp4',
     shotBy: null,
@@ -155,6 +171,28 @@ export function canAssertOfficial(file: string): boolean {
   const p = VIDEO_PROVENANCE.find((v) => v.file === file);
   return p?.shotBy === '제조사' && p.webConsent === true;
 }
+
+/**
+ * 제품 소개 영상 — 홈 상단에 두는 대표 영상.
+ *
+ * 2026-08-08에 사장님 지시로 홈의 사용법 영상을 이 영상으로 바꾸고, 사용법 영상은
+ * /guides/ 로 옮겼다. 홈은 "왜 이 제품인가"를 보여주고, 사용법은 10단계와 같은
+ * 페이지에 있어야 하기 때문이다.
+ *
+ * 원본 30초 7.0MB(1.9Mbps)를 웹용 1.3Mbps로 재인코딩했다.
+ *
+ * ⚠ 이 영상에는 **얼굴이 식별되는 사람이 등장한다.** 초상 사용 동의가 확인되기 전까지
+ * 캡션에 촬영 주체를 단정하지 않는다. TODO.md A-1 참고.
+ */
+export const INTRO_VIDEO: VideoAsset = {
+  src: '/video/blueguard-fogger-intro.mp4',
+  poster: posterIntro,
+  title: '블루가드 연막소독기 소개영상',
+  durationSec: 30,
+  width: 1280,
+  height: 720,
+  caption: '마당·정원·창고에서 실제로 사용하는 모습을 30초로 모은 영상입니다.',
+};
 
 /** 공식 사용법 영상 — 원본 1920×1080 113MB를 웹용 1280×720으로 재인코딩 */
 export const HOWTO_VIDEO: VideoAsset = {

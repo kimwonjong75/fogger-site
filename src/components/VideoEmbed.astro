@@ -82,7 +82,7 @@ const aspect = video ? `${video.width} / ${video.height}` : '16 / 9';
     position: relative;
     aspect-ratio: var(--video-aspect, 16 / 9);
     width: 100%;
-    border-radius: 12px;
+    border-radius: var(--r-card);
     overflow: hidden;
     display: flex;
     align-items: center;
@@ -107,7 +107,7 @@ const aspect = video ? `${video.width} / ${video.height}` : '16 / 9';
     align-items: center;
     justify-content: center;
     gap: 0.75rem;
-    background: rgb(11 37 69 / 0.45);
+    background: rgb(9 32 63 / 0.45);
     border: 0;
     color: #fff;
     cursor: pointer;
@@ -117,7 +117,7 @@ const aspect = video ? `${video.width} / ${video.height}` : '16 / 9';
   }
 
   .video__play:hover {
-    background: rgb(11 37 69 / 0.3);
+    background: rgb(9 32 63 / 0.3);
   }
 
   .video__play-icon {
@@ -169,7 +169,7 @@ const aspect = video ? `${video.width} / ${video.height}` : '16 / 9';
     font-size: 0.75rem;
     font-weight: 700;
     padding: 0.15rem 0.5rem;
-    border-radius: 4px;
+    border-radius: var(--r-tag);
     background: var(--c-surface);
     border: 1px solid var(--c-border);
     color: var(--c-text-muted);
@@ -191,7 +191,7 @@ const aspect = video ? `${video.width} / ${video.height}` : '16 / 9';
   .video :global(video) {
     width: 100%;
     aspect-ratio: var(--video-aspect, 16 / 9);
-    border-radius: 12px;
+    border-radius: var(--r-card);
     display: block;
     background: #000;
   }

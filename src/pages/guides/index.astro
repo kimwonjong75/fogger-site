@@ -2,9 +2,10 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import DocList from '../../components/DocList.astro';
 import SafetyBox from '../../components/SafetyBox.astro';
-import { HOWTO_STEPS, howToApprovalLabel } from '../../data/media';
+import VideoEmbed from '../../components/VideoEmbed.astro';
+import { HOWTO_STEPS, HOWTO_VIDEO, VIDEO_PUBLISHED_DATE, howToApprovalLabel } from '../../data/media';
 import { COLLECTION_META, docHref, getPublishedDocs } from '../../lib/content';
-import { howToSchema, itemListSchema } from '../../lib/schema';
+import { howToSchema, itemListSchema, videoSchema } from '../../lib/schema';
 
 const meta = COLLECTION_META.guides;
 const docs = await getPublishedDocs('guides');
@@ -28,6 +29,22 @@ const list = itemListSchema(
  * 화면에 렌더링하는 순서·문구를 그대로 쓴다. step-{no} 앵커도 스키마가 참조한다.
  */
 const howTo = howToSchema(meta.href, '블루가드 연막소독기 사용방법', HOWTO_STEPS);
+
+/**
+ * 사용법 영상. 2026-08-08에 홈에서 이 페이지로 옮겼다.
+ *
+ * 아래 10단계는 이 영상의 자막을 그대로 옮긴 순서다. 둘이 떨어져 있으면 독자는 글만 읽고
+ * 영상은 못 보게 되고, 검색엔진도 절차와 영상을 잇지 못한다. VideoObject 스키마도
+ * 영상과 같은 페이지에 있어야 하므로 함께 옮겼다.
+ */
+const howToVideo = videoSchema({
+  name: HOWTO_VIDEO.title,
+  description: HOWTO_VIDEO.caption,
+  contentUrl: HOWTO_VIDEO.src,
+  thumbnailUrl: HOWTO_VIDEO.poster.src,
+  durationSec: HOWTO_VIDEO.durationSec,
+  uploadDate: VIDEO_PUBLISHED_DATE,
+});
 ---
 
 <BaseLayout
@@ -36,7 +53,7 @@ const howTo = howToSchema(meta.href, '블루가드 연막소독기 사용방법'
   canonicalPath={meta.href}
   ogImage="/og/og-guides.png"
   crumbs={[{ name: meta.label, href: meta.href }]}
-  schemaNodes={[list, howTo]}
+  schemaNodes={[list, howTo, howToVideo]}
 >
   <h1>{meta.title}</h1>
   <p class="lede">{meta.description}</p>
@@ -47,7 +64,11 @@ const howTo = howToSchema(meta.href, '블루가드 연막소독기 사용방법'
     <h2 id="howto">공식 사용 순서 10단계</h2>
     <p class="section-desc">
       작업 전 준비부터 점화, 펌핑, 사용 후 세척까지 순서대로 따라가면 됩니다.
+      아래 순서는 이 영상의 자막을 그대로 옮긴 것입니다.
     </p>
+
+    <VideoEmbed video={HOWTO_VIDEO} />
+
     <ol class="howto-steps">
       {
         HOWTO_STEPS.map((step) => (

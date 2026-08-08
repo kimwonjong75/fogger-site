@@ -14,7 +14,7 @@
  *   7. 화면 브레드크럼과 BreadcrumbList 항목 일치
  *   8. og:image 파일 실재
  *   9. 이미지 width·height 필수, 히어로 외 lazy, alt "{주제} — {구체 장면}"
- *  10. 웹폰트 0
+ *  10. 웹폰트는 자체 호스팅만 (외부 글꼴 서버 금지) & 조각 파일 용량 한도
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { readdir } from 'node:fs/promises';
@@ -27,6 +27,9 @@ const DIST = join(ROOT, 'dist');
 const CONTENT = join(ROOT, 'src', 'content');
 const SITE = 'https://fogger.blueguard.kr';
 const PAGE_BUDGET = 1.2 * 1024 * 1024;
+/* 글꼴을 남의 서버에서 불러오는 것을 막는다 — 그 서버가 죽으면 글자가 안 나온다 */
+const EXTERNAL_FONT_HOST =
+  /fonts\.googleapis\.com|fonts\.gstatic\.com|use\.typekit\.net|cdn\.jsdelivr\.net|unpkg\.com|webfontworld|fastly\.jsdelivr\.net/i;
 
 /**
  * 구조화데이터 금지 목록.
@@ -457,9 +460,21 @@ for (const file of pages) {
     fail(`${where} "무료배송" 표기가 있는데 배송 조건 고지가 없습니다`);
   }
 
-  /* --- 10. 웹폰트 --- */
-  if (/@font-face|fonts\.googleapis\.com|fonts\.gstatic\.com|\.woff2?/i.test(html)) {
-    fail(`${where} 웹폰트 참조 발견`);
+  /* --- 10. 웹폰트는 자체 호스팅만 --- */
+  /*
+   * 브랜드 글꼴(Pretendard)을 쓰기로 하면서 "웹폰트 0" 규칙을 바꿨다.
+   * 막아야 할 것은 글꼴 자체가 아니라 두 가지다.
+   *   (1) 남의 서버에 의존하는 것 — 그 서버가 죽으면 글자가 안 나오고, 방문자 IP가 넘어간다.
+   *   (2) 페이지가 받아야 하는 글꼴 양이 통제 없이 늘어나는 것.
+   * (2)는 아래 FONT_FILE_BUDGET 에서 파일 단위로 막는다.
+   */
+  if (EXTERNAL_FONT_HOST.test(html)) {
+    fail(`${where} 외부 글꼴 서버 참조 — 글꼴은 public/fonts/ 에 두고 자체 호스팅한다`);
+  }
+  for (const [, ref] of html.matchAll(/(?:href|src)="([^"]*\.woff2?)"/gi)) {
+    if (!ref.startsWith('/fonts/')) {
+      fail(`${where} 자체 호스팅 밖의 글꼴 참조 → ${ref}`);
+    }
   }
 
   /* --- noindex 는 404 와 "공개 문서 0건인 컬렉션 인덱스"에만 --- */
@@ -671,6 +686,44 @@ for (const file of pages) {
   }
 }
 
+/* ---------- 미디어 지도가 현실과 어긋나지 않는가 ----------
+ *
+ * /admin/media/ 는 사장님이 "어느 사진이 어디 있고 어디가 비었는지" 보는 유일한 화면이다.
+ * 지도에서 빠진 사진이 생기면 그 사진은 사장님 눈에 영영 안 보이게 되므로,
+ * 자산 폴더와 지도를 대조해 누락을 막는다.
+ */
+{
+  const mapPath = join(ROOT, 'src', 'data', 'media-map.ts');
+  const map = readFileSync(mapPath, 'utf8');
+
+  const assetsDir = join(ROOT, 'src', 'assets');
+  const photos = readdirSync(assetsDir).filter((f) => /^photo-.*\.(jpg|png)$/.test(f));
+  for (const photo of photos) {
+    if (!map.includes(photo)) {
+      fail(
+        `[media-map.ts] src/assets/${photo} 가 미디어 지도에 없습니다 — ` +
+          `PHOTO_SLOTS 에 추가하세요 (안 그러면 /admin/media/ 에서 안 보입니다)`,
+      );
+    }
+  }
+
+  // 반대 방향 — 지도가 가리키는 파일이 실제로 있는가
+  for (const [, name] of map.matchAll(/file:\s*'(photo-[^']+)'/g)) {
+    if (!photos.includes(name)) {
+      fail(`[media-map.ts] 지도에 적힌 src/assets/${name} 파일이 없습니다`);
+    }
+  }
+
+  // 영상도 같은 방식으로 — media.ts 에 등록되지 않은 영상 파일은 화면에 붙을 수 없다
+  const mediaTs = readFileSync(join(ROOT, 'src', 'data', 'media.ts'), 'utf8');
+  const videoDir = join(DIST, 'video');
+  for (const file of readdirSync(videoDir).filter((f) => f.endsWith('.mp4'))) {
+    if (!mediaTs.includes(file)) {
+      fail(`[media.ts] public/video/${file} 이 영상 목록에 없습니다 — 어느 화면에도 안 붙습니다`);
+    }
+  }
+}
+
 /* ---------- 그 외 산출물(텍스트 파일)의 자리표시자 ---------- */
 // .yml 은 편집 화면 설정(admin/config.yml) 때문에 포함한다 — 설정에 적은 문구도 산출물이다.
 for (const file of files.filter((f) => /\.(txt|xml|json|ya?ml)$/.test(f))) {
@@ -682,11 +735,34 @@ for (const file of files.filter((f) => /\.(txt|xml|json|ya?ml)$/.test(f))) {
   }
 }
 
-/* ---------- CSS 안 웹폰트 ---------- */
+/* ---------- CSS 안 웹폰트도 자체 호스팅만 ---------- */
 for (const file of files.filter((f) => f.endsWith('.css'))) {
   const css = readFileSync(file, 'utf8');
-  if (/@font-face|fonts\.googleapis\.com|\.woff2?/i.test(css)) {
-    fail(`[CSS] 웹폰트 참조 발견 → ${file.slice(DIST.length)}`);
+  if (EXTERNAL_FONT_HOST.test(css)) {
+    fail(`[CSS] 외부 글꼴 서버 참조 → ${file.slice(DIST.length)}`);
+  }
+  for (const [, ref] of css.matchAll(/url\(["']?([^"')]*\.woff2?)["']?\)/gi)) {
+    if (!ref.startsWith('/fonts/')) {
+      fail(`[CSS] 자체 호스팅 밖의 글꼴 참조 → ${file.slice(DIST.length)} 안의 ${ref}`);
+    }
+  }
+}
+
+/* ---------- 글꼴 파일 용량 ----------
+ * 조각 하나가 커지면 그 조각에 든 글자를 쓴 페이지 전부가 그만큼 더 받는다.
+ * Pretendard 변수 폰트의 unicode-range 조각은 가장 큰 것이 42KB다.
+ * 누군가 전체 글꼴(2MB)을 통째로 넣는 것을 막는 것이 이 검사의 목적이다.
+ */
+const FONT_FILE_BUDGET = 80 * 1024;
+const fontFiles = files.filter((f) => /\.woff2?$/i.test(f));
+if (fontFiles.length === 0) fail('[글꼴] dist 에 글꼴 파일이 하나도 없습니다');
+for (const file of fontFiles) {
+  const size = statSync(file).size;
+  if (size > FONT_FILE_BUDGET) {
+    fail(
+      `[글꼴] ${file.slice(DIST.length)} 가 ${Math.round(size / 1024)}KB — ` +
+        `조각 하나는 ${FONT_FILE_BUDGET / 1024}KB 이하여야 합니다`,
+    );
   }
 }
 

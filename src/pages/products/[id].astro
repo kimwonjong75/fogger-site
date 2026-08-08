@@ -202,7 +202,7 @@ const related = (await getAllPublishedDocs()).slice(0, 3);
     width: 100%;
     max-width: 560px;
     height: auto;
-    border-radius: 14px;
+    border-radius: var(--r-card);
     display: block;
     margin: 0.5rem auto 1.5rem;
     background: var(--c-surface-alt);
@@ -223,7 +223,7 @@ const related = (await getAllPublishedDocs()).slice(0, 3);
 
   .variant-note {
     padding: 0.85rem 1rem;
-    border-radius: 8px;
+    border-radius: var(--r-btn);
     background: var(--c-surface-alt);
     border: 1px solid var(--c-border);
     font-size: 0.92rem;
@@ -252,7 +252,7 @@ const related = (await getAllPublishedDocs()).slice(0, 3);
   .venue-list li {
     padding: 0.75rem 0.9rem;
     border: 1px solid var(--c-border);
-    border-radius: 10px;
+    border-radius: var(--r-btn);
     background: var(--c-surface-alt);
     font-size: 0.9rem;
   }
@@ -274,7 +274,7 @@ const related = (await getAllPublishedDocs()).slice(0, 3);
     margin-top: 2.5rem;
     padding: 1.35rem;
     border: 1px solid var(--c-accent);
-    border-radius: 10px;
+    border-radius: var(--r-btn);
     background: var(--c-accent-soft);
   }
 
@@ -285,7 +285,7 @@ const related = (await getAllPublishedDocs()).slice(0, 3);
   .spec-more {
     margin: -0.5rem 0 1.5rem;
     border: 1px solid var(--c-border);
-    border-radius: 8px;
+    border-radius: var(--r-btn);
     background: var(--c-surface);
   }
 

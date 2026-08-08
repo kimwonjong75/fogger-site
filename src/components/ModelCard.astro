@@ -108,7 +108,7 @@ const price = priceLabel(product);
     gap: 0.9rem;
     padding: 1.25rem;
     border: 1px solid var(--c-border);
-    border-radius: 10px;
+    border-radius: var(--r-btn);
     background: var(--c-surface);
   }
 
@@ -116,7 +116,7 @@ const price = priceLabel(product);
   .model-card__figure {
     display: block;
     margin: -0.25rem 0 0.25rem;
-    border-radius: 10px;
+    border-radius: var(--r-btn);
     overflow: hidden;
     background: var(--c-surface-alt);
   }
@@ -185,15 +185,14 @@ const price = priceLabel(product);
 
   /*
    * 두 핵심 수치는 표에서 빼내 카드의 시각 앵커로 세운다.
-   * 배경은 제품 본체 색에서 뽑은 옐로 틴트 + 왼쪽 액센트 바로, 브랜드 블루가 아니라
-   * 실제 제품과 시각적으로 연결되게 한다.
+   * 배경은 브랜드 시안의 옅은 틴트를 쓴다. 이전에는 제품 본체 색인 옐로 틴트에
+   * 왼쪽 액센트 바를 뒀지만, 디자인 시스템이 색 있는 한쪽 테두리를 금한다.
    */
   .model-card__headline {
     margin: 0;
-    padding: 0.7rem 0.9rem 0.7rem 0.8rem;
-    border-radius: 8px;
-    border-left: 4px solid var(--c-yellow);
-    background: #fdf6e3;
+    padding: 0.7rem 0.9rem;
+    border-radius: var(--r-btn);
+    background: var(--c-accent-soft);
     color: var(--c-ink);
     display: flex;
     align-items: baseline;
@@ -260,7 +259,7 @@ const price = priceLabel(product);
     display: inline-block;
     margin-right: 0.4rem;
     padding: 0.1rem 0.4rem;
-    border-radius: 4px;
+    border-radius: var(--r-tag);
     background: var(--c-surface-alt);
     font-weight: 600;
     color: var(--c-text);
