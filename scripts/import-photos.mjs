@@ -44,6 +44,22 @@ const PART_PHOTOS = [
   { src: '블루가드 연막기 피스톤.jpg', out: 'src/assets/photo-part-piston.jpg', size: 900 },
 ];
 
+/**
+ * 작업 현장 컷 (홈 ⑫, TODO.md F-1).
+ *
+ * 원본이 2.16:1 로 넓어 4:3 자리에 그대로 넣을 수 없다. 가운데를 잘라 쓴다 —
+ * 왼쪽에 소, 가운데에 작업자, 오른쪽에 연막이 들어와 "축사에서 쓴다"가 한 장으로 읽힌다.
+ * 오른쪽으로 치우쳐 자르면 소가 빠져 현장이 어디인지 알 수 없게 된다.
+ */
+const WORK_PHOTOS = [
+  {
+    src: '여성연막작업.png',
+    out: 'src/assets/photo-work-livestock-barn.jpg',
+    width: 960,
+    height: 720,
+  },
+];
+
 if (!existsSync(SOURCE_ROOT)) {
   console.log(`원본 폴더를 찾을 수 없어 건너뜁니다: ${SOURCE_ROOT}`);
   console.log('FOGGER_PHOTO_SOURCE 환경변수로 경로를 지정할 수 있습니다.');
@@ -81,6 +97,24 @@ for (const photo of PART_PHOTOS) {
   const buf = await sharp(from)
     .resize(photo.size, photo.size, { fit: 'cover', position: 'centre' })
     .jpeg({ quality: 88, mozjpeg: true })
+    .toBuffer();
+
+  await writeFile(to, buf);
+  console.log(`  ${photo.out}  ${(buf.length / 1024).toFixed(0)}KB`);
+}
+
+for (const photo of WORK_PHOTOS) {
+  const from = resolve(PART_SOURCE_ROOT, photo.src);
+  if (!existsSync(from)) {
+    console.log(`  건너뜀 (원본 없음): 100S/${photo.src}`);
+    continue;
+  }
+  const to = resolve(ROOT, photo.out);
+  await mkdir(dirname(to), { recursive: true });
+
+  const buf = await sharp(from)
+    .resize(photo.width, photo.height, { fit: 'cover', position: 'centre' })
+    .jpeg({ quality: 86, mozjpeg: true })
     .toBuffer();
 
   await writeFile(to, buf);
