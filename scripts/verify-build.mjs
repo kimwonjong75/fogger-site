@@ -968,6 +968,99 @@ for (const path of expected) {
   if (!sitemapUrls.includes(`${SITE}${path}`)) fail(`[sitemap] 누락: ${path}`);
 }
 
+/* ---------- 검색 전제 (AEO·SEO) ----------
+ *
+ * 이 사이트는 "AEO·AI 인용과 네이버·구글 상위노출"을 전제로 만들었다 (2026-08-10 사장님 확인).
+ * 그 전제를 사람이 기억하는 것에 맡기지 않고, 이번에 실제로 깨졌던 지점을 검사로 옮겼다.
+ *
+ *   · 제목 중복 — 한때 색인 페이지 10개가 같은 말("연막소독기…")로 시작해 서로 순위를
+ *     나눠 갖고 있었다. 완전히 같은 제목은 실패로 막는다.
+ *   · 제목-본문 불일치 — 제목을 「소형 연막기」로 바꿨는데 본문에 "소형"이 0회였던
+ *     사례가 있었다. 검색엔진은 본문이 뒷받침하지 않는 제목을 제멋대로 다시 쓴다.
+ *   · 오독 방지 문장 — 네이버 AI가 "1,500ml로 30분·300평"을 탱크 용량으로 오독해
+ *     "용량 1.5L"로 노출한 실제 사고가 있었다. 그걸 바로잡는 문장이 지워지면 막는다.
+ */
+{
+  const htmlOf = (file) => readFileSync(file, 'utf8');
+  const titleOf = (html) => html.match(/<title>([^<]*)<\/title>/)?.[1]?.trim() ?? '';
+  const mainTextOf = (html) => {
+    const main = html.match(/<main[\s\S]*?<\/main>/)?.[0] ?? html;
+    return main.replace(/<script[\s\S]*?<\/script>/g, '').replace(/<[^>]+>/g, ' ');
+  };
+
+  const indexable = pages.filter(
+    (f) => urlPathFor(f) !== '/404/' && !noindexPaths.includes(urlPathFor(f)),
+  );
+
+  // --- 제목 완전 중복 → 실패 ---
+  const byTitle = new Map();
+  for (const file of indexable) {
+    const title = titleOf(htmlOf(file));
+    if (!byTitle.has(title)) byTitle.set(title, []);
+    byTitle.get(title).push(urlPathFor(file));
+  }
+  for (const [title, urls] of byTitle) {
+    if (urls.length > 1) {
+      fail(
+        `[검색] 제목 "${title}" 을 ${urls.length}개 페이지가 같이 씁니다 (${urls.join(', ')}) — ` +
+          `같은 제목이면 검색엔진이 하나만 올리고 나머지를 버립니다. 페이지마다 다른 검색어를 맡기세요`,
+      );
+    }
+  }
+
+  // --- 제목 단어를 본문이 뒷받침하는가 → 경고 ---
+  // 조사가 붙은 형태("고르기"→"고르")를 허용하려고 끝 한 글자를 뗀 형태도 함께 찾는다.
+  // 경고로만 두는 이유: 표현의 자유는 사장님 몫이고, 여기서는 알려만 준다.
+  for (const file of indexable) {
+    const html = htmlOf(file);
+    const body = mainTextOf(html);
+    const tokens = titleOf(html)
+      .split(/[\s·—–\-+,|]+/)
+      .filter((t) => /^[가-힣]{2,}$/.test(t));
+    const missing = tokens.filter(
+      (t) => !body.includes(t) && !(t.length >= 3 && body.includes(t.slice(0, -1))),
+    );
+    if (missing.length) {
+      warn(
+        `[검색] ${urlPathFor(file)} 제목의 "${missing.join('·')}" 이(가) 본문에 없습니다 — ` +
+          `본문이 뒷받침하지 않는 제목은 검색엔진이 다시 씁니다`,
+      );
+    }
+  }
+
+  // --- 1,500mL 오독 방지 문장 → 실패 ---
+  const productsData = JSON.parse(readFileSync(join(CONTENT, 'data', 'products.json'), 'utf8'));
+  // "아닙니다"·"아니라"·"아니고" 를 모두 잡도록 "아"까지만 본다
+  if (!/탱크 용량이 아/.test(productsData?.workReference?.note ?? '')) {
+    fail(
+      '[AEO] 작업 기준 주석에서 "탱크 용량이 아니라는 구분"이 사라졌습니다 — ' +
+        '네이버 AI가 작업 기준량 1,500mL를 탱크 용량으로 오독해 "용량 1.5L"로 노출한 사고를 바로잡는 문장입니다. ' +
+        '표현은 바꿔도 되지만 이 구분은 남겨 주세요 (편집 화면 → 제품 정보 → 작업 기준)',
+    );
+  }
+
+  // --- 핵심 구조화데이터가 붙어 있는가 → 실패 ---
+  // 페이지를 없애기로 결정했다면 이 검사도 같이 지운다 — 조용히 빠지는 것만 막는다.
+  const mustContain = [
+    ['/products/', 'ProductGroup', '세 구성을 한 제품군으로 묶는 노드'],
+    ['/mist/', 'FAQPage', '연무기 화면의 문답 구조화데이터'],
+    ['/equipment/', 'FAQPage', '방역기 화면의 문답 구조화데이터'],
+  ];
+  for (const [urlPath, needle, why] of mustContain) {
+    const file = pages.find((f) => urlPathFor(f) === urlPath);
+    if (!file) fail(`[AEO] ${urlPath} 페이지가 없습니다 — 없애기로 했다면 이 검사도 함께 지우세요`);
+    else if (!htmlOf(file).includes(needle)) {
+      fail(`[AEO] ${urlPath} 에 ${needle} 이 없습니다 — ${why}가 조용히 빠졌습니다`);
+    }
+  }
+  for (const file of pages) {
+    const p = urlPathFor(file);
+    if (/^\/products\/[^/]+\/$/.test(p) && !htmlOf(file).includes('isVariantOf')) {
+      fail(`[AEO] ${p} 에 isVariantOf 가 없습니다 — 제품군(ProductGroup) 연결이 끊겼습니다`);
+    }
+  }
+}
+
 /* ---------- RSS ---------- */
 const rssPath = join(DIST, 'rss.xml');
 if (size(rssPath) === null) fail('[rss] rss.xml 없음');
@@ -1016,8 +1109,9 @@ else {
   for (const id of UNPUBLISHED) {
     if (llms.includes(`/${id}/`)) fail(`[llms] published:false 문서가 llms.txt에 있음: ${id}`);
   }
-  // 제품 표기는 공식 옵션명으로만 한다 — 내부 모델 번호는 산출물에 나가면 안 된다
-  for (const needle of ['인용', '충전 한도', '기본형', '대용량', '대용량+롱노즐']) {
+  // 제품 표기는 공식 옵션명으로만 한다 — 내부 모델 번호는 산출물에 나가면 안 된다.
+  // '작업 기준량'·'냉연무'는 AI 오독 방지 문장이다 (검색 전제 검사 참조) — 지우면 안 된다.
+  for (const needle of ['인용', '충전 한도', '기본형', '대용량', '대용량+롱노즐', '작업 기준량', '냉연무']) {
     if (!llms.includes(needle)) fail(`[llms] "${needle}" 항목 없음`);
   }
 }
