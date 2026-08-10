@@ -1,11 +1,11 @@
 {
   "hero": {
-    "eyebrow": "부품 {{국산비율}}% 국산",
-    "headlineTop": "차량 장비가 못 들어가는 곳까지,",
-    "headlineAccent": "손에 드는 국산 연막소독기",
+    "eyebrow": "{{국산비율}}% 국산기술 국산부품",
+    "headlineTop": "제대로 된 연막기 찾으셨다면,",
+    "headlineAccent": "좋은 부품과 국내 원천기술로 만든 블루가드 연막기입니다.",
     "lede": [
-      "마당부터 창고·축사·하수구까지, 필요한 현장으로 직접 들고 갑니다.",
-      "국산 부품과 단단한 구조로 오래 쓰는 휴대용 방역 장비입니다."
+      "풍부한 연막으로 마당부터 농장·작업장까지",
+      "필요할 때 바로 방역하는 국산기술 연막소독기"
     ],
     "videoButtonLabel": "소개 영상 보기",
     "modelButtonLabel": "내게 맞는 모델 찾기",
@@ -13,7 +13,6 @@
     "image": "/src/assets/photo-bf-102.jpg",
     "imageAlt": "블루가드 연막소독기 대용량 — 흰색 연료통과 스테인리스 배럴이 보이는 본체 제품 사진"
   },
-
   "works": {
     "heading": "차량까지 동원할 필요 없는 현장을 위해",
     "desc": "대형 장비가 들어가기 어려운 좁은 곳에서도 작업자가 직접 들고 이동합니다.",
@@ -34,38 +33,55 @@
       }
     ],
     "moreLinks": [
-      { "label": "사용 순서 10단계 보기", "href": "/guides/" },
-      { "label": "매질 고르는 법", "href": "/guides/choose-media/" }
+      {
+        "label": "사용 순서 10단계 보기",
+        "href": "/guides/"
+      },
+      {
+        "label": "매질 고르는 법",
+        "href": "/guides/choose-media/"
+      }
     ]
   },
-
   "parts": {
     "heading": "겉은 비슷해도, 안쪽은 다릅니다",
     "desc": "가격표보다 먼저 확인할 네 곳입니다. 저희 것부터 열어서 보여드립니다.",
     "closing": "1~2만원의 차이보다, 오래 쓸 구조를 먼저 보세요."
   },
-
   "models": {
     "heading": "어디에 쓰실 건가요",
     "desc": "마당이면 {{기본형}}, 넓은 곳이면 {{대용량}}, 손이 안 닿는 곳이면 롱노즐입니다.",
     "moreLinks": [
-      { "label": "세 구성 비교표 보기", "href": "/compare/" },
-      { "label": "제품 전체 보기", "href": "/products/" }
+      {
+        "label": "세 구성 비교표 보기",
+        "href": "/compare/"
+      },
+      {
+        "label": "제품 전체 보기",
+        "href": "/products/"
+      }
     ]
   },
-
   "closing": {
     "heading": "사진만 보지 말고, 부품과 작동 모습을 확인하세요",
     "desc": "실제 구조와 분사 영상을 확인한 뒤 현장에 맞는 구성을 고르시면 됩니다.",
     "safetyBoxTitle": "쓰기 전에 이것만은",
     "safetyLinkLabel": "전체 안전수칙 보기 →",
     "moreLinks": [
-      { "label": "사용법", "href": "/guides/" },
-      { "label": "활용사례", "href": "/uses/" },
-      { "label": "문제해결", "href": "/troubleshooting/" }
+      {
+        "label": "사용법",
+        "href": "/guides/"
+      },
+      {
+        "label": "활용사례",
+        "href": "/uses/"
+      },
+      {
+        "label": "문제해결",
+        "href": "/troubleshooting/"
+      }
     ]
   },
-
   "seo": {
     "title": "가정용 휴대용 연막소독기 블루가드",
     "description": "차량 장비가 들어가기 어려운 좁은 현장을 위해 소형화한 국산 휴대용 연막소독기. 연막·연무 겸용 사양과 눈으로 확인하는 부품 기준을 정리했습니다."
