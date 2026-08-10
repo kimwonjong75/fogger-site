@@ -1,0 +1,5 @@
+# Windows 의 core.autocrlf=true 는 체크아웃할 때 줄바꿈을 CRLF 로 바꾼다.
+# 셸 스크립트가 CRLF 가 되면 `#!/bin/sh` 뒤에 \r 이 붙어 실행 자체가 실패한다.
+# git 훅은 실패해도 조용하므로, 여기서 LF 로 못박아 둔다.
+.githooks/** text eol=lf
+*.sh        text eol=lf
