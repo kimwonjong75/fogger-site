@@ -128,6 +128,17 @@ const schema = z.object({
         id: z.string().regex(/^[a-z0-9][a-z0-9-]*$/, 'id 는 영문 소문자·숫자·붙임표(-)만 씁니다.'),
         officialLabel: text,
         name: text,
+        /**
+         * 제품 상세 페이지의 검색결과 제목.
+         *
+         * 2026-08-10 확인: 세 구성의 제목이 전부 `휴대용 연막소독기 {옵션명} 사양` 이었다.
+         * 같은 말로 시작하면 검색엔진이 셋 중 하나만 올리고 나머지는 버린다 — 세 페이지가
+         * 서로의 순위를 나눠 갖고, 「소형 연막기」·「대용량 연막소독기」처럼 구성마다 다른
+         * 검색어는 아무도 받지 못했다. 그래서 **구성마다 다른 말로 시작**하게 값을 연다.
+         *
+         * 상한 35자는 `SeoHead` 의 TITLE_MAX 와 같은 값이다 — 넘기면 빌드가 선다.
+         */
+        seoTitle: text.max(35, '검색결과 제목은 35자 이내여야 합니다.'),
         tagline: text,
         tankLiters: z.number().positive(),
         dimensionsMm: z.string().regex(/^\d+×\d+×\d+$/, '"465×265×180" 형식으로 적어 주세요.'),
@@ -323,7 +334,13 @@ export interface Product {
    * 보는 이름과 사이트가 부르는 이름이 다르면 같은 제품인지 확인이 안 된다.
    */
   officialLabel: string;
+  /** 검색결과·구조화데이터에 쓰는 긴 이름 */
   name: string;
+  /**
+   * 제품 상세 페이지 title.
+   * 세 구성이 **서로 다른 말로 시작**해야 한다 — 같으면 셋이 서로 순위를 잠식한다.
+   */
+  seoTitle: string;
   tagline: string;
   tankLiters: number;
   dimensionsMm: string;

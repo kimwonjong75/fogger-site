@@ -102,6 +102,42 @@ export function articleSchema(input: ArticleSchemaInput) {
 }
 
 /**
+ * ProductGroup @id — 세 구성을 묶는 제품군 노드. 제품 목록 화면에서 1회만 출력하고
+ * 각 제품은 `isVariantOf` 로 이 id를 참조한다.
+ */
+export const PRODUCT_GROUP_ID = `${absoluteUrl('/products/')}#productgroup`;
+
+/**
+ * ProductGroup — 세 구성을 한 제품군으로 묶는다.
+ *
+ * 2026-08-10 추가. 그전에는 독립된 `Product` 3개만 내보내고 있어서, 검색엔진에게 이 셋은
+ * "탱크 용량만 다른 한 제품의 3구성"이 아니라 **서로 남남인 제품 3개**로 보였다.
+ * 묶어 주면 세 페이지의 신호가 한 제품군으로 합쳐지고, "기본형이냐 대용량이냐" 하는
+ * 옵션 선택 의도에 정확히 걸린다.
+ *
+ * `offers`는 여기에도 넣지 않는다 — 이 사이트는 결제·주문 기능이 없다(productSchema 주석 참조).
+ * ProductGroup 은 `hasVariant` + `variesBy` 만으로 성립하므로 그 원칙과 충돌하지 않는다.
+ */
+export function productGroupSchema(products: readonly Product[]) {
+  return {
+    '@type': 'ProductGroup',
+    '@id': PRODUCT_GROUP_ID,
+    name: SITE.name,
+    description: `${PRODUCT_TYPE} — ${SPRAY_MODES}. 탱크 용량과 노즐 구성만 다른 ${products.length}가지 구성입니다.`,
+    url: absoluteUrl('/products/'),
+    category: PRODUCT_TYPE,
+    inLanguage: SITE.lang,
+    brand: { '@id': ORG_ID },
+    manufacturer: { '@id': ORG_ID },
+    /** 구성 간에 실제로 달라지는 축. 나머지 사양은 전 구성 공통이다 */
+    variesBy: ['탱크 용량', '노즐 구성'],
+    hasVariant: products.map((product) => ({
+      '@id': `${absoluteUrl(`/products/${product.id}/`)}#product`,
+    })),
+  };
+}
+
+/**
  * Product — 제품 상세 페이지에 출력한다.
  *
  * `offers`는 넣지 않는다. 이 사이트는 결제·주문 기능이 없는 정보 사이트이고,
@@ -132,6 +168,8 @@ export function productSchema(product: Product) {
     url,
     brand: { '@id': ORG_ID },
     manufacturer: { '@id': ORG_ID },
+    /** 세 구성이 한 제품군임을 알린다 — 노드 본체는 제품 목록 화면에 있다 */
+    isVariantOf: { '@id': PRODUCT_GROUP_ID },
     additionalProperty: [
       { '@type': 'PropertyValue', name: '탱크 용량', value: `${product.tankLiters}L` },
       {

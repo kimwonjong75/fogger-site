@@ -10,7 +10,7 @@ import VideoEmbed from '../../components/VideoEmbed.astro';
 import { BUILD_QUALITY, PRODUCTS } from '../../data/products';
 import { PRODUCTS_PAGE } from '../../data/pages';
 import { CUSTOMER_USE_VIDEOS, QC_VIDEOS, SPRAY_TEST_VIDEO } from '../../data/media';
-import { itemListSchema } from '../../lib/schema';
+import { itemListSchema, productGroupSchema } from '../../lib/schema';
 
 /** 문구는 편집 화면(/admin/ → "제품 목록 화면")에서 고친다 — src/content/pages/products.json */
 const page = PRODUCTS_PAGE;
@@ -36,7 +36,7 @@ const list = itemListSchema(
   canonicalPath="/products/"
   ogImage="/og/og-products.png"
   crumbs={[{ name: '제품', href: '/products/' }]}
-  schemaNodes={[list]}
+  schemaNodes={[list, productGroupSchema(PRODUCTS)]}
   stickyBuy="generic"
 >
   <p class="eyebrow">{page.eyebrow}</p>
