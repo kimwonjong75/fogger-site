@@ -14,6 +14,7 @@ import { field, parsePage } from '../lib/page-content';
 
 import homeRaw from '../content/pages/home.json';
 import compareRaw from '../content/pages/compare.json';
+import mistRaw from '../content/pages/mist.json';
 import productsRaw from '../content/pages/products.json';
 import safetyRaw from '../content/pages/safety.json';
 import guidesRaw from '../content/pages/guides.json';
@@ -136,6 +137,54 @@ const compareSchema = z.object({
 });
 
 export const COMPARE_PAGE = parsePage(COMPARE, compareSchema, compareRaw);
+
+/* ------------------------------------------------------------------ *
+ * 연무기
+ * ------------------------------------------------------------------ */
+
+/**
+ * 「연무기」로 검색해서 들어온 사람을 받는 화면 (2026-08-10 신설).
+ *
+ * 이 이름 하나에 원리가 다른 기계 셋이 섞여 있어서 — 가열식 열연무, ULV 냉연무,
+ * 전동 분무 — 검색결과도 뒤섞여 나온다. 그래서 이 화면의 첫째 일은 제품을 파는 것이
+ * 아니라 **어느 쪽을 찾고 있는지 갈라 주는 것**이다. ULV 를 찾는 사람에게 "여기가 아니다"라고
+ * 먼저 말해야 잘못 들어온 사람이 헤매지 않고, 검색·AI 가 우리를 냉연무기로 잘못 배우지 않는다.
+ *
+ * `methods` 의 `ours` 는 그 갈라 주기를 화면에서 한눈에 보이게 하는 표시다.
+ */
+const MIST = 'mist';
+
+const mistSchema = z.object({
+  eyebrow: line(MIST),
+  heading: line(MIST),
+  lede: line(MIST),
+  answerHeading: line(MIST),
+  /** 검색해서 들어온 사람이 첫 화면에서 바로 판단할 수 있게 하는 직접 답변 */
+  answer: z.array(rich(MIST)).min(1),
+  methodsHeading: line(MIST),
+  methodsDesc: line(MIST),
+  methods: z
+    .array(
+      z.object({
+        name: line(MIST),
+        particle: line(MIST),
+        power: line(MIST),
+        /** 이 제품이 쓰는 방식인지 — 표에서 한 줄만 강조된다 */
+        ours: z.boolean(),
+        detail: line(MIST),
+      }),
+    )
+    .min(2, '방식을 하나만 적으면 비교가 되지 않습니다.'),
+  switchHeading: line(MIST),
+  switchDesc: rich(MIST),
+  faqHeading: line(MIST),
+  faq: z.array(z.object({ q: line(MIST), a: line(MIST) })).min(1),
+  safetyBoxTitle: line(MIST),
+  moreLinks: z.array(navLink(MIST)).min(1),
+  seo: seo(MIST),
+});
+
+export const MIST_PAGE = parsePage(MIST, mistSchema, mistRaw);
 
 /* ------------------------------------------------------------------ *
  * 제품 목록

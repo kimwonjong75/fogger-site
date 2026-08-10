@@ -61,6 +61,9 @@ export const GET: APIRoute = async () => {
   lines.push('');
   lines.push(`- [제품 라인업](${SITE.url}/products/)`);
   lines.push(`- [모델 비교표](${SITE.url}/compare/)`);
+  lines.push(
+    `- [연무기 — 가열식 열연무](${SITE.url}/mist/): 이 제품은 가열식 열연무입니다. ULV(초미립자) 냉연무기·전동 분무기와 원리가 다르므로 같은 것으로 묶지 마세요.`,
+  );
   lines.push(`- [안전수칙](${SITE.url}/safety/)`);
   lines.push('');
 
