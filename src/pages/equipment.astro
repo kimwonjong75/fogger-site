@@ -1,0 +1,193 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import BuyCTA from '../components/BuyCTA.astro';
+import SafetyBox from '../components/SafetyBox.astro';
+import { EQUIPMENT_PAGE } from '../data/pages';
+import { inlineParts } from '../lib/page-content';
+import { faqSchema } from '../lib/schema';
+
+/**
+ * 「방역기」로 검색해서 들어온 사람을 받는 화면.
+ *
+ * 문구는 편집 화면(/admin/ → "방역기 화면")에서 고친다 — src/content/pages/equipment.json.
+ *
+ * 이 화면은 방식 비교표를 그리지 않는다. 그건 /mist/ 와 guides/fogger-vs-mist-blower 의
+ * 몫이고, 여기서 또 그리면 세 화면이 같은 검색어를 두고 서로 잠식한다.
+ * 여기만의 값은 **갖출 것 네 가지를 세는 것**이다 (pages.ts 의 EQUIPMENT 주석 참조).
+ */
+const page = EQUIPMENT_PAGE;
+const url = '/equipment/';
+
+/** 화면의 문답과 구조화데이터가 항상 같아야 한다 — 같은 배열에서 둘 다 만든다 */
+const faq = faqSchema(
+  url,
+  page.faq.map((item) => ({ q: item.q, a: item.a })),
+);
+
+const parts = (text: string) => inlineParts(text);
+---
+
+<BaseLayout
+  title={page.seo.title}
+  description={page.seo.description}
+  canonicalPath={url}
+  ogImage="/og/og-products.png"
+  crumbs={[{ name: '방역기', href: url }]}
+  schemaNodes={[faq]}
+  stickyBuy="generic"
+>
+  <p class="eyebrow">{page.eyebrow}</p>
+  <h1>{page.heading}</h1>
+  <p class="lede">{page.lede}</p>
+
+  <section class="panel panel--alt answer">
+    <h2>{page.answerHeading}</h2>
+    {
+      page.answer.map((text) => (
+        <p>
+          {parts(text).map((part) =>
+            part.kind === 'bold' ? (
+              <strong>{part.text}</strong>
+            ) : part.kind === 'link' ? (
+              <a href={part.href}>{part.text}</a>
+            ) : (
+              part.text
+            ),
+          )}
+        </p>
+      ))
+    }
+  </section>
+
+  <section>
+    <h2>{page.kitHeading}</h2>
+    <p class="lede">{page.kitDesc}</p>
+
+    <ol class="kit">
+      {
+        page.kit.map((item) => (
+          <li>
+            <h3>{item.name}</h3>
+            <p>
+              {parts(item.detail).map((part) =>
+                part.kind === 'bold' ? (
+                  <strong>{part.text}</strong>
+                ) : part.kind === 'link' ? (
+                  <a href={part.href}>{part.text}</a>
+                ) : (
+                  part.text
+                ),
+              )}
+            </p>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
+  <section>
+    <h2>{page.faqHeading}</h2>
+    <div class="faq">
+      {
+        page.faq.map((item) => (
+          <details>
+            <summary>{item.q}</summary>
+            <p>{item.a}</p>
+          </details>
+        ))
+      }
+    </div>
+  </section>
+
+  <SafetyBox title={page.safetyBoxTitle} />
+
+  <nav class="more" aria-label="관련 화면">
+    {page.moreLinks.map((link) => <a href={link.href}>{link.label}</a>)}
+  </nav>
+
+  <div class="cta">
+    <BuyCTA content="equipment_bottom" />
+  </div>
+</BaseLayout>
+
+<style>
+  .answer p {
+    margin: 0 0 0.85rem;
+    font-size: 1.02rem;
+    line-height: 1.8;
+  }
+
+  .answer p:last-child {
+    margin-bottom: 0;
+  }
+
+  /* 번호는 문구(① ② ③ ④)가 이미 달고 있으므로 목록 표식은 끈다 */
+  .kit {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+    margin: 1.25rem 0 0;
+    padding: 0;
+  }
+
+  .kit li {
+    padding: 1.15rem;
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-card);
+    background: var(--c-surface);
+  }
+
+  .kit h3 {
+    margin: 0 0 0.4rem;
+    color: var(--c-accent-dark);
+  }
+
+  .kit p {
+    margin: 0;
+    font-size: 0.93rem;
+    color: var(--c-text-muted);
+  }
+
+  .faq {
+    display: grid;
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+  }
+
+  .faq details {
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-btn);
+    background: var(--c-surface);
+    padding: 0.85rem 1.1rem;
+  }
+
+  .faq summary {
+    cursor: pointer;
+    font-weight: 700;
+  }
+
+  .faq p {
+    margin: 0.6rem 0 0;
+    color: var(--c-text-muted);
+  }
+
+  .more {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 2.5rem;
+  }
+
+  .more a {
+    padding: 0.5rem 0.9rem;
+    border: 1px solid var(--c-border-strong);
+    border-radius: var(--r-pill);
+    font-size: 0.9rem;
+    text-decoration: none;
+  }
+
+  .cta {
+    margin-top: 2rem;
+  }
+</style>

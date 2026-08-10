@@ -67,7 +67,19 @@ const parts = (text: string) => inlineParts(text);
 
   <section>
     <h2>{page.methodsHeading}</h2>
-    <p class="lede">{page.methodsDesc}</p>
+    <p class="lede">
+      {
+        parts(page.methodsDesc).map((part) =>
+          part.kind === 'bold' ? (
+            <strong>{part.text}</strong>
+          ) : part.kind === 'link' ? (
+            <a href={part.href}>{part.text}</a>
+          ) : (
+            part.text
+          ),
+        )
+      }
+    </p>
 
     <div class="methods">
       {

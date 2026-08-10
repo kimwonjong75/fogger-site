@@ -15,6 +15,7 @@ import { field, parsePage } from '../lib/page-content';
 import homeRaw from '../content/pages/home.json';
 import compareRaw from '../content/pages/compare.json';
 import mistRaw from '../content/pages/mist.json';
+import equipmentRaw from '../content/pages/equipment.json';
 import productsRaw from '../content/pages/products.json';
 import safetyRaw from '../content/pages/safety.json';
 import guidesRaw from '../content/pages/guides.json';
@@ -162,7 +163,8 @@ const mistSchema = z.object({
   /** 검색해서 들어온 사람이 첫 화면에서 바로 판단할 수 있게 하는 직접 답변 */
   answer: z.array(rich(MIST)).min(1),
   methodsHeading: line(MIST),
-  methodsDesc: line(MIST),
+  /** 깊은 비교 문서로 보내는 링크가 들어가므로 rich 다 */
+  methodsDesc: rich(MIST),
   methods: z
     .array(
       z.object({
@@ -185,6 +187,44 @@ const mistSchema = z.object({
 });
 
 export const MIST_PAGE = parsePage(MIST, mistSchema, mistRaw);
+
+/* ------------------------------------------------------------------ *
+ * 방역기
+ * ------------------------------------------------------------------ */
+
+/**
+ * 「방역기」로 검색해서 들어온 사람을 받는 화면 (2026-08-10 신설).
+ *
+ * ⚠️ 이 화면과 겹치기 쉬운 자리가 셋 있다. **각을 지켜야 서로 잠식하지 않는다.**
+ *
+ *   · `/mist/`                       → "어떤 방식을 사야 하나" (가열식·ULV·전동 분무)
+ *   · `guides/fogger-vs-mist-blower` → "원리가 어떻게 다른가" (깊은 비교)
+ *   · `guides/` 10단계               → "어떻게 쓰나" (작업 절차)
+ *   · 여기                            → **"직접 하려면 무엇을 갖추나"** (기계·매질·약제·환기)
+ *
+ * 그래서 이 화면은 방식 비교표를 다시 그리지 않는다. 갖출 것 네 가지를 세는 것이
+ * 다른 어느 화면에도 없는 이 화면만의 값이고, 방식 이야기는 위 두 곳으로 보낸다.
+ */
+const EQUIPMENT = 'equipment';
+
+const equipmentSchema = z.object({
+  eyebrow: line(EQUIPMENT),
+  heading: line(EQUIPMENT),
+  lede: line(EQUIPMENT),
+  answerHeading: line(EQUIPMENT),
+  answer: z.array(rich(EQUIPMENT)).min(1),
+  kitHeading: line(EQUIPMENT),
+  kitDesc: line(EQUIPMENT),
+  /** 갖출 것 목록 — 이 화면의 고유 가치다. 하나라도 빠지면 작업이 안 되거나 위험해진다 */
+  kit: z.array(z.object({ name: line(EQUIPMENT), detail: rich(EQUIPMENT) })).min(1),
+  faqHeading: line(EQUIPMENT),
+  faq: z.array(z.object({ q: line(EQUIPMENT), a: line(EQUIPMENT) })).min(1),
+  safetyBoxTitle: line(EQUIPMENT),
+  moreLinks: z.array(navLink(EQUIPMENT)).min(1),
+  seo: seo(EQUIPMENT),
+});
+
+export const EQUIPMENT_PAGE = parsePage(EQUIPMENT, equipmentSchema, equipmentRaw);
 
 /* ------------------------------------------------------------------ *
  * 제품 목록

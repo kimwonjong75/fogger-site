@@ -351,7 +351,12 @@ collections:
               **별표 두 개**로 감싸면 굵게 나옵니다. {{가열원}} 같은 자리표시자를 쓸 수 있습니다.
 
           - { name: methodsHeading, label: 방식 비교 — 섹션 제목, widget: string }
-          - { name: methodsDesc, label: 방식 비교 — 제목 아래 한 줄, widget: string, hint: *token_hint }
+          - name: methodsDesc
+            label: 방식 비교 — 제목 아래 한 줄
+            widget: text
+            hint: >-
+              **별표 두 개**로 감싸면 굵게, `[글씨](/주소/)` 로 적으면 링크가 됩니다.
+              깊은 비교는 "연막기와 연무기 차이" 문서가 맡으므로 여기서 그쪽으로 보내 주세요.
           - name: methods
             label: 방식 비교 — 표의 각 줄
             label_singular: 방식
@@ -377,6 +382,74 @@ collections:
             hint: >-
               아래 매질 표는 "제품 정보 → 매질"에서 자동으로 채워집니다.
               **별표 두 개**로 감싸면 굵게 나옵니다.
+
+          - { name: faqHeading, label: 자주 묻는 것 — 섹션 제목, widget: string }
+          - name: faq
+            label: 자주 묻는 것 — 문답
+            label_singular: 문답
+            widget: list
+            min: 1
+            summary: '{{fields.q}}'
+            hint: 사람들이 실제로 검색창에 치는 말 그대로 질문을 적으면 검색·AI 가 그대로 인용합니다.
+            fields:
+              - { name: q, label: 질문, widget: string }
+              - { name: a, label: 답, widget: text, hint: *token_hint }
+
+          - name: safetyBoxTitle
+            label: 노란 안전 상자 제목
+            widget: string
+            hint: 상자 안의 항목은 "안전수칙 화면"에서 함께 관리됩니다.
+
+          - name: moreLinks
+            label: 맨 아래 링크
+            label_singular: 링크
+            widget: list
+            required: false
+            summary: '{{fields.label}}'
+            fields: *nav_link_fields
+
+          - { name: seo, label: 검색결과 표기, widget: object, fields: *seo_fields }
+
+      # ----------------------------------------------------------------
+      # 방역기
+      #
+      # ⚠️ "방식 비교"를 여기서 또 하지 않는다. 그건 연무기 화면과
+      #    "연막기와 연무기 차이" 문서의 몫이다. 여기는 "직접 하려면 무엇을 갖추나".
+      # ----------------------------------------------------------------
+      - name: equipment
+        label: 방역기 화면
+        file: src/content/pages/equipment.json
+        description: fogger.blueguard.kr/equipment/ — 「방역기」로 검색해서 들어온 분에게 갖출 것을 알려 주는 화면입니다.
+        fields:
+          - { name: eyebrow, label: 제목 위 작은 글씨, widget: string }
+          - { name: heading, label: 큰 제목, widget: string }
+          - { name: lede, label: 제목 아래 소개 문구, widget: text }
+
+          - { name: answerHeading, label: 짧은 답 — 섹션 제목, widget: string }
+          - name: answer
+            label: 짧은 답 — 문단
+            label_singular: 문단
+            widget: list
+            min: 1
+            field: { name: line, label: 한 문단, widget: text }
+            hint: >-
+              검색해서 들어온 분이 첫 화면에서 바로 판단할 수 있게 적는 자리입니다.
+              **별표 두 개**로 감싸면 굵게, `[글씨](/주소/)` 로 적으면 링크가 됩니다.
+
+          - { name: kitHeading, label: 갖출 것 — 섹션 제목, widget: string }
+          - { name: kitDesc, label: 갖출 것 — 제목 아래 한 줄, widget: string, hint: *token_hint }
+          - name: kit
+            label: 갖출 것 — 항목
+            label_singular: 항목
+            widget: list
+            min: 1
+            summary: '{{fields.name}}'
+            hint: >-
+              이 목록이 이 화면만의 값입니다. 다른 화면에는 없습니다.
+              번호(① ② ③)는 제목에 직접 적어 주세요.
+            fields:
+              - { name: name, label: 항목 이름, widget: string }
+              - { name: detail, label: 설명, widget: text, hint: *token_hint }
 
           - { name: faqHeading, label: 자주 묻는 것 — 섹션 제목, widget: string }
           - name: faq
@@ -1000,7 +1073,7 @@ collections:
         options:
           - { label: '사용법 — 사용 후 세척', value: 'guides/after-use-cleaning' }
           - { label: '사용법 — 모델 고르기', value: 'guides/choose-fogger' }
-          - { label: '사용법 — 매질 고르기', value: 'guides/choose-media' }
+          - { label: '사용법 — 살충제와 매질 고르기', value: 'guides/choose-media' }
           - { label: '사용법 — 충전과 준비', value: 'guides/fill-and-prepare' }
           - { label: '사용법 — 연막기와 연무기 차이', value: 'guides/fogger-vs-mist-blower' }
           - { label: '사용법 — 점화와 분사', value: 'guides/ignition-and-spray' }

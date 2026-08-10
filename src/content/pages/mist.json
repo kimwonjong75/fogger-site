@@ -9,7 +9,7 @@
     "전원을 꽂아 쓰는 **ULV 냉연무기를 찾고 계시다면 이 제품은 맞지 않습니다.** 아래 표에서 어느 쪽이 필요한지 확인하세요."
   ],
   "methodsHeading": "세 방식이 어떻게 다른가",
-  "methodsDesc": "같은 「연무기」로 불리지만 입자를 만드는 원리가 다릅니다. 원리가 다르면 쓸 수 있는 자리도 달라집니다.",
+  "methodsDesc": "같은 「연무기」로 불리지만 입자를 만드는 원리가 다릅니다. 원리가 다르면 쓸 수 있는 자리도 달라집니다. 원리를 더 깊게 보시려면 [연막기와 연무기 차이](/guides/fogger-vs-mist-blower/) 를 보세요.",
   "methods": [
     {
       "name": "가열식 열연무",
@@ -56,9 +56,9 @@
   ],
   "safetyBoxTitle": "연무 작업에도 그대로 적용됩니다",
   "moreLinks": [
-    { "label": "매질 고르기", "href": "/guides/choose-media/" },
-    { "label": "제품 라인업", "href": "/products/" },
-    { "label": "사용법 10단계", "href": "/guides/" }
+    { "label": "연막기와 연무기 차이 자세히", "href": "/guides/fogger-vs-mist-blower/" },
+    { "label": "매질·살충제 고르기", "href": "/guides/choose-media/" },
+    { "label": "제품 라인업", "href": "/products/" }
   ],
   "seo": {
     "title": "연무기 · 연무소독기 — 가열식 열연무",

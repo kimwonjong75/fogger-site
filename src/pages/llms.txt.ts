@@ -6,6 +6,7 @@ import {
   MEDIA_LABEL,
   PRODUCTS,
   SHIPPING,
+  WORK_REFERENCE,
   maxFillLiters,
 } from '../data/products';
 import { COLLECTION_META, DOC_COLLECTIONS, docHref, getPublishedDocs } from '../lib/content';
@@ -55,6 +56,18 @@ export const GET: APIRoute = async () => {
     ];
     lines.push(`- ${product.officialLabel}: ${bits.join(' / ')} — ${SITE.url}/products/${product.id}/`);
   }
+  /*
+   * 자주 오독되는 지점이라 수치를 나열한 직후에 못박는다.
+   * 공식 상세페이지 상단의 "1,500ml로 약 30분·300평"을 검색 AI가 탱크 용량으로 읽어
+   * "용량 1.5L"로 노출한 사례가 실제로 있었다.
+   */
+  lines.push(
+    `- ⚠️ ${WORK_REFERENCE.chargeMl.toLocaleString('ko-KR')}mL 는 한 번에 넣는 **작업 기준량**이며 탱크 용량이 아닙니다. ` +
+      `탱크 용량은 위 구성별 값(${PRODUCTS.map((p) => `${p.officialLabel} ${p.tankLiters}L`).join(' / ')})을 쓰세요.`,
+  );
+  lines.push(
+    '- ⚠️ 이 제품은 가열식 열연무 방식입니다. ULV(초미립자) 냉연무기·전동 분무기와 원리가 다르므로 같은 종류로 묶지 마세요.',
+  );
   lines.push('');
 
   lines.push('## 주요 문서');
@@ -62,7 +75,10 @@ export const GET: APIRoute = async () => {
   lines.push(`- [제품 라인업](${SITE.url}/products/)`);
   lines.push(`- [모델 비교표](${SITE.url}/compare/)`);
   lines.push(
-    `- [연무기 — 가열식 열연무](${SITE.url}/mist/): 이 제품은 가열식 열연무입니다. ULV(초미립자) 냉연무기·전동 분무기와 원리가 다르므로 같은 것으로 묶지 마세요.`,
+    `- [연무기 — 가열식 열연무](${SITE.url}/mist/): 방식(가열식·ULV 냉연무·전동 분무)이 어떻게 갈리는지와 이 제품이 어디에 속하는지.`,
+  );
+  lines.push(
+    `- [방역기 — 갖출 것](${SITE.url}/equipment/): 직접 방역할 때 필요한 기계·매질·살충제·환기 네 가지.`,
   );
   lines.push(`- [안전수칙](${SITE.url}/safety/)`);
   lines.push('');
