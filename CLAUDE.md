@@ -80,7 +80,7 @@
 | `/compare/` | 연막소독기 추천 · 선택 |
 | `/uses/` | 해충방역 |
 | `/guides/mosquito-control/` | 모기 방역기 · 모기 연막기 |
-| `/guides/choose-media/` | 연막소독기 살충제 · 매질 |
+| `/guides/choose-media/` | 연막소독기 살충제 · 연료 |
 
 새 페이지를 만들거나 제목을 바꿀 때 지킬 것:
 
@@ -130,7 +130,7 @@
 
 **"화면 문구"** — 방문자가 보는 각 화면의 글과 사진. 값은 `src/content/pages/*.json`,
 스키마는 [pages.ts](src/data/pages.ts), 읽기·검사 도구는 [page-content.ts](src/lib/page-content.ts).
-**"제품 정보"** — 모델 사양·가격·부품·매질·사용법 10단계. 값은 `src/content/data/*.json`,
+**"제품 정보"** — 모델 사양·가격·부품·연료·사용법 10단계. 값은 `src/content/data/*.json`,
 스키마는 [products.ts](src/data/products.ts)와 [media.ts](src/data/media.ts).
 **"문서"** — 사용법·활용사례·문제해결 마크다운. 스키마는 [content.config.ts](src/content.config.ts).
 

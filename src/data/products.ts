@@ -6,7 +6,7 @@
  *
  * **값 자체는 `src/content/pages/../data/products.json` 에 있다.**
  * 2026-08-08에 사장님이 편집 화면(/admin/ → "제품 정보")에서 직접 고칠 수 있도록 옮겼다.
- * 이 파일은 그 값을 검사하고, 파생값(최대 충전량·매질 표기 등)을 계산해서 내보낸다.
+ * 이 파일은 그 값을 검사하고, 파생값(최대 충전량·연료 표기 등)을 계산해서 내보낸다.
  *
  * ⚠️ 옮기기 전 이 파일에는 값마다 "무엇을 보고 확인했는지"가 주석으로 붙어 있었다.
  *    그 근거는 지운 것이 아니라 두 곳으로 갈라 두었다 —
@@ -60,7 +60,7 @@ const schema = z.object({
     efficacy: text,
     storage: text,
     /**
-     * 탱크 충전 한도(%). 가열 시 매질이 팽창하므로 가득 채우면 넘침·역류 위험이 있다.
+     * 탱크 충전 한도(%). 가열 시 연료가 팽창하므로 가득 채우면 넘침·역류 위험이 있다.
      * 안전 수치라 100 을 넣을 수 없게 막는다.
      */
     fillRatioPercent: z
@@ -113,7 +113,7 @@ const schema = z.object({
         id: z.string().regex(/^[a-z][a-z-]*$/),
         name: text,
         mode: text,
-        /** 이 매질을 썼을 때 실내에서 쓸 수 있는지. 환기 조건은 별개 축이라 그대로 적용된다 */
+        /** 이 연료를 썼을 때 실내에서 쓸 수 있는지. 환기 조건은 별개 축이라 그대로 적용된다 */
         indoor: z.boolean(),
         venueLabel: text,
         detail: text,
@@ -215,7 +215,7 @@ export const FILL_RATIO_LABEL = `${common.fillRatioPercent}%`;
 /**
  * 사용 장소는 하나의 값이 아니라 세 축이 겹쳐서 정해진다.
  *
- *   1) 실내에서 쓸 수 있는가 → **매질**이 정한다 (mediaSpecs 의 indoor)
+ *   1) 실내에서 쓸 수 있는가 → **연료**가 정한다 (mediaSpecs 의 indoor)
  *   2) 어떤 환기 상태여야 하는가 → **가열원**이 정한다 (아래 condition)
  *   3) 무엇을 뿌려도 되는가 → **약제 표시사항**이 정한다
  *
@@ -258,10 +258,10 @@ export const DESIGN_FEATURES = parsed.designFeatures;
  * 자리표시자 — 제품 데이터 안에서 쓸 수 있는 이름
  * ------------------------------------------------------------------ */
 
-/** 매질명만 필요한 자리 */
+/** 연료명만 필요한 자리 */
 export const MEDIA = parsed.mediaSpecs.map((m) => m.name);
 
-/** 매질 표기용 문자열 — "경유 또는 글리세린 50% 이상 확산제" */
+/** 연료 표기용 문자열 — "경유 또는 글리세린 50% 이상 확산제" */
 export const MEDIA_LABEL = MEDIA.join(' 또는 ');
 
 /**
@@ -271,7 +271,7 @@ export const MEDIA_LABEL = MEDIA.join(' 또는 ');
 export const PRODUCT_TOKENS: Record<string, string> = {
   가열원: HEAT_SOURCE,
   분사모드: SPRAY_MODES,
-  매질: MEDIA_LABEL,
+  연료: MEDIA_LABEL,
   충전한도: FILL_RATIO_LABEL,
   국산비율: String(DOMESTIC_PARTS_PERCENT),
   철망두께: String(MESH_THICKNESS_MM),
@@ -306,7 +306,7 @@ export const BUILD_QUALITY = parsed.buildQuality.map((part) => ({
 }));
 
 /* ------------------------------------------------------------------ *
- * 매질
+ * 연료
  * ------------------------------------------------------------------ */
 
 export const MEDIA_SPECS = parsed.mediaSpecs.map((medium) => ({
@@ -314,7 +314,7 @@ export const MEDIA_SPECS = parsed.mediaSpecs.map((medium) => ({
   detail: fill(medium.detail),
 }));
 
-/** 실내 작업에 쓸 수 있는 매질 (없으면 실내 안내를 렌더링하지 않는다) */
+/** 실내 작업에 쓸 수 있는 연료 (없으면 실내 안내를 렌더링하지 않는다) */
 export const INDOOR_MEDIA = MEDIA_SPECS.filter((m) => m.indoor);
 
 /* ------------------------------------------------------------------ *
@@ -427,7 +427,7 @@ export const SPEC_ROWS: SpecRow[] = [
   { label: '어깨끈', value: (p) => (p.shoulderStrap ? '포함' : '미포함') },
   { label: '주요 사용처', value: (p) => p.bestFor.join(', ') },
   { label: '가열원', value: () => HEAT_SOURCE, shared: true },
-  { label: '사용 매질', value: () => MEDIA_LABEL, shared: true },
+  { label: '사용 연료', value: () => MEDIA_LABEL, shared: true },
   { label: '사용 장소', value: () => USE_VENUE.label, shared: true },
   { label: '보조주입구', value: () => '작동 중 사용 금지', shared: true },
   { label: '배송', value: () => SHIPPING.label, shared: true },

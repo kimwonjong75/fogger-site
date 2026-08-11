@@ -45,7 +45,7 @@ import {
  * 새 자리표시자가 필요하면 여기 한 줄을 더하고 config.yml 의 안내문도 같이 고친다.
  */
 export const TOKENS: Record<string, string> = {
-  /* 제품 정보 쪽에서 이미 정의한 것 — 가열원·매질·충전한도·국산비율·배송 등 */
+  /* 제품 정보 쪽에서 이미 정의한 것 — 가열원·연료·충전한도·국산비율·배송 등 */
   ...PRODUCT_TOKENS,
 
   /**
@@ -73,8 +73,8 @@ export const TOKENS: Record<string, string> = {
   대용량최대충전: `${maxFillLiters(PRODUCTS[1]?.tankLiters ?? PRODUCTS[0]!.tankLiters)}L`,
   기본형최장변: PRODUCTS[0]!.dimensionsMm.split('×')[0]!,
 
-  /* 매질별 사용 장소를 한 줄로 — "경유 실외 전용, 확산제 실내·실외" */
-  매질별장소: MEDIA_SPECS.map((m) => `${m.name} ${m.venueLabel}`).join(', '),
+  /* 연료별 사용 장소를 한 줄로 — "경유 실외 전용, 확산제 실내·실외" */
+  연료별장소: MEDIA_SPECS.map((m) => `${m.name} ${m.venueLabel}`).join(', '),
 
   /* 작업 기준량 — 탱크 용량이 아니라 "1,500mL로 약 30분·300평" 쪽 값이다 */
   작업기준량: WORK_REFERENCE.chargeMl.toLocaleString('ko-KR'),

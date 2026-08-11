@@ -24,7 +24,7 @@ export interface Chemical {
    * approvalRequired가 true인데 null이면 공개되지 않는다.
    */
   approvalNumber: string | null;
-  /** 실내 작업에 쓸 수 있는 매질인지 (확산제만 해당) */
+  /** 실내 작업에 쓸 수 있는 연료인지 (확산제만 해당) */
   indoorCapable: boolean;
   /** 공개 여부 — false면 라우트·사이트맵·RSS·내부링크에서 모두 제외 */
   published: boolean;
@@ -36,7 +36,7 @@ export const CHEMICALS: Chemical[] = [
     name: '벅스델타 유제',
     category: '살충제',
     description:
-      '연막·연무용 살충 약제 (BUGS DELTA EMULSION, 1L). 매질에 섞어 쓰는 살충 성분으로, 단독으로 기기에 넣지 않습니다.',
+      '연막·연무용 살충 약제 (BUGS DELTA EMULSION, 1L). 연료에 섞어 쓰는 살충 성분으로, 단독으로 기기에 넣지 않습니다.',
     approvalRequired: true,
     approvalNumber: '2419-0109',
     indoorCapable: false,
@@ -47,7 +47,7 @@ export const CHEMICALS: Chemical[] = [
     name: '그린미스트에스',
     category: '확산제',
     description:
-      '전문방역용 글리세린계 분사제 (1L). 경유 대신 쓰는 수용성 매질이라 실내 작업에 사용합니다.',
+      '전문방역용 글리세린계 분사제 (1L). 경유 대신 쓰는 수용성 연료라 실내 작업에 사용합니다.',
     approvalRequired: false,
     approvalNumber: null,
     indoorCapable: true,
@@ -80,7 +80,7 @@ export const DILUTION: DilutionSpec[] = [
   { officialLabel: '대용량', carrierMl: 2000, pesticideMl: 40 },
 ];
 
-/** 희석비 (매질 : 살충제) — 두 구성 모두 50:1 */
+/** 희석비 (연료 : 살충제) — 두 구성 모두 50:1 */
 export const DILUTION_RATIO = '50 : 1';
 
 /** 공식 표기 주의사항 */

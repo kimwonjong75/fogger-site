@@ -161,7 +161,7 @@ export function productSchema(product: Product) {
     description: [
       product.tagline,
       `탱크 ${product.tankLiters}L, 최대 충전량 ${maxFillLiters(product.tankLiters)}L.`,
-      `가열원 ${HEAT_SOURCE}, 사용 매질 ${MEDIA_LABEL}.`,
+      `가열원 ${HEAT_SOURCE}, 사용 연료 ${MEDIA_LABEL}.`,
       price ? `공식몰 정가 ${price}.` : null,
     ]
       .filter(Boolean)
@@ -186,7 +186,7 @@ export function productSchema(product: Product) {
         '@type': 'PropertyValue',
         name: '분사 모드',
         value: SPRAY_MODES,
-        description: '탱크에 넣는 매질을 바꿔 연막·연무를 전환합니다.',
+        description: '탱크에 넣는 연료를 바꿔 연막·연무를 전환합니다.',
       },
       {
         '@type': 'PropertyValue',
@@ -195,7 +195,7 @@ export function productSchema(product: Product) {
         description: WORK_REFERENCE.note,
       },
       { '@type': 'PropertyValue', name: '가열원', value: HEAT_SOURCE },
-      { '@type': 'PropertyValue', name: '사용 매질', value: MEDIA_LABEL },
+      { '@type': 'PropertyValue', name: '사용 연료', value: MEDIA_LABEL },
       {
         '@type': 'PropertyValue',
         name: '사용 장소',

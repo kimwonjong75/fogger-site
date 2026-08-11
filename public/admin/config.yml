@@ -86,7 +86,7 @@ collections:
                 widget: string
                 hint: &token_hint >-
                   숫자는 직접 쓰지 마세요. {{국산비율}} {{충전한도}} {{기본형탱크}} {{대용량탱크}}
-                  {{분사모드}} {{가열원}} {{매질}} {{기본형}} {{대용량}} {{롱노즐구성}}
+                  {{분사모드}} {{가열원}} {{연료}} {{기본형}} {{대용량}} {{롱노즐구성}}
                   {{작업기준량}} {{작업시간}} {{작업면적}} 처럼 적으면 제품 데이터의 실제 값이
                   자동으로 들어갑니다. 없는 이름을 쓰면 저장은 되지만 사이트에 반영되지 않습니다.
               - { name: headlineTop, label: 큰 제목 — 첫 줄, widget: string }
@@ -380,7 +380,7 @@ collections:
             label: 연막·연무 전환 — 설명
             widget: text
             hint: >-
-              아래 매질 표는 "제품 정보 → 매질"에서 자동으로 채워집니다.
+              아래 연료 표는 "제품 정보 → 연료"에서 자동으로 채워집니다.
               **별표 두 개**로 감싸면 굵게 나옵니다.
 
           - { name: faqHeading, label: 자주 묻는 것 — 섹션 제목, widget: string }
@@ -655,7 +655,7 @@ collections:
           - *seo_title_only_field
 
   # ==================================================================
-  # 제품 정보 — 사양 · 가격 · 부품 · 매질
+  # 제품 정보 — 사양 · 가격 · 부품 · 연료
   #
   # 값은 src/content/data/products.json, 검사는 src/data/products.ts.
   #
@@ -734,7 +734,7 @@ collections:
                 label_singular: 사용처
                 widget: list
                 field: { name: item, label: 사용처, widget: string }
-                hint: 실내·실외를 단정하는 표현은 쓰지 마세요. 장소는 매질과 환기 조건이 함께 정합니다.
+                hint: 실내·실외를 단정하는 표현은 쓰지 마세요. 장소는 연료와 환기 조건이 함께 정합니다.
               - name: priceKrw
                 label: 공식몰 정가 (원)
                 widget: number
@@ -778,7 +778,7 @@ collections:
                 min: 50
                 max: 95
                 hint: >-
-                  ⚠️ 안전 수치입니다. 가열하면 매질이 팽창하므로 가득 채우면 넘치거나 역류합니다.
+                  ⚠️ 안전 수치입니다. 가열하면 연료가 팽창하므로 가득 채우면 넘치거나 역류합니다.
                   95%를 넘겨 넣을 수 없게 막아 두었습니다. 모델별 최대 충전량이 이 값으로 계산됩니다.
               - name: domesticPartsPercent
                 label: 부품 국산 비율 (%)
@@ -796,7 +796,7 @@ collections:
             label: 사용 장소
             widget: object
             hint: >-
-              장소는 세 가지가 겹쳐 정해집니다 — 매질(실내 가능 여부) · 가열원(환기 조건) ·
+              장소는 세 가지가 겹쳐 정해집니다 — 연료(실내 가능 여부) · 가열원(환기 조건) ·
               약제 표시사항(허용 대상). "실내 사용 가능"만 단독으로 쓰면 나머지 둘이 사라져
               위험한 문장이 됩니다.
             fields:
@@ -804,7 +804,7 @@ collections:
               - name: condition
                 label: 항상 함께 붙는 조건
                 widget: text
-                hint: ⚠️ 매질과 무관하게 언제나 적용되는 환기 조건입니다. 비우거나 약하게 고치지 마세요.
+                hint: ⚠️ 연료와 무관하게 언제나 적용되는 환기 조건입니다. 비우거나 약하게 고치지 마세요.
 
           - name: workReference
             label: 작업 기준량
@@ -870,8 +870,8 @@ collections:
                 pattern: ['^(.+ — .+)?$', '"{무엇} — {어떤 장면}" 형식으로 적어 주세요.']
 
           - name: mediaSpecs
-            label: 사용 가능 매질
-            label_singular: 매질
+            label: 사용 가능 연료
+            label_singular: 연료
             widget: list
             min: 1
             summary: '{{fields.name}}'
@@ -883,7 +883,7 @@ collections:
                 label: 이름표
                 widget: string
                 pattern: ['^[a-z][a-z-]*$', '영문 소문자와 붙임표(-)만 쓸 수 있습니다.']
-              - { name: name, label: 매질 이름, widget: string }
+              - { name: name, label: 연료 이름, widget: string }
               - { name: mode, label: 분사 모드, widget: string, hint: '예 — 연막 / 연무' }
               - name: indoor
                 label: 실내 사용 가능
@@ -1000,7 +1000,7 @@ collections:
         widget: select
         options:
           - { label: '제품 — 모델 비교·구매 안내', value: product }
-          - { label: '소모품 — 매질·약제 안내 (지금은 화면에 안 나옴)', value: consumable }
+          - { label: '소모품 — 연료·약제 안내 (지금은 화면에 안 나옴)', value: consumable }
           - { label: 'A/S — 문의 안내', value: as }
           - { label: '없음', value: none }
         hint: '"소모품"은 약제 승인번호가 확보되기 전까지 화면에 나오지 않습니다.'
@@ -1073,7 +1073,7 @@ collections:
         options:
           - { label: '사용법 — 사용 후 세척', value: 'guides/after-use-cleaning' }
           - { label: '사용법 — 모델 고르기', value: 'guides/choose-fogger' }
-          - { label: '사용법 — 살충제와 매질 고르기', value: 'guides/choose-media' }
+          - { label: '사용법 — 살충제와 연료 고르기', value: 'guides/choose-media' }
           - { label: '사용법 — 충전과 준비', value: 'guides/fill-and-prepare' }
           - { label: '사용법 — 연막기와 연무기 차이', value: 'guides/fogger-vs-mist-blower' }
           - { label: '사용법 — 점화와 분사', value: 'guides/ignition-and-spray' }
