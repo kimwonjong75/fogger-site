@@ -36,6 +36,13 @@ export const SITE = {
   /** 사이트 이름 — <title> 접미사와 WebSite 스키마에 사용 */
   name: '블루가드 연막소독기',
   shortName: '블루가드 포거',
+  /**
+   * 헤더 흰 띠에서 로고 오른쪽에 붙는 한 줄.
+   * 전 페이지에 같은 문구가 나가는 사이트 공통 요소라 페이지별 JSON이 아니라 여기에 둔다.
+   * 검색 검사(verify-build.mjs 의 제목-본문 대조)는 <main> 안만 보므로,
+   * 이 문구가 각 페이지의 본문 검사를 대신 통과시키지는 않는다.
+   */
+  tagline: '휴대용 연막소독기',
   locale: 'ko_KR',
   lang: 'ko',
   description:
