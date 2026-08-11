@@ -233,6 +233,18 @@ export const USE_VENUE = parsed.useVenue;
 export const WORK_REFERENCE = parsed.workReference;
 
 /**
+ * 작업 기준 한 줄 — **화면과 구조화데이터가 같은 문자열을 쓴다.**
+ *
+ * 전에는 제품 상세(.astro)와 `schema.ts` 가 각자 이 문장을 조립했고, 한쪽은
+ * "1,500mL로", 다른 쪽은 "1500mL 충전 시"였다. 검색엔진은 화면에 없는 값이
+ * 구조화데이터에만 있는 것을 정책 위반으로 본다. 조립을 한 곳으로 모아 어긋날 수 없게 한다.
+ */
+export function workReferenceLabel(): string {
+  const { chargeMl, minutes, pyeong } = WORK_REFERENCE;
+  return `${chargeMl.toLocaleString('ko-KR')}mL로 약 ${minutes}분 · ${pyeong}평`;
+}
+
+/**
  * 배송 정책.
  * `label`만 단독으로 쓰지 말고 조건이 들어갈 자리에는 반드시 `note`를 함께 노출한다.
  * (검증기가 "무료배송"이 나온 페이지에 조건 문구가 있는지 검사한다)

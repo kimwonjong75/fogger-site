@@ -20,6 +20,7 @@ import {
   STORAGE,
   USE_VENUE,
   WORK_REFERENCE,
+  workReferenceLabel,
   getProduct,
   maxFillLiters,
   priceLabel,
@@ -58,7 +59,7 @@ const facts = [
   { label: '분사 방식', value: product.sprayMode },
   {
     label: '작업 기준',
-    value: `${WORK_REFERENCE.chargeMl.toLocaleString('ko-KR')}mL로 약 ${WORK_REFERENCE.minutes}분 · ${WORK_REFERENCE.pyeong}평`,
+    value: workReferenceLabel(),
     note: WORK_REFERENCE.note,
   },
   { label: '어깨끈', value: product.shoulderStrap ? '포함' : '미포함' },

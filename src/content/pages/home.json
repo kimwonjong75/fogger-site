@@ -40,6 +40,10 @@
       {
         "label": "매질 고르는 법",
         "href": "/guides/choose-media/"
+      },
+      {
+        "label": "연무기 방식 비교",
+        "href": "/mist/"
       }
     ]
   },
@@ -79,6 +83,10 @@
       {
         "label": "문제해결",
         "href": "/troubleshooting/"
+      },
+      {
+        "label": "방역기 준비물",
+        "href": "/equipment/"
       }
     ]
   },

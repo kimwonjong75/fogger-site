@@ -9,6 +9,7 @@ import {
   WORK_REFERENCE,
   maxFillLiters,
   priceLabel,
+  workReferenceLabel,
   type Product,
 } from '../data/products';
 import { absoluteUrl } from './url';
@@ -190,7 +191,7 @@ export function productSchema(product: Product) {
       {
         '@type': 'PropertyValue',
         name: '작업 기준',
-        value: `${WORK_REFERENCE.chargeMl}mL 충전 시 약 ${WORK_REFERENCE.minutes}분 · ${WORK_REFERENCE.pyeong}평`,
+        value: workReferenceLabel(),
         description: WORK_REFERENCE.note,
       },
       { '@type': 'PropertyValue', name: '가열원', value: HEAT_SOURCE },

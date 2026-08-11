@@ -1028,6 +1028,73 @@ for (const path of expected) {
     }
   }
 
+  // --- H1 은 정확히 하나 → 실패 ---
+  // 0개면 이 페이지가 무엇에 관한 것인지 검색엔진에 알릴 가장 강한 신호가 없고,
+  // 2개 이상이면 어느 쪽이 주제인지 흐려진다.
+  for (const file of indexable) {
+    const count = (htmlOf(file).match(/<h1[\s>]/gi) ?? []).length;
+    if (count !== 1) {
+      fail(`[검색] ${urlPathFor(file)} 의 h1 이 ${count}개입니다 — 페이지마다 정확히 하나여야 합니다`);
+    }
+  }
+
+  // --- 화면 FAQ 와 FAQPage 구조화데이터가 같은가 → 실패 ---
+  // 화면에 없는 문답을 스키마에만 넣는 것은 구글 구조화데이터 정책 위반이다.
+  // 문서(DocLayout)는 같은 배열에서 둘 다 만들지만, 허브 화면은 손으로 어긋날 수 있다.
+  for (const file of indexable) {
+    const html = htmlOf(file);
+    const body = mainTextOf(html).replace(/\s+/g, ' ');
+    for (const m of all(html, /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)) {
+      let graph;
+      try {
+        graph = JSON.parse(m[1]);
+      } catch {
+        fail(`[검색] ${urlPathFor(file)} 의 JSON-LD 를 읽을 수 없습니다`);
+        continue;
+      }
+      for (const node of graph['@graph'] ?? []) {
+        if (node['@type'] !== 'FAQPage') continue;
+        for (const q of node.mainEntity ?? []) {
+          if (!body.includes(q.name.replace(/\s+/g, ' '))) {
+            fail(
+              `[검색] ${urlPathFor(file)} 의 FAQPage 질문 "${q.name}" 이 화면에 없습니다 — ` +
+                `구조화데이터에만 있는 문답은 정책 위반입니다`,
+            );
+          }
+        }
+      }
+    }
+  }
+
+  // --- 구조화데이터의 제품 사양이 화면에도 있는가 → 경고 ---
+  // 같은 이유(화면 ↔ 스키마 일치)지만 표기가 조금씩 달라("465×265×180 (mm)") 오탐이 나므로
+  // 공백·괄호를 지우고 비교하고, 실패가 아니라 경고로 둔다.
+  const squash = (s) => String(s).replace(/[\s()]/g, '');
+  for (const file of indexable) {
+    const html = htmlOf(file);
+    const body = squash(mainTextOf(html));
+    for (const m of all(html, /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)) {
+      let graph;
+      try {
+        graph = JSON.parse(m[1]);
+      } catch {
+        continue;
+      }
+      for (const node of graph['@graph'] ?? []) {
+        if (node['@type'] !== 'Product') continue;
+        const unseen = (node.additionalProperty ?? [])
+          .filter((p) => !body.includes(squash(p.value)))
+          .map((p) => `${p.name}=${p.value}`);
+        if (unseen.length) {
+          warn(
+            `[검색] ${urlPathFor(file)} 의 Product 구조화데이터 값이 화면에 없습니다: ${unseen.join(', ')} — ` +
+              `화면에 없는 값을 스키마에만 넣으면 정책 위반입니다`,
+          );
+        }
+      }
+    }
+  }
+
   // --- 1,500mL 오독 방지 문장 → 실패 ---
   const productsData = JSON.parse(readFileSync(join(CONTENT, 'data', 'products.json'), 'utf8'));
   // "아닙니다"·"아니라"·"아니고" 를 모두 잡도록 "아"까지만 본다

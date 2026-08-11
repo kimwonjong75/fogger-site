@@ -58,7 +58,8 @@
   "moreLinks": [
     { "label": "연막기와 연무기 차이 자세히", "href": "/guides/fogger-vs-mist-blower/" },
     { "label": "매질·살충제 고르기", "href": "/guides/choose-media/" },
-    { "label": "제품 라인업", "href": "/products/" }
+    { "label": "제품 라인업", "href": "/products/" },
+    { "label": "방역기 — 갖출 것", "href": "/equipment/" }
   ],
   "seo": {
     "title": "연무기 · 연무소독기 — 가열식 열연무",
