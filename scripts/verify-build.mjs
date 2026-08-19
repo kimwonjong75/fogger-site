@@ -533,6 +533,24 @@ for (const file of pages) {
     if (size(join(DIST, 'admin', 'config.yml')) === null) {
       fail('[admin] dist/admin/config.yml 이 없습니다 — 편집 항목이 표시되지 않습니다');
     }
+
+    // 미디어 지도로 가는 유일한 길.
+    //
+    // 편집기(Sveltia CMS)에는 메뉴에 항목을 더하는 API 가 없어서, 이 링크는 우리가
+    // index.html 에 직접 얹은 것이다. 편집기 판을 올리면서 이 파일을 새로 쓰면
+    // 조용히 사라지고, 그러면 사장님은 /admin/media/ 주소를 외우지 않는 한
+    // 미디어 지도에 갈 방법이 없어진다.
+    if (!/href="\/admin\/media\//.test(html)) {
+      fail(
+        '[admin] 편집 화면에 미디어 지도(/admin/media/) 링크가 없습니다 — ' +
+          '사장님이 사진 지도로 갈 길이 사라집니다',
+      );
+    }
+  }
+
+  // 링크가 있어도 그 화면이 빌드되지 않았으면 사장님은 404 를 만난다.
+  if (size(join(DIST, 'admin', 'media', 'index.html')) === null) {
+    fail('[admin] dist/admin/media/index.html 이 없습니다 — 미디어 지도가 빌드되지 않았습니다');
   }
 
   // 편집 화면으로 가는 링크가 공개 페이지에 있으면 방문자에게도 노출된다.
