@@ -66,19 +66,23 @@ export interface PhotoSlotEntry {
 }
 
 export const PHOTO_SLOTS: PhotoSlotEntry[] = [
-  {
-    no: '①',
+  // 파일명을 손으로 적지 않는다 — 편집 화면에서 사진을 바꾸면 이 목록도 같이 따라온다
+  ...HOME_PAGE.hero.slides.map((slide, i) => ({
+    no: i === 0 ? '①' : null,
     page: '/',
-    where: '첫 화면 오른쪽',
-    what: '성인이 한 손으로 들고 선 컷',
-    ratio: '세로 3:4',
-    status: 'temporary',
-    // 파일명을 손으로 적지 않는다 — 편집 화면에서 사진을 바꾸면 이 목록도 같이 따라온다
-    file: assetFileName(HOME_PAGE.hero.image.path),
-    image: HOME_PAGE.hero.image.meta,
-    editIn: '홈 화면 → 첫 화면 → 사진',
-    note: '지금은 흰 배경 제품 컷이 임시로 들어가 있습니다. 어두운 배경에 사람이 들고 선 컷으로 바꾸면 크기가 몸으로 증명됩니다. 얼굴은 안 나와도 됩니다.',
-  },
+    where: `첫 화면 배경 ${i + 1}번째 사진 (돌아가며 바뀜)`,
+    what: '실제 방역 장면',
+    ratio: '가로 16:9',
+    // 화면 전체를 덮는 자리라 가로 1,280px보다 작으면 흐려 보인다 — 더 큰 원본으로 바꿀 자리
+    status: slide.image.meta.width >= 1280 ? ('final' as const) : ('temporary' as const),
+    file: assetFileName(slide.image.path),
+    image: slide.image.meta,
+    editIn: '홈 화면 → 첫 화면 → 배경 사진',
+    note:
+      i === 0
+        ? '어둡게 깔린 위에 글이 올라갑니다. 사람이 방역하는 가로 사진(가로 1,280px 이상)을 더 찍으면 여기 추가하세요.'
+        : undefined,
+  })),
   {
     no: '⑫',
     page: '/',

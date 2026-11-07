@@ -105,23 +105,43 @@ collections:
                 label: 버튼 아래 사양 한 줄
                 widget: string
                 hint: *token_hint
-              - name: image
-                label: 오른쪽 제품 사진
-                widget: image
-                media_folder: /src/assets
-                public_folder: /src/assets
-                hint: &photo_hint >-
-                  세로로 긴 사진이 잘 맞습니다. 올리면 자동으로 크기가 줄고 형식이 바뀌므로
-                  원본 그대로 올리셔도 됩니다. 사진을 바꾸면 아래 "사진 설명"도 함께 고쳐 주세요.
-              - name: imageAlt
-                label: 사진 설명
-                widget: string
-                hint: &alt_hint >-
-                  눈이 안 보이는 분과 검색엔진이 읽는 유일한 설명입니다.
-                  "{무엇} — {어떤 장면}" 형식으로 적어 주세요(가운데 줄표 앞뒤에 빈칸).
-                  예: 블루가드 연막소독기 대용량 — 흰 연료통과 스테인리스 배럴이 보이는 본체 사진
-                pattern:
-                  ['^.+ — .+$', '"{무엇} — {어떤 장면}" 형식으로 적어 주세요. 예: 제품 사진 — 마당에서 분사하는 장면']
+              - name: slides
+                label: 배경 사진 (돌아가며 바뀜)
+                label_singular: 배경 사진
+                widget: list
+                min: 1
+                max: 6
+                summary: '{{fields.imageAlt}}'
+                hint: >-
+                  첫 화면 뒤에 어둡게 깔리고 5초마다 다음 사진으로 바뀝니다. 실제로 방역하는
+                  가로 사진이 가장 잘 맞습니다. 맨 위 사진이 가장 먼저 보입니다.
+                fields:
+                  - name: image
+                    label: 사진
+                    widget: image
+                    media_folder: /src/assets
+                    public_folder: /src/assets
+                    hint: &photo_hint >-
+                      올리면 자동으로 크기가 줄고 형식이 바뀌므로 원본 그대로 올리셔도 됩니다.
+                      사진을 바꾸면 아래 "사진 설명"도 함께 고쳐 주세요.
+                  - name: imageAlt
+                    label: 사진 설명
+                    widget: string
+                    hint: &alt_hint >-
+                      눈이 안 보이는 분과 검색엔진이 읽는 유일한 설명입니다.
+                      "{무엇} — {어떤 장면}" 형식으로 적어 주세요(가운데 줄표 앞뒤에 빈칸).
+                      예: 블루가드 연막소독기 대용량 — 흰 연료통과 스테인리스 배럴이 보이는 본체 사진
+                    pattern:
+                      ['^.+ — .+$', '"{무엇} — {어떤 장면}" 형식으로 적어 주세요. 예: 제품 사진 — 마당에서 분사하는 장면']
+                  - name: focus
+                    label: 휴대폰에서 남길 쪽
+                    widget: select
+                    default: center
+                    hint: 휴대폰은 화면이 세로라 사진 양옆이 잘립니다. 사람이 있는 쪽을 고르세요.
+                    options:
+                      - { label: '왼쪽', value: left }
+                      - { label: '가운데', value: center }
+                      - { label: '오른쪽', value: right }
 
           - name: works
             label: 현장 사진 섹션

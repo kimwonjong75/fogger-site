@@ -83,8 +83,20 @@ const homeSchema = z.object({
     videoButtonLabel: line(HOME),
     modelButtonLabel: line(HOME),
     specLine: line(HOME),
-    image: image(HOME),
-    imageAlt: imageAlt(HOME),
+    /**
+     * 첫 화면 뒤에 어둡게 깔려 돌아가는 실제 방역 사진.
+     * `focus` 는 세로 화면(휴대폰)에서 사진 양옆이 잘릴 때 남길 쪽이다.
+     */
+    slides: z
+      .array(
+        z.object({
+          image: image(HOME),
+          imageAlt: imageAlt(HOME),
+          focus: z.enum(['left', 'center', 'right']).default('center'),
+        }),
+      )
+      .min(1)
+      .max(6),
   }),
   works: z.object({
     heading: line(HOME),

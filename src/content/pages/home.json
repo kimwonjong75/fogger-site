@@ -10,8 +10,23 @@
     "videoButtonLabel": "소개 영상 보기",
     "modelButtonLabel": "내게 맞는 모델 찾기",
     "specLine": "한 손 휴대 · {{분사모드}} · {{기본형}} {{기본형탱크}} / {{대용량}} {{대용량탱크}}",
-    "image": "/src/assets/photo-bf-102.jpg",
-    "imageAlt": "블루가드 연막소독기 대용량 — 흰색 연료통과 스테인리스 배럴이 보이는 본체 제품 사진"
+    "slides": [
+      {
+        "image": "/src/assets/photo-work-livestock-barn.jpg",
+        "imageAlt": "블루가드 연막소독기 사용 장면 — 소 축사 안에서 한 손으로 들고 연막을 뿜는 모습",
+        "focus": "center"
+      },
+      {
+        "image": "/src/assets/photo-work-field.jpg",
+        "imageAlt": "블루가드 연막소독기 사용 장면 — 마스크를 쓴 사람이 밭 가장자리에 연막을 뿜는 모습",
+        "focus": "right"
+      },
+      {
+        "image": "/src/assets/photo-work-garden.jpg",
+        "imageAlt": "블루가드 연막소독기 사용 장면 — 정원 나무 아래로 연막을 뿜는 모습",
+        "focus": "left"
+      }
+    ]
   },
   "works": {
     "heading": "방역은 전문가처럼, 장비는 더 가볍게.",
