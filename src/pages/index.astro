@@ -5,7 +5,7 @@ import ModelCard from '../components/ModelCard.astro';
 import Pic from '../components/Pic.astro';
 import SafetyBox from '../components/SafetyBox.astro';
 import VideoEmbed from '../components/VideoEmbed.astro';
-import { BUILD_QUALITY, PRODUCTS } from '../data/products';
+import { BUILD_QUALITY, PRODUCTS, priceLabel } from '../data/products';
 import { HOME_PAGE } from '../data/pages';
 import { numeralParts } from '../lib/page-content';
 import { INTRO_VIDEO, VIDEO_PUBLISHED_DATE } from '../data/media';
@@ -80,6 +80,8 @@ const introVideo = videoSchema({
             {
               page.hero.lede.map((text, i) => (
                 <>
+                  {/* 모바일은 줄바꿈을 숨기므로 공백을 함께 넣어야 두 줄이 붙지 않는다 */}
+                  {i > 0 && ' '}
                   {i > 0 && <br />}
                   {text}
                 </>
@@ -95,6 +97,30 @@ const introVideo = videoSchema({
             </a>
           </div>
           <p class="hero__media">{page.hero.specLine}</p>
+
+          {/*
+            트랙 F(2026-11-07): 첫 화면에서 "어떤 구성이 있고 얼마인지"가 보이게 한다.
+            문구를 새로 만들지 않고 products.ts 의 공식 옵션명·탱크·가격만 쓴다.
+          */}
+          <ul class="hero__models">
+            {
+              PRODUCTS.map((product) => (
+                <li>
+                  <a
+                    href={`/products/${product.id}/`}
+                    data-ga-event="model_select"
+                    data-ga-model={product.officialLabel}
+                    data-ga-product-id={product.id}
+                    data-ga-context="home_hero"
+                  >
+                    <strong>{product.officialLabel}</strong>
+                    <span class="hero__models-tank num">{product.tankLiters}L</span>
+                    {priceLabel(product) && <span class="hero__models-price">{priceLabel(product)}</span>}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
         </div>
 
         <div class="hero__figure">
@@ -956,6 +982,243 @@ const introVideo = videoSchema({
     section[aria-labelledby='close-h'] {
       padding: 1.5rem;
       border-radius: var(--r-tile);
+    }
+  }
+</style>
+
+<style>
+  /*
+   * 트랙 F (2026-11-07) — 첫 화면에 "무엇·어떤 구성·어디서 사나"가 보이게 한다.
+   *
+   * 전에는 제품 사진을 배경 무늬처럼 흐리게(투명도 0.12~0.2) 깔아서, 휴대폰 첫 화면에는
+   * 제목만 보이고 제품도 세 구성도 보이지 않았다(구성은 4.6화면 아래). 사진은 흰 배경
+   * 제품컷이라 어두운 띠 위에 그대로 올리면 흰 상자가 되므로, 흰 타일에 담아 또렷하게 세운다.
+   * 위 두 블록의 사진·제목 규칙을 여기서 덮어쓴다(값은 같은 토큰만 쓴다).
+   */
+  .hero-band {
+    min-height: 0;
+    padding: clamp(2.5rem, 6vw, 4.5rem) 0 clamp(2.5rem, 5vw, 3.5rem);
+  }
+
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    gap: clamp(1.5rem, 4vw, 3.5rem);
+    align-items: center;
+  }
+
+  .hero__text {
+    max-width: none;
+    margin: 0;
+    text-align: left;
+  }
+
+  .hero__text h1 {
+    font-size: clamp(2.2rem, 3.6vw, 3.3rem);
+  }
+
+  .hero__text .lede {
+    margin: 1.2rem 0 0;
+    font-size: clamp(0.98rem, 1.4vw, 1.1rem);
+    line-height: 1.7;
+  }
+
+  .hero__actions {
+    justify-content: flex-start;
+    margin-top: 1.75rem;
+  }
+
+  .hero__figure {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    width: auto;
+    opacity: 1;
+    transform: none;
+    mix-blend-mode: normal;
+    mask-image: none;
+    pointer-events: auto;
+    padding: clamp(0.75rem, 2vw, 1.5rem);
+    border-radius: var(--r-panel);
+    background: #fff;
+    box-shadow: 0 30px 60px -30px rgb(0 0 0 / 0.55);
+  }
+
+  .hero :global(.hero__image) {
+    filter: none;
+  }
+
+  /* 세 구성 — 공식 옵션명·탱크·가격 한 줄씩. 누르면 그 구성의 제품 화면으로 간다 */
+  .hero__models {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.6rem;
+    margin: 1.5rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .hero__models a {
+    display: grid;
+    gap: 0.15rem;
+    height: 100%;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid rgb(255 255 255 / 0.16);
+    border-radius: var(--r-card);
+    background: rgb(255 255 255 / 0.06);
+    color: #fff;
+    text-decoration: none;
+    transition: border-color 160ms ease, background 160ms ease;
+  }
+
+  .hero__models a:hover {
+    border-color: rgb(127 208 245 / 0.6);
+    background: rgb(255 255 255 / 0.1);
+  }
+
+  .hero__models strong {
+    font-size: 0.95rem;
+    font-weight: 700;
+  }
+
+  .hero__models-tank {
+    color: #7fd0f5;
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+
+  .hero__models-price {
+    color: var(--c-on-ink-dim);
+    font-size: 0.8rem;
+  }
+
+  @media (max-width: 900px) {
+    .hero__text h1 {
+      font-size: clamp(2rem, 6vw, 3rem);
+    }
+
+    .hero__figure {
+      right: auto;
+      bottom: auto;
+      width: auto;
+      opacity: 1;
+    }
+  }
+
+  /*
+   * 휴대폰: 제목 → [사진 | 세 구성] → 버튼 순서.
+   * 글 상자를 풀어(display: contents) 사진을 제목과 버튼 사이에 끼운다.
+   */
+  @media (max-width: 640px) {
+    .hero-band {
+      padding: 1.75rem 0 1.75rem;
+    }
+
+    .hero {
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      grid-template-areas:
+        'eyebrow eyebrow'
+        'title title'
+        'figure models'
+        'lede lede'
+        'actions actions'
+        'media media';
+      gap: 0;
+      column-gap: 0.75rem;
+      align-items: stretch;
+    }
+
+    .hero__text {
+      display: contents;
+    }
+
+    .eyebrow--ink {
+      grid-area: eyebrow;
+      justify-self: start;
+      margin: 0 0 0.9rem;
+    }
+
+    .hero__text h1 {
+      grid-area: title;
+      font-size: clamp(1.6rem, 7.2vw, 2rem);
+      line-height: 1.22;
+      letter-spacing: -0.04em;
+    }
+
+    .hero__figure {
+      grid-area: figure;
+      align-self: center;
+      max-width: none;
+      margin: 1.1rem 0 0;
+      padding: 0.5rem;
+      border-radius: var(--r-tile);
+    }
+
+    .hero__models {
+      grid-area: models;
+      grid-template-columns: 1fr;
+      gap: 0.4rem;
+      margin: 1.1rem 0 0;
+    }
+
+    .hero__models a {
+      grid-template-columns: 1fr auto;
+      align-items: baseline;
+      padding: 0.55rem 0.7rem;
+      column-gap: 0.4rem;
+    }
+
+    .hero__models-price {
+      grid-column: 1 / -1;
+    }
+
+    .hero__text .lede {
+      grid-area: lede;
+      margin: 1.1rem 0 0;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .hero__actions {
+      grid-area: actions;
+      grid-template-columns: 1fr 1fr;
+      max-width: none;
+      margin: 1rem 0 0;
+      gap: 0.5rem;
+    }
+
+    .hero__cta {
+      min-height: 48px;
+      padding: 0 0.75rem;
+      font-size: 0.88rem;
+    }
+
+    .hero__media {
+      grid-area: media;
+      justify-self: start;
+      margin: 0.9rem 0 0;
+      padding: 0;
+      border: 0;
+    }
+
+    /*
+     * 부품 네 칸: 2열 격자에서는 칸마다 글이 좁게 접혀 1,500px를 넘었다.
+     * 옆으로 넘기는 한 줄로 바꿔 높이를 한 칸만큼으로 줄인다(글은 그대로 둔다).
+     */
+    .parts__grid {
+      grid-template-columns: none;
+      grid-auto-flow: column;
+      grid-auto-columns: 78%;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding-bottom: 0.5rem;
+      margin-right: calc(-1 * clamp(1.25rem, 4vw, 2rem));
+      padding-right: clamp(1.25rem, 4vw, 2rem);
+      scrollbar-width: thin;
+    }
+
+    .part {
+      scroll-snap-align: start;
     }
   }
 </style>
