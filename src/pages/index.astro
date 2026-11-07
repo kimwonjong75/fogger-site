@@ -76,6 +76,35 @@ const introVideo = videoSchema({
         <div class="hero__text">
           <p class="eyebrow eyebrow--ink">{page.hero.eyebrow}</p>
           <h1>{page.hero.headlineTop}<br /><span>{page.hero.headlineAccent}</span></h1>
+
+          {/*
+            트랙 F(2026-11-07): 첫 화면에서 "어떤 구성이 있고 얼마인지"가 보이게 한다.
+            문구를 새로 만들지 않고 products.ts 의 공식 옵션명·탱크·가격만 쓴다.
+            휴대폰에서 버튼보다 위에 보이므로 키보드 순서도 맞춰 제목 바로 뒤에 둔다.
+          */}
+          <ul class="hero__models">
+            {
+              PRODUCTS.map((product) => {
+                const price = priceLabel(product);
+                return (
+                  <li>
+                    <a
+                      href={`/products/${product.id}/`}
+                      data-ga-event="model_select"
+                      data-ga-model={product.officialLabel}
+                      data-ga-product-id={product.id}
+                      data-ga-context="home_hero"
+                    >
+                      <strong>{product.officialLabel}</strong>
+                      <span class="hero__models-tank num">{product.tankLiters}L</span>
+                      {price && <span class="hero__models-price">{price}</span>}
+                    </a>
+                  </li>
+                );
+              })
+            }
+          </ul>
+
           <p class="lede">
             {
               page.hero.lede.map((text, i) => (
@@ -97,30 +126,6 @@ const introVideo = videoSchema({
             </a>
           </div>
           <p class="hero__media">{page.hero.specLine}</p>
-
-          {/*
-            트랙 F(2026-11-07): 첫 화면에서 "어떤 구성이 있고 얼마인지"가 보이게 한다.
-            문구를 새로 만들지 않고 products.ts 의 공식 옵션명·탱크·가격만 쓴다.
-          */}
-          <ul class="hero__models">
-            {
-              PRODUCTS.map((product) => (
-                <li>
-                  <a
-                    href={`/products/${product.id}/`}
-                    data-ga-event="model_select"
-                    data-ga-model={product.officialLabel}
-                    data-ga-product-id={product.id}
-                    data-ga-context="home_hero"
-                  >
-                    <strong>{product.officialLabel}</strong>
-                    <span class="hero__models-tank num">{product.tankLiters}L</span>
-                    {priceLabel(product) && <span class="hero__models-price">{priceLabel(product)}</span>}
-                  </a>
-                </li>
-              ))
-            }
-          </ul>
         </div>
 
         <div class="hero__figure">
@@ -188,7 +193,8 @@ const introVideo = videoSchema({
     <h2 id="parts-h">{page.parts.heading}</h2>
     <p class="parts__desc">{page.parts.desc}</p>
 
-    <div class="parts__grid">
+    {/* 휴대폰에서 옆으로 넘기는 영역이 되므로 키보드로도 들어가 넘길 수 있게 한다 */}
+    <div class="parts__grid" role="region" aria-labelledby="parts-h" tabindex="0">
       {
         HOME_PARTS.map((part) => (
           <article class="part">
