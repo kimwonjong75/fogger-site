@@ -3,7 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import DocList from '../../components/DocList.astro';
 import SafetyBox from '../../components/SafetyBox.astro';
 import VideoEmbed from '../../components/VideoEmbed.astro';
-import { HOWTO_STEPS, HOWTO_VIDEO, VIDEO_PUBLISHED_DATE, howToApprovalLabel } from '../../data/media';
+import { HOWTO_STEPS, HOWTO_VIDEO, howToApprovalLabel } from '../../data/media';
 import { COLLECTION_META, docHref, getPublishedDocs } from '../../lib/content';
 import { GUIDES_PAGE } from '../../data/pages';
 import { inlineParts } from '../../lib/page-content';
@@ -53,7 +53,7 @@ const howToVideo = videoSchema({
   contentUrl: HOWTO_VIDEO.src,
   thumbnailUrl: HOWTO_VIDEO.poster.src,
   durationSec: HOWTO_VIDEO.durationSec,
-  uploadDate: VIDEO_PUBLISHED_DATE,
+  uploadDate: HOWTO_VIDEO.uploadDate,
 });
 ---
 
