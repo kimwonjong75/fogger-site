@@ -1,0 +1,22 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { HOWTO_VIDEO as v, HOWTO_STEPS } from '../../data/media';
+import { GUIDES_PAGE, SAFETY_PAGE } from '../../data/pages';
+import { videoSchema } from '../../lib/schema';
+
+const url = '/watch/howto/';
+const node = videoSchema({ name: v.title, description: v.caption, contentUrl: v.src, thumbnailUrl: v.poster.src, durationSec: v.durationSec, uploadDate: v.uploadDate });
+---
+<BaseLayout title={v.title} description={v.caption} canonicalPath={url} ogImage={v.poster.src} width="narrow" crumbs={[{ name: GUIDES_PAGE.label, href: '/guides/' }, { name: v.title, href: url }]} schemaNodes={[node]}>
+  <h1>{v.title}</h1>
+  <video controls playsinline preload="metadata" src={v.src} poster={v.poster.src} width={v.width} height={v.height} aria-label={v.title}></video>
+  <p class="lede">{v.caption}</p>
+  <p>{SAFETY_PAGE.lede} <a href="/safety/">{SAFETY_PAGE.heading}</a></p>
+  <h2>{GUIDES_PAGE.howtoHeading}</h2>
+  <ol>{HOWTO_STEPS.map((step) => <li><a href={'/guides/#step-' + step.no}>{step.title}</a></li>)}</ol>
+  <p><a href="/guides/">{GUIDES_PAGE.heading}</a></p>
+</BaseLayout>
+<style>
+  video { display: block; width: 100%; height: auto; border-radius: var(--r-card); }
+  li { margin-block: .4rem; }
+</style>
