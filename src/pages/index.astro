@@ -8,7 +8,7 @@ import VideoEmbed from '../components/VideoEmbed.astro';
 import { BUILD_QUALITY, PRODUCTS } from '../data/products';
 import { HOME_PAGE } from '../data/pages';
 import { numeralParts } from '../lib/page-content';
-import { INTRO_VIDEO, VIDEO_PUBLISHED_DATE } from '../data/media';
+import { INTRO_VIDEO } from '../data/media';
 import { itemListSchema, organizationSchema, videoSchema, websiteSchema } from '../lib/schema';
 
 /**
@@ -57,7 +57,7 @@ const introVideo = videoSchema({
   contentUrl: INTRO_VIDEO.src,
   thumbnailUrl: INTRO_VIDEO.poster.src,
   durationSec: INTRO_VIDEO.durationSec,
-  uploadDate: VIDEO_PUBLISHED_DATE,
+  uploadDate: INTRO_VIDEO.uploadDate,
 });
 ---
 

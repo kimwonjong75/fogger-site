@@ -53,6 +53,8 @@ import posterCustomer2 from '../assets/video-poster-customer2.jpg';
 
 export interface VideoAsset {
   src: string;
+  /** First successful Production deployment of this video (ISO 8601, KST). */
+  uploadDate: string;
   poster: ImageMetadata;
   title: string;
   /** 재생 시간(초) */
@@ -62,14 +64,6 @@ export interface VideoAsset {
   /** 재생 버튼 아래 안내 문구 */
   caption: string;
 }
-
-/**
- * 영상이 이 사이트에 게시된 날짜 (ISO).
- *
- * schema.org의 uploadDate는 "이 사이트에 업로드된 시점"을 뜻하므로 촬영일이 아니라
- * 게시일을 쓴다. 전 영상이 2026-08-06에 리포지토리에 추가됐다.
- */
-export const VIDEO_PUBLISHED_DATE = '2026-08-06';
 
 /* ------------------------------------------------------------------ *
  * 영상 출처 확인표  ← 여기를 채우면 됩니다
@@ -222,6 +216,7 @@ export function canAssertOfficial(file: string): boolean {
  */
 export const INTRO_VIDEO: VideoAsset = {
   src: '/video/blueguard-fogger-intro.mp4',
+  uploadDate: '2026-08-08T10:45:49+09:00',
   poster: posterIntro,
   title: '블루가드 연막소독기 소개영상',
   durationSec: 30,
@@ -233,6 +228,7 @@ export const INTRO_VIDEO: VideoAsset = {
 /** 공식 사용법 영상 — 원본 1920×1080 113MB를 웹용 1280×720으로 재인코딩 */
 export const HOWTO_VIDEO: VideoAsset = {
   src: '/video/blueguard-fogger-howto.mp4',
+  uploadDate: '2026-08-06T22:54:33+09:00',
   poster: posterHowto,
   title: '블루가드 연막기 사용방법',
   durationSec: 109,
@@ -244,6 +240,7 @@ export const HOWTO_VIDEO: VideoAsset = {
 /** 실제 분사 테스트 — 배럴 안쪽 발열 코일과 연막 분사량을 확인할 수 있는 촬영본 */
 export const SPRAY_TEST_VIDEO: VideoAsset = {
   src: '/video/spray-test.mp4',
+  uploadDate: '2026-08-06T23:54:13+09:00',
   poster: posterSpray,
   title: '실제 분사 테스트',
   durationSec: 75,
@@ -255,6 +252,7 @@ export const SPRAY_TEST_VIDEO: VideoAsset = {
 /** 롱노즐 구성 분사 촬영 — 50cm 롱노즐 체결 상태와 하부침투분사 확인 */
 export const LONG_NOZZLE_VIDEO: VideoAsset = {
   src: '/video/long-nozzle-spray.mp4',
+  uploadDate: '2026-08-06T23:54:13+09:00',
   poster: posterLongNozzle,
   title: '롱노즐 구성 분사 촬영',
   durationSec: 161,
@@ -267,6 +265,7 @@ export const LONG_NOZZLE_VIDEO: VideoAsset = {
 export const CUSTOMER_USE_VIDEOS: VideoAsset[] = [
   {
     src: '/video/customer-use-1.mp4',
+    uploadDate: '2026-08-06T23:54:13+09:00',
     poster: posterCustomer1,
     title: '실제 사용 현장 1',
     durationSec: 13,
@@ -276,6 +275,7 @@ export const CUSTOMER_USE_VIDEOS: VideoAsset[] = [
   },
   {
     src: '/video/customer-use-2.mp4',
+    uploadDate: '2026-08-06T23:54:13+09:00',
     poster: posterCustomer2,
     title: '실제 사용 현장 2',
     durationSec: 13,
@@ -295,6 +295,7 @@ export const VIDEO_BY_KEY = {
 export const QC_VIDEOS: VideoAsset[] = [
   {
     src: '/video/qc-assembly-1.mp4',
+    uploadDate: '2026-08-06T23:54:13+09:00',
     poster: posterQc1,
     title: '제조 조립 현장 1',
     durationSec: 7,
@@ -304,6 +305,7 @@ export const QC_VIDEOS: VideoAsset[] = [
   },
   {
     src: '/video/qc-assembly-2.mp4',
+    uploadDate: '2026-08-06T23:54:13+09:00',
     poster: posterQc2,
     title: '제조 조립 현장 2',
     durationSec: 15,

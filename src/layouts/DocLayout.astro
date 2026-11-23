@@ -7,7 +7,7 @@ import ModelSpecTable from '../components/ModelSpecTable.astro';
 import Pic from '../components/Pic.astro';
 import RelatedGuides from '../components/RelatedGuides.astro';
 import ShippingNote from '../components/ShippingNote.astro';
-import { VIDEO_BY_KEY, VIDEO_PUBLISHED_DATE } from '../data/media';
+import { VIDEO_BY_KEY } from '../data/media';
 import Sources from '../components/Sources.astro';
 import VideoEmbed from '../components/VideoEmbed.astro';
 import { BUSINESS } from '../data/site';
@@ -54,7 +54,7 @@ const video = embedded
       contentUrl: embedded.src,
       thumbnailUrl: embedded.poster.src,
       durationSec: embedded.durationSec,
-      uploadDate: VIDEO_PUBLISHED_DATE,
+      uploadDate: embedded.uploadDate,
     })
   : null;
 
