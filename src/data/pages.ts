@@ -146,6 +146,7 @@ const compareSchema = z.object({
   summaryHeading: line(COMPARE),
   summary: z.array(rich(COMPARE)).min(1),
   safetyBoxTitle: line(COMPARE),
+  faq: z.array(z.object({ q: line(COMPARE), a: line(COMPARE) })).default([]),
   seo: seo(COMPARE),
 });
 

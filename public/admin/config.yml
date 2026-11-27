@@ -335,6 +335,15 @@ collections:
               **별표 두 개** 로 감싼 부분이 굵게 나옵니다. 예 — 한 공간을 짧게 처리한다면
               **{{기본형}}**. 가볍고 준비가 빠릅니다.
 
+          - name: faq
+            label: 모델 선택 질문과 답변
+            label_singular: 문답
+            widget: list
+            required: false
+            fields:
+              - { name: q, label: 질문, widget: string, hint: *token_hint }
+              - { name: a, label: 답변, widget: text, hint: *token_hint }
+
           - name: safetyBoxTitle
             label: 노란 안전 상자 제목
             widget: string

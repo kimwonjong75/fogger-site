@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import BuyCTA from '../components/BuyCTA.astro';
+import Faq from '../components/Faq.astro';
 import { BUY_CTA_LABEL_SHORT } from '../data/site';
 import ModelSpecTable from '../components/ModelSpecTable.astro';
 import SafetyBox from '../components/SafetyBox.astro';
@@ -8,17 +9,20 @@ import ShippingNote from '../components/ShippingNote.astro';
 import { PRODUCTS, maxFillLiters } from '../data/products';
 import { COMPARE_PAGE } from '../data/pages';
 import { inlineParts } from '../lib/page-content';
+import { faqSchema } from '../lib/schema';
 
 /** 문구는 편집 화면(/admin/ → "모델비교 화면")에서 고친다 — src/content/pages/compare.json */
 const page = COMPARE_PAGE;
+const url = '/compare/';
 ---
 
 <BaseLayout
   title={page.seo.title}
   description={page.seo.description}
-  canonicalPath="/compare/"
+  canonicalPath={url}
   ogImage="/og/og-compare.png"
-  crumbs={[{ name: '모델비교', href: '/compare/' }]}
+  crumbs={[{ name: '모델비교', href: url }]}
+  schemaNodes={[faqSchema(url, page.faq)]}
   stickyBuy="generic"
 >
   <p class="eyebrow">{page.eyebrow}</p>
@@ -73,6 +77,7 @@ const page = COMPARE_PAGE;
   <ShippingNote />
 
   <SafetyBox title={page.safetyBoxTitle} />
+  <Faq items={page.faq} />
 </BaseLayout>
 
 <style>
