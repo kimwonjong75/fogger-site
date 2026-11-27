@@ -195,6 +195,20 @@ const related = (await getAllPublishedDocs()).slice(0, 3);
 
     <RelatedGuides docs={related} title="사용 전에 읽어두면 좋은 문서" />
   </article>
+
+  <script is:inline type="module">
+    // 비교 페이지에서 바로 넘어온 경우에만 경로를 덧붙인다. 버튼 위치는 기존 utm_content로 집계한다.
+    if (document.referrer) {
+      const previous = new URL(document.referrer);
+      if (previous.origin === location.origin && previous.pathname === '/compare/') {
+        for (const button of document.querySelectorAll('a[data-ga-event="purchase_cta_click"]')) {
+          const destination = new URL(button.href);
+          destination.searchParams.set('utm_term', 'compare_detail');
+          button.href = destination.href;
+        }
+      }
+    }
+  </script>
 </BaseLayout>
 
 <style>

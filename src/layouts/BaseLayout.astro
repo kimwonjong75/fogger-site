@@ -22,8 +22,8 @@ interface Props {
   crumbs?: Crumb[];
   /** 홈의 Organization/WebSite, 문서의 Article 등 추가 JSON-LD 노드 */
   schemaNodes?: unknown[];
-  /** 전환층 전용 하단 고정 구매바. 'generic'은 모델 미지정 바 */
-  stickyBuy?: ProductId | 'generic' | false;
+  /** 'model-guide'는 상단과 하단 버튼을 본문의 모델 선택 안내로 연결한다. */
+  stickyBuy?: ProductId | 'generic' | 'model-guide' | false;
   /** 본문 최대폭 — 문서형은 narrow */
   width?: 'page' | 'narrow';
 }
@@ -80,7 +80,7 @@ const jsonLd = graph([breadcrumbSchema(allCrumbs), ...schemaNodes]);
 
   <body>
     <a class="skip-link" href="#main">본문 바로가기</a>
-    <Header />
+    <Header modelGuide={stickyBuy === 'model-guide'} />
 
     <slot name="hero" />
 
@@ -92,7 +92,7 @@ const jsonLd = graph([breadcrumbSchema(allCrumbs), ...schemaNodes]);
     </div>
 
     <Footer />
-    {stickyBuy && <StickyBuyBar productId={stickyBuy === 'generic' ? undefined : stickyBuy} />}
+    {stickyBuy && <StickyBuyBar mode={stickyBuy} />}
   </body>
 </html>
 

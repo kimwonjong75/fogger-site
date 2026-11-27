@@ -8,16 +8,17 @@ import { withUtm } from '../lib/url';
  * 정보성 문서 전반에는 붙이지 않는다.
  */
 interface Props {
-  /** 모델이 특정된 페이지에서만 지정. 생략하면 모델 미지정 바 */
-  productId?: ProductId;
+  mode: ProductId | 'generic' | 'model-guide';
   /** utm_content 접미사 — 기본 sticky_bar */
   content?: string;
 }
 
-const { productId, content = 'sticky_bar' } = Astro.props;
+const { mode, content = 'sticky_bar' } = Astro.props;
 
-const product = productId ? getProduct(productId) : null;
+const modelGuide = mode === 'model-guide';
+const product = mode === 'generic' || mode === 'model-guide' ? null : getProduct(mode);
 const href = withUtm(product?.buyUrl ?? OFFICIAL_STORE_PRODUCT_URL, { content });
+const genericHint = modelGuide ? '탱크 · 어깨끈 · 롱노즐' : '공식몰에서 모델 옵션을 선택합니다';
 ---
 
 <div class="sticky-bar" data-sticky-buy-bar>
@@ -28,22 +29,26 @@ const href = withUtm(product?.buyUrl ?? OFFICIAL_STORE_PRODUCT_URL, { content })
         {
           product
             ? `탱크 ${product.tankLiters}L · 최대충전 ${maxFillLiters(product.tankLiters)}L`
-            : '공식몰에서 모델 옵션을 선택합니다'
+            : genericHint
         }
       </span>
     </div>
-    <a
-      class="sticky-bar__cta"
-      href={href}
-      target="_blank"
-      rel="noopener external"
-      data-ga-event="purchase_cta_click"
-      data-ga-utm-content={content}
-      data-ga-model={product?.officialLabel}
-      data-ga-product-id={product?.id}
-    >
-      {product ? BUY_CTA_LABEL_SHORT : BUY_CTA_LABEL}
-    </a>
+    {modelGuide ? (
+      <a class="sticky-bar__cta" href="#model-guide">모델 선택 안내</a>
+    ) : (
+      <a
+        class="sticky-bar__cta"
+        href={href}
+        target="_blank"
+        rel="noopener external"
+        data-ga-event="purchase_cta_click"
+        data-ga-utm-content={content}
+        data-ga-model={product?.officialLabel}
+        data-ga-product-id={product?.id}
+      >
+        {product ? BUY_CTA_LABEL_SHORT : BUY_CTA_LABEL}
+      </a>
+    )}
   </div>
 </div>
 

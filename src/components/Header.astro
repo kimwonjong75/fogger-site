@@ -5,6 +5,11 @@ import BuyCTA from './BuyCTA.astro';
 import { BUY_CTA_LABEL_SHORT, NAV, SITE } from '../data/site';
 import { normalizePath } from '../lib/url';
 
+interface Props {
+  modelGuide?: boolean;
+}
+
+const { modelGuide = false } = Astro.props;
 const current = normalizePath(Astro.url.pathname);
 const isActive = (href: string) => current === href || (href !== '/' && current.startsWith(href));
 ---
@@ -28,7 +33,11 @@ const isActive = (href: string) => current === href || (href !== '/' && current.
       <p class="site-header__tagline">{SITE.tagline}</p>
 
       <div class="site-header__actions">
-        <BuyCTA content="header" label={BUY_CTA_LABEL_SHORT} class="site-header__buy" />
+        {modelGuide ? (
+          <a class="site-header__guide" href="#model-guide">모델 선택 안내</a>
+        ) : (
+          <BuyCTA content="header" label={BUY_CTA_LABEL_SHORT} class="site-header__buy" />
+        )}
 
         <details class="site-header__toggle">
           <summary aria-label="메뉴 열기">
@@ -186,6 +195,23 @@ const isActive = (href: string) => current === href || (href !== '/' && current.
     font-weight: 700 !important;
   }
 
+  .site-header__guide {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 1.2rem;
+    border: 1px solid var(--c-accent-dark);
+    border-radius: var(--r-pill);
+    color: var(--c-accent-dark);
+    font-size: 0.88rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .site-header__guide:hover {
+    background: var(--c-accent-soft);
+  }
+
   /* 모바일 토글 — <details>/<summary> 만으로 구현해 JS가 필요 없다 */
   .site-header__toggle {
     display: none;
@@ -305,7 +331,8 @@ const isActive = (href: string) => current === href || (href !== '/' && current.
       min-height: 54px;
     }
 
-    .site-header__actions :global(.buy-cta) {
+    .site-header__actions :global(.buy-cta),
+    .site-header__guide {
       display: none !important;
     }
   }
@@ -332,6 +359,7 @@ const isActive = (href: string) => current === href || (href !== '/' && current.
     /* 메뉴를 감추면 네이비 띠는 빈 줄만 남으므로 띠째 뺀다 */
     .site-header__row,
     .site-header__toggle,
+    .site-header__guide,
     .site-header__actions :global(.buy-cta) {
       display: none;
     }
