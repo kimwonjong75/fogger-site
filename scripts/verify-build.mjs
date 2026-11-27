@@ -197,6 +197,7 @@ const titles = new Map();
 const report = [];
 /** noindex가 붙은 페이지의 URL 경로 — 사이트맵과의 모순 검사에 재사용 */
 const noindexPaths = [];
+const idsByFile = new Map();
 
 for (const file of pages) {
   const html = readFileSync(file, 'utf8');
@@ -209,6 +210,20 @@ for (const file of pages) {
   /* --- 1. 내부 링크 --- */
   const linkTargets = new Set();
   for (const [, href] of all(html, /<a\b[^>]*\shref="([^"]+)"/gi)) {
+    // 같은 페이지 또는 다른 내부 페이지에서 모델별 구매 안내로 정확히 이동해야 한다.
+    if (href.includes('#') && (href.startsWith('#') || (href.startsWith('/') && !href.startsWith('//')))) {
+      const link = new URL(unescapeAttr(href), SITE + urlPath);
+      const targetFile = distPathFor(link.pathname);
+      if (link.hash.length > 1 && targetFile.endsWith('.html') && size(targetFile) !== null) {
+        if (!idsByFile.has(targetFile)) {
+          const targetHtml = readFileSync(targetFile, 'utf8');
+          idsByFile.set(targetFile, new Set(all(targetHtml, /<[\w:-]+\b[^>]*?\sid="([^"]+)"/gi).map((m) => m[1])));
+        }
+        if (!idsByFile.get(targetFile).has(decodeURIComponent(link.hash.slice(1)))) {
+          fail(`${where} 내부 링크의 도착 항목이 없습니다 → ${href}`);
+        }
+      }
+    }
     if (/^(https?:|mailto:|tel:|#|data:)/i.test(href)) continue;
     linkTargets.add(href);
   }
@@ -441,9 +456,12 @@ for (const file of pages) {
       continue;
     }
     const productNo = decodeURIComponent(url.pathname).match(/\/(\d+)\/?$/)?.[1];
-    if (url.hostname !== EXPECTED_BUY_HOST || productNo !== EXPECTED_BUY_PRODUCT_NO) {
+    const diffuserLink = urlPath === '/guides/choose-media/' && attr(tag, 'data-ga-utm-content') === 'doc_consumable_choose-media';
+    const expectedProduct = diffuserLink ? '3064' : EXPECTED_BUY_PRODUCT_NO;
+    if (url.hostname !== EXPECTED_BUY_HOST || productNo !== expectedProduct ||
+        (diffuserLink && attr(tag, 'data-ga-product-id') !== 'diffuser')) {
       fail(
-        `${where} 구매 CTA가 지정 상품(${EXPECTED_BUY_HOST} 상품번호 ${EXPECTED_BUY_PRODUCT_NO})이 아님 → ${href}`,
+        `${where} 구매 CTA가 지정 상품(${EXPECTED_BUY_HOST} 상품번호 ${expectedProduct})이 아님 → ${href}`,
       );
     }
     if (!url.searchParams.get('utm_content')) {

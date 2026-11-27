@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import FactTable from '../components/FactTable.astro';
-import ModelSpecTable from '../components/ModelSpecTable.astro';
+import { PRODUCTS, maxFillLiters } from '../data/products';
 import { BUSINESS } from '../data/site';
 import { SAFETY_PAGE } from '../data/pages';
 
@@ -14,6 +14,11 @@ import { SAFETY_PAGE } from '../data/pages';
  * 안전 문구만 옛 숫자로 남는 것을 막기 위한 규칙이다.
  */
 const page = SAFETY_PAGE;
+const fillLimits = PRODUCTS.map((product) => ({
+  label: product.officialLabel,
+  value: `최대 충전량 ${maxFillLiters(product.tankLiters)}L`,
+  note: `탱크 용량 ${product.tankLiters}L`,
+}));
 ---
 
 <BaseLayout
@@ -40,6 +45,11 @@ const page = SAFETY_PAGE;
     </button>
   </div>
 
+  <nav class="safety-links" aria-label="안전수칙 바로가기">
+    <a href="#fill-limits">{page.fillTableHeading}</a>
+    <a href="#emergency">{page.emergencyHeading}</a>
+  </nav>
+
   <h2>{page.limitsHeading}</h2>
   <FactTable rows={page.limits} caption={page.limitsCaption} />
 
@@ -63,15 +73,15 @@ const page = SAFETY_PAGE;
     {page.dont.map((item) => <li>{item}</li>)}
   </ul>
 
-  <h2>{page.fillTableHeading}</h2>
-  <ModelSpecTable
+  <h2 id="fill-limits">{page.fillTableHeading}</h2>
+  <FactTable
     caption={page.fillTableCaption}
-    includeShared={false}
+    rows={fillLimits}
     footnote={page.fillTableFootnote}
   />
 
   <section class="emergency">
-    <h2>{page.emergencyHeading}</h2>
+    <h2 id="emergency">{page.emergencyHeading}</h2>
     <ol>
       {page.emergencySteps.map((step) => <li>{step}</li>)}
       <li>
@@ -92,6 +102,20 @@ const page = SAFETY_PAGE;
 </script>
 
 <style>
+  .safety-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+  }
+
+  .safety-links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  #fill-limits, #emergency { scroll-margin-top: 7rem; }
+
   .head {
     display: flex;
     align-items: flex-start;
@@ -204,7 +228,7 @@ const page = SAFETY_PAGE;
   }
 
   @media print {
-    .print-btn {
+    .print-btn, .safety-links {
       display: none;
     }
   }

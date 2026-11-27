@@ -1,30 +1,32 @@
 ---
-import BuyCTA from './BuyCTA.astro';
 import Pic from './Pic.astro';
-import { maxFillLiters, priceLabel, type Product } from '../data/products';
-import { BUY_CTA_LABEL_SHORT } from '../data/site';
+import { maxFillLiters, priceLabel, PRICES_CONFIRMED, type Product } from '../data/products';
 
 interface Props {
   product: Product;
   /** GA model_select 이벤트의 발생 위치 (home, products, compare …) */
   context: string;
-  /** 카드 안에 구매 버튼까지 노출할지 */
-  withBuy?: boolean;
-  /**
-   * 축약 모드 — 사양 표와 사용처 줄을 접는다.
-   * 홈은 "어느 것을 고를지"만 정하는 자리라 값 비교는 /compare/로 넘긴다.
-   * 세 카드를 다 펼치면 모바일에서 2,400px(3화면)을 혼자 차지한다.
-   */
+  /** 홈에는 추천 용도와 선택을 좌우하는 사양만 표시한다. */
   compact?: boolean;
 }
 
-const { product, context, withBuy = true, compact = false } = Astro.props;
+const { product, context, compact = false } = Astro.props;
 const href = `/products/${product.id}/`;
-const price = priceLabel(product);
+const purchaseGuide = `/compare/#buy-${product.id}`;
+const price = !compact && PRICES_CONFIRMED ? priceLabel(product) : null;
+const decidingFeature = product.longNozzle
+  ? product.nozzle
+  : product.shoulderStrap
+    ? '어깨끈 포함'
+    : product.nozzle;
 ---
 
 <article class:list={['model-card', compact && 'model-card--compact']}>
-  <a class="model-card__figure" href={href} tabindex="-1" aria-hidden="true">
+  <a class="model-card__figure" href={href} tabindex="-1"
+    data-ga-event="model_select"
+    data-ga-model={product.officialLabel}
+    data-ga-product-id={product.id}
+    data-ga-context={context}>
     <Pic
       src={product.image}
       alt={product.imageAlt}
@@ -49,17 +51,28 @@ const price = priceLabel(product);
     </h3>
   </header>
 
-  {price && <p class="model-card__price">{price}<span>공식몰 판매가</span></p>}
+  <p class="model-card__best">{product.bestFor.slice(0, 2).join(' · ')}</p>
 
-  <p class="model-card__tagline">{product.tagline}</p>
-
-  <p class="model-card__headline">
-    <span class="num">{product.tankLiters}</span><span class="model-card__unit">L</span>
-    <span class="model-card__headline-label">탱크</span>
-    <span class="model-card__sep" aria-hidden="true"></span>
-    <span class="num">{maxFillLiters(product.tankLiters)}</span><span class="model-card__unit">L</span>
-    <span class="model-card__headline-label">최대 충전</span>
-  </p>
+  {compact ? (
+    <p class="model-card__headline model-card__headline--compact">
+      탱크 {product.tankLiters}L · {decidingFeature}
+    </p>
+  ) : (
+    <>
+      <p class="model-card__tagline">{product.tagline}</p>
+      <p class="model-card__headline">
+        <span class="model-card__measure">
+          <span class="num">{product.tankLiters}<span class="model-card__unit">L</span></span>
+          <span class="model-card__headline-label">탱크 용량</span>
+        </span>
+        <span class="model-card__sep" aria-hidden="true"></span>
+        <span class="model-card__measure">
+          <span class="num">{maxFillLiters(product.tankLiters)}<span class="model-card__unit">L</span></span>
+          <span class="model-card__headline-label">최대 충전량</span>
+        </span>
+      </p>
+    </>
+  )}
 
   {
     !compact && (
@@ -69,26 +82,22 @@ const price = priceLabel(product);
           <dd>{product.shoulderStrap ? '포함' : '미포함'}</dd>
         </div>
         <div>
-          <dt>롱노즐</dt>
-          <dd>{product.longNozzle ? '포함' : '미포함'}</dd>
+          <dt>노즐</dt>
+          <dd>{product.nozzle}</dd>
         </div>
       </dl>
     )
   }
 
-  {
-    !compact && product.bestFor.length > 0 && (
-      <p class="model-card__best">
-        <span>이럴 때</span>
-        {product.bestFor.slice(0, 2).join(' · ')}
-      </p>
-    )
-  }
+  {!compact && <p class="model-card__includes"><strong>구성품</strong> {product.includes.join(' · ')}</p>}
+
+  {price && <p class="model-card__price"><span>공식몰 판매가</span> <strong>{price}</strong></p>}
 
   <footer class="model-card__foot">
     <a
       class="model-card__more"
       href={href}
+      aria-label={`${product.officialLabel} 상세 사양 보기`}
       data-ga-event="model_select"
       data-ga-model={product.officialLabel}
       data-ga-product-id={product.id}
@@ -96,7 +105,17 @@ const price = priceLabel(product);
     >
       상세 사양 보기
     </a>
-    {withBuy && <BuyCTA productId={product.id} content={`${context}_card_${product.id}`} label={BUY_CTA_LABEL_SHORT} />}
+    <a
+      class="model-card__guide"
+      href={purchaseGuide}
+      aria-label={`${product.officialLabel} 구매 안내`}
+      data-ga-event="model_select"
+      data-ga-model={product.officialLabel}
+      data-ga-product-id={product.id}
+      data-ga-context={`${context}_guide`}
+    >
+      구매 안내
+    </a>
   </footer>
 </article>
 
@@ -111,7 +130,6 @@ const price = priceLabel(product);
     background: var(--c-surface);
   }
 
-  /* 사진은 제목 링크와 목적지가 같아 스크린리더에는 중복이므로 숨긴다 */
   .model-card__figure {
     display: block;
     margin: -0.25rem 0 0.25rem;
@@ -159,20 +177,17 @@ const price = priceLabel(product);
     text-decoration: underline;
   }
 
-  /* 가격은 구매 판단의 첫 기준이라 태그라인보다 위에, 모델명 바로 아래 둔다 */
   .model-card__price {
-    margin: 0 0 0.15rem;
-    font-size: 1.35rem;
-    font-weight: 800;
-    letter-spacing: -0.01em;
+    margin: auto 0 0;
   }
 
   .model-card__price span {
-    margin-left: 0.4rem;
-    font-size: 0.74rem;
-    font-weight: 600;
+    font-size: 0.8rem;
     color: var(--c-text-muted);
-    letter-spacing: 0;
+  }
+
+  .model-card__price strong {
+    font-size: 1.05rem;
   }
 
   .model-card__tagline {
@@ -201,6 +216,19 @@ const price = priceLabel(product);
     font-weight: 800;
     letter-spacing: -0.03em;
     line-height: 1.2;
+  }
+
+  .model-card__headline--compact {
+    font-size: 0.86rem;
+    font-weight: 600;
+    line-height: 1.45;
+    letter-spacing: 0;
+  }
+
+  .model-card__measure {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.3rem;
   }
 
   .model-card__unit {
@@ -245,37 +273,46 @@ const price = priceLabel(product);
   .model-card__specs dd {
     margin: 0;
     font-weight: 600;
+    text-align: right;
   }
 
   .model-card__best {
     margin: 0;
-    font-size: 0.86rem;
-    color: var(--c-text-muted);
+    font-size: 0.9rem;
+    font-weight: 600;
     line-height: 1.6;
   }
 
-  .model-card__best span {
-    display: inline-block;
-    margin-right: 0.4rem;
-    padding: 0.1rem 0.4rem;
-    border-radius: var(--r-tag);
-    background: var(--c-surface-alt);
-    font-weight: 600;
-    color: var(--c-text);
+  .model-card__includes {
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--c-text-muted);
   }
 
   .model-card__foot {
     margin-top: auto;
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.35rem 0.85rem;
     flex-wrap: wrap;
     padding-top: 0.4rem;
   }
 
-  .model-card__more {
+  .model-card__price + .model-card__foot {
+    margin-top: 0;
+  }
+
+  .model-card__more,
+  .model-card__guide {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
     font-size: 0.9rem;
     font-weight: 600;
+  }
+
+  .model-card__guide {
+    font-weight: 700;
   }
 
   @media (max-width: 480px) {
@@ -299,7 +336,7 @@ const price = priceLabel(product);
     }
 
     .model-card--compact .model-card__figure {
-      grid-row: 1 / -1;
+      grid-row: 1 / span 4;
       margin: 0;
       align-self: center;
     }
@@ -309,7 +346,6 @@ const price = priceLabel(product);
     }
 
     .model-card--compact .model-card__headline {
-      font-size: 1.1rem;
       padding: 0.45rem 0.6rem;
     }
 

@@ -1,6 +1,6 @@
 ---
 import { getProduct, SHIPPING, type ProductId } from '../data/products';
-import { BUY_CTA_LABEL, OFFICIAL_STORE_PRODUCT_URL } from '../data/site';
+import { BUY_CTA_LABEL, OFFICIAL_STORE_DIFFUSER_URL, OFFICIAL_STORE_PRODUCT_URL } from '../data/site';
 import { withUtm } from '../lib/url';
 
 /**
@@ -10,6 +10,7 @@ import { withUtm } from '../lib/url';
  * productId를 주면 GA에 모델을 함께 기록하지만, 링크 목적지와 문구는 옵션 선택 기준이다.
  */
 interface Props {
+  item?: 'fogger' | 'diffuser';
   /** 계측용 모델 지정. 생략하면 모델 미지정 CTA */
   productId?: ProductId;
   /** utm_content — CTA 위치 식별자 (예: hero, doc_footer, sticky_bar) */
@@ -23,6 +24,7 @@ interface Props {
 }
 
 const {
+  item = 'fogger',
   productId,
   content,
   label,
@@ -33,7 +35,8 @@ const {
 } = Astro.props;
 
 const product = productId ? getProduct(productId) : null;
-const href = withUtm(product?.buyUrl ?? OFFICIAL_STORE_PRODUCT_URL, { content, campaign });
+const storeUrl = item === 'diffuser' ? OFFICIAL_STORE_DIFFUSER_URL : product?.buyUrl ?? OFFICIAL_STORE_PRODUCT_URL;
+const href = withUtm(storeUrl, { content, campaign });
 const text = label ?? BUY_CTA_LABEL;
 ---
 
@@ -46,11 +49,11 @@ const text = label ?? BUY_CTA_LABEL;
     data-ga-event="purchase_cta_click"
     data-ga-utm-content={content}
     data-ga-model={product?.officialLabel}
-    data-ga-product-id={product?.id}
+    data-ga-product-id={item === 'diffuser' ? item : product?.id}
   >
     {text}
   </a>
-  {showShipping && SHIPPING.free && <span class="buy-cta__note">{SHIPPING.label}</span>}
+  {item === 'fogger' && showShipping && SHIPPING.free && <span class="buy-cta__note">{SHIPPING.label}</span>}
 </span>
 
 <style>

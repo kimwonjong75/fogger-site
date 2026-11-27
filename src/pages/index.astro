@@ -68,7 +68,7 @@ const introVideo = videoSchema({
   ogImage="/og/og-default.png"
   crumbs={[{ name: '홈', href: '/' }]}
   schemaNodes={[organizationSchema(), websiteSchema(), productList, introVideo]}
-  stickyBuy="generic"
+  stickyBuy="model-guide"
 >
   <Fragment slot="hero">
     <div class="full-bleed hero-band">
@@ -209,13 +209,13 @@ const introVideo = videoSchema({
   </section>
 
   <!-- S4 모델 -->
-  <section id="models" aria-labelledby="models-h">
-    <h2 id="models-h">{page.models.heading}</h2>
-    <p class="section-desc">{page.models.desc}</p>
+  <section id="models" aria-labelledby="model-guide">
+    <h2 id="model-guide" tabindex="-1">{page.models.heading}</h2>
+    <p class="section-desc">{page.models.desc} <a href="/safety/">장소별 사용 조건</a>도 확인하세요.</p>
     <div class="grid grid--3">
       {
         PRODUCTS.map((product) => (
-          <ModelCard product={product} context="home" withBuy={false} compact />
+          <ModelCard product={product} context="home" compact />
         ))
       }
     </div>
@@ -241,7 +241,7 @@ const introVideo = videoSchema({
       only={['venue', 'fill-limit', 'aux-inlet']}
     />
     <div class="close-actions">
-      <BuyCTA content="home_close" />
+      <BuyCTA content="home_close" label="공식몰에서 옵션 선택하기" />
       <a class="close-actions__link" href="/safety/">{page.closing.safetyLinkLabel}</a>
     </div>
     <p class="section-more section-more--quiet">
@@ -334,6 +334,11 @@ const introVideo = videoSchema({
 
   .grid--3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  #models,
+  #model-guide {
+    scroll-margin-block-start: 7.5rem;
   }
 
   .section-desc {

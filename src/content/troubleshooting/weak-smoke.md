@@ -1,11 +1,12 @@
 ---
 title: 연막소독기 연막량 부족 원인 찾기
 description: 연막이 묽거나 끊기고 액체가 그대로 튄다면 원인은 펌핑, 대기시간, 연료, 노즐 중 하나입니다. 순서대로 좁혀가는 방법을 정리했습니다.
-updatedDate: 2026-08-06
+publishedDate: 2026-08-06
+updatedDate: 2026-11-27
 published: true
 reviewer: 김원종
-ctaType: product
-showSpecTable: true
+ctaType: as
+showSpecTable: false
 videoKey: sprayTest
 related:
   - guides/ignition-and-spray
@@ -51,4 +52,4 @@ sources:
 
 ## 그래도 같다면
 
-충전량을 늘려 해결하려 하지 마세요. 충전 한도는 안전 기준이며 연막량과 무관합니다. 모델별 상한은 아래 표에서 확인할 수 있습니다.
+충전량을 늘려 해결하려 하지 마세요. [모델별 최대 충전량](/safety/#fill-limits)을 확인하고 그 한도를 넘기지 마세요.

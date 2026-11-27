@@ -8,27 +8,34 @@ interface Props {
     section?: string;
   }[];
   reviewer: string;
+  publishedDate?: Date;
   updatedDate: Date;
 }
 
-const { sources, reviewer, updatedDate } = Astro.props;
+const { sources, reviewer, publishedDate, updatedDate } = Astro.props;
 
-const formatted = new Intl.DateTimeFormat('ko-KR', {
+const formatter = new Intl.DateTimeFormat('ko-KR', {
   year: 'numeric',
   month: 'long',
   day: 'numeric',
   timeZone: 'Asia/Seoul',
-}).format(updatedDate);
+});
 ---
 
 <footer class="doc-meta">
   <dl>
+    {publishedDate && (
+      <div>
+        <dt>발행</dt>
+        <dd><time datetime={publishedDate.toISOString().slice(0, 10)}>{formatter.format(publishedDate)}</time></dd>
+      </div>
+    )}
     <div>
       <dt>최종 수정</dt>
-      <dd><time datetime={updatedDate.toISOString().slice(0, 10)}>{formatted}</time></dd>
+      <dd><time datetime={updatedDate.toISOString().slice(0, 10)}>{formatter.format(updatedDate)}</time></dd>
     </div>
     <div>
-      <dt>검수</dt>
+      <dt>원문 검수</dt>
       <dd>{reviewer}</dd>
     </div>
   </dl>

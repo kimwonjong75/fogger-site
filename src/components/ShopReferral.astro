@@ -1,0 +1,23 @@
+---
+interface Props {
+  destination: 'compare' | 'detail';
+}
+const { destination } = Astro.props;
+---
+<script is:inline type="module" define:vars={{ destination }}>
+  // 직접 확인되는 직전 내부 페이지의 종류만 넘긴다. 기존 버튼·모델 식별자는 유지한다.
+  if (document.referrer) {
+    const previous = new URL(document.referrer);
+    if (previous.origin === location.origin) {
+      const sources = new Map([['/', 'home'], ['/products/', 'products'], ['/compare/', 'compare']]);
+      const source = sources.get(previous.pathname);
+      if (source && source !== destination) {
+        for (const link of document.querySelectorAll('a[data-ga-event="purchase_cta_click"]')) {
+          const url = new URL(link.href);
+          url.searchParams.set('utm_term', source + '_' + destination);
+          link.href = url.href;
+        }
+      }
+    }
+  }
+</script>

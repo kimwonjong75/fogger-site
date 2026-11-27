@@ -1,6 +1,7 @@
 ---
 title: 연막소독기 사용 후 세척과 보관
 description: 가스밸브를 잠그고 부탄가스를 분리한 뒤 코일 속 연기를 빼고 물로 청소하기까지, 공식 사용법 영상 7~10단계를 그대로 정리했습니다.
+publishedDate: 2026-08-06
 updatedDate: 2026-08-06
 published: true
 reviewer: 김원종

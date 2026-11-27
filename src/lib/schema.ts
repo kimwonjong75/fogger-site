@@ -78,6 +78,7 @@ export interface ArticleSchemaInput {
   title: string;
   description: string;
   url: string;
+  publishedDate?: Date;
   updatedDate: Date;
   reviewer: string;
   imageUrl?: string;
@@ -85,15 +86,14 @@ export interface ArticleSchemaInput {
 
 /** Article — 가이드/활용사례/문제해결 문서에만 출력 */
 export function articleSchema(input: ArticleSchemaInput) {
-  const iso = input.updatedDate.toISOString();
   return compact({
     '@type': 'Article',
     '@id': `${absoluteUrl(input.url)}#article`,
     headline: input.title,
     description: input.description,
     inLanguage: SITE.lang,
-    datePublished: iso,
-    dateModified: iso,
+    datePublished: input.publishedDate?.toISOString(),
+    dateModified: input.updatedDate.toISOString(),
     mainEntityOfPage: absoluteUrl(input.url),
     image: input.imageUrl,
     author: { '@id': ORG_ID },

@@ -408,6 +408,16 @@ export function priceLabel(product: Product): string | null {
   return `${product.priceKrw.toLocaleString('ko-KR')}원`;
 }
 
+/** 공식몰 단일 상품의 옵션명. 추가금은 기본형의 판매가를 기준으로 한다. */
+export function shopOptionLabel(product: Product): string {
+  const basePrice = getProduct('bf-100s').priceKrw;
+  if (!PRICES_CONFIRMED || basePrice === null || product.priceKrw === null) return product.officialLabel;
+  const difference = product.priceKrw - basePrice;
+  if (difference === 0) return product.officialLabel;
+  const surcharge = difference.toLocaleString('ko-KR', { signDisplay: 'always' });
+  return `${product.officialLabel} (${surcharge}원)`;
+}
+
 /** 비교표 행 정의 — 모델비교 페이지와 제품 페이지 FactTable이 공유 */
 export interface SpecRow {
   label: string;

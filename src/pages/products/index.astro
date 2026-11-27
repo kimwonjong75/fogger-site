@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import BuyCTA from '../../components/BuyCTA.astro';
 import FactTable from '../../components/FactTable.astro';
 import ModelCard from '../../components/ModelCard.astro';
 import SafetyBox from '../../components/SafetyBox.astro';
@@ -37,21 +38,22 @@ const list = itemListSchema(
   ogImage="/og/og-products.png"
   crumbs={[{ name: '제품', href: '/products/' }]}
   schemaNodes={[list, productGroupSchema(PRODUCTS)]}
-  stickyBuy="generic"
+  stickyBuy="model-guide"
 >
   <p class="eyebrow">{page.eyebrow}</p>
   <h1>{page.heading}</h1>
   <p class="lede">{page.lede}</p>
 
-  <StatRow />
+  <section id="model-guide" aria-labelledby="models-heading" tabindex="-1">
+    <h2 id="models-heading">용도별 연막소독기 모델</h2>
+    <p class="section-desc">작업 전 연료·환기·약제 표시사항에 따른 <a href="/safety/">장소별 사용 조건</a>을 확인하세요.</p>
+    <div class="grid">
+      {PRODUCTS.map((product) => <ModelCard product={product} context="products" />)}
+    </div>
+    <p class="more"><a href={page.moreLink.href}>{page.moreLink.label}</a></p>
+  </section>
 
-  <div class="grid">
-    {
-      PRODUCTS.map((product) => (
-        <ModelCard product={product} context="products" />
-      ))
-    }
-  </div>
+  <StatRow />
 
   <h2>{page.partsHeading}</h2>
   <p class="section-desc">{page.partsDesc}</p>
@@ -87,10 +89,20 @@ const list = itemListSchema(
 
   <TrustBar />
 
-  <p class="more"><a href={page.moreLink.href}>{page.moreLink.label}</a></p>
+  <section aria-labelledby="order-heading">
+    <h2 id="order-heading">공식몰에서 주문하기</h2>
+    <p class="section-desc">
+      기본형·대용량·대용량+롱노즐은 공식몰의 같은 상품에서 판매합니다. 상품 화면에서 원하는 옵션을 직접 선택하세요.
+    </p>
+    <BuyCTA content="products_close" label="공식몰에서 옵션 선택하기" />
+  </section>
 </BaseLayout>
 
 <style>
+  #model-guide {
+    scroll-margin-block-start: 7.5rem;
+  }
+
   .grid {
     display: grid;
     gap: 1rem;

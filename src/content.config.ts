@@ -21,6 +21,11 @@ const docSchema = ({ image }: SchemaContext) =>
         .min(70, 'description은 70자 이상이어야 합니다.')
         .max(80, 'description은 80자 이하여야 합니다.'),
 
+      /** 공개 문서의 첫 발행일. 미발행 초안은 비워둘 수 있다. */
+      publishedDate: z.preprocess(
+        (value) => value === null || value === '' ? undefined : value,
+        z.coerce.date().optional(),
+      ),
       /** 최종 수정일 */
       updatedDate: z.coerce.date(),
 
@@ -92,6 +97,14 @@ const docSchema = ({ image }: SchemaContext) =>
        * 문서 내용과 실제로 관련된 촬영본이 있을 때만 지정할 것.
        */
       videoKey: z.enum(['sprayTest', 'longNozzle']).optional(),
+    })
+    .refine((data) => !data.published || !!data.publishedDate, {
+      message: '문서를 처음 공개할 때 발행일을 입력하세요.',
+      path: ['publishedDate'],
+    })
+    .refine((data) => !data.publishedDate || data.publishedDate <= data.updatedDate, {
+      message: '최종 수정일은 발행일과 같거나 이후여야 합니다.',
+      path: ['updatedDate'],
     })
     .refine((data) => !data.heroImage || !!data.heroImageAlt, {
       message: 'heroImage를 지정하면 heroImageAlt도 필요합니다.',

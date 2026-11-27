@@ -67,6 +67,9 @@ export const EXTERNAL = {
 export const OFFICIAL_STORE_PRODUCT_URL =
   'https://blueguard.kr/product/%EB%B8%94%EB%A3%A8%EA%B0%80%EB%93%9C-%EB%B0%A9%EC%97%AD%EC%9A%A9-%EC%97%B0%EB%A7%89%EC%86%8C%EB%8F%85%EA%B8%B0/3054';
 
+export const OFFICIAL_STORE_DIFFUSER_URL =
+  'https://blueguard.kr/product/연막기전용-확산제-1l/3064/';
+
 /** 구매 CTA 기본 문구 — 옵션 선택이 필요한 단일 상품 페이지이므로 모델명을 붙이지 않는다. */
 export const BUY_CTA_LABEL = '옵션 선택하고 구매하기';
 

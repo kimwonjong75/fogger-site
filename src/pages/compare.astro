@@ -6,7 +6,8 @@ import ModelSpecTable from '../components/ModelSpecTable.astro';
 import Pic from '../components/Pic.astro';
 import SafetyBox from '../components/SafetyBox.astro';
 import ShippingNote from '../components/ShippingNote.astro';
-import { getProduct, priceLabel, PRODUCTS, PRICES_CONFIRMED, type Product } from '../data/products';
+import ShopReferral from '../components/ShopReferral.astro';
+import { priceLabel, PRODUCTS, PRICES_CONFIRMED, shopOptionLabel } from '../data/products';
 import { COMPARE_PAGE } from '../data/pages';
 import { inlineParts } from '../lib/page-content';
 import { faqSchema } from '../lib/schema';
@@ -14,15 +15,6 @@ import { faqSchema } from '../lib/schema';
 /** 문구는 편집 화면(/admin/ → "모델비교 화면")에서 고친다 — src/content/pages/compare.json */
 const page = COMPARE_PAGE;
 const url = '/compare/';
-const basePrice = getProduct('bf-100s').priceKrw;
-
-function storeOption(product: Product): string {
-  if (!PRICES_CONFIRMED || basePrice === null || product.priceKrw === null) return product.officialLabel;
-  const difference = product.priceKrw - basePrice;
-  if (difference === 0) return product.officialLabel;
-  const surcharge = difference.toLocaleString('ko-KR', { signDisplay: 'always' });
-  return `${product.officialLabel} (${surcharge}원)`;
-}
 ---
 
 <BaseLayout
@@ -106,7 +98,7 @@ function storeOption(product: Product): string {
           <div>
             <h3 id={`order-${product.id}`}>{product.officialLabel}</h3>
             {PRICES_CONFIRMED && <p class="purchase-option__price">공식몰 판매가 <strong>{priceLabel(product)}</strong></p>}
-            <p>공식몰에서 선택할 옵션 <strong>‘{storeOption(product)}’</strong></p>
+            <p>공식몰에서 선택할 옵션 <strong>‘{shopOptionLabel(product)}’</strong></p>
           </div>
           <BuyCTA productId={product.id} content={`compare_${product.id}`} label={`공식몰에서 ${product.officialLabel} 선택하기`} />
         </article>
@@ -114,6 +106,7 @@ function storeOption(product: Product): string {
     </div>
     <ShippingNote />
   </section>
+  <ShopReferral destination="compare" />
 </BaseLayout>
 
 <style>

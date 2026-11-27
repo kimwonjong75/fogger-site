@@ -1,6 +1,7 @@
 ---
 title: 연막소독기 점화 불량 점검 순서
 description: 점화 스위치를 눌러도 불이 붙지 않을 때 가스 체결 상태부터 점화부까지 어떤 순서로 확인해야 하는지 현장 점검법을 정리했습니다.
+publishedDate: 2026-07-31
 updatedDate: 2026-07-31
 published: true
 reviewer: 김원종

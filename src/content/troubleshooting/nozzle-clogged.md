@@ -1,6 +1,7 @@
 ---
 title: 연막소독기 노즐 막힘 해결과 예방
 description: 노즐이 막혀 연막이 가늘어졌을 때 기기를 충분히 식힌 뒤 안전하게 뚫는 방법과, 제조사가 밝힌 두 가지 막힘 원인을 정리했습니다.
+publishedDate: 2026-08-06
 updatedDate: 2026-08-06
 published: true
 reviewer: 김원종

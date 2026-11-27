@@ -1,10 +1,11 @@
 ---
 title: 연막소독기 부탄가스 장착과 점화 순서
 description: 부탄가스 장착부터 가스밸브 개방, 점화, 계속 펌핑까지 공식 사용법 영상 3~6단계 내용을 그대로 옮겨 순서대로 정리했습니다.
+publishedDate: 2026-08-06
 updatedDate: 2026-08-06
 published: true
 reviewer: 김원종
-ctaType: product
+ctaType: none
 related:
   - guides/fill-and-prepare
   - troubleshooting/no-ignition

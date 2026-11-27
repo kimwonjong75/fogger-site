@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import BuyCTA from '../components/BuyCTA.astro';
+import GuidePurchase from '../components/GuidePurchase.astro';
 import SafetyBox from '../components/SafetyBox.astro';
 import { MEDIA_SPECS } from '../data/products';
 import { MIST_PAGE } from '../data/pages';
@@ -40,7 +40,7 @@ const parts = (text: string) => inlineParts(text);
   ogImage="/og/og-products.png"
   crumbs={[{ name: '연무기', href: url }]}
   schemaNodes={[faq]}
-  stickyBuy="generic"
+  stickyBuy="model-guide"
 >
   <p class="eyebrow">{page.eyebrow}</p>
   <h1>{page.heading}</h1>
@@ -157,9 +157,7 @@ const parts = (text: string) => inlineParts(text);
     {page.moreLinks.map((link) => <a href={link.href}>{link.label}</a>)}
   </nav>
 
-  <div class="cta">
-    <BuyCTA content="mist_bottom" />
-  </div>
+  <GuidePurchase content="mist_bottom" />
 </BaseLayout>
 
 <style>
@@ -318,7 +316,5 @@ const parts = (text: string) => inlineParts(text);
     text-decoration: none;
   }
 
-  .cta {
-    margin-top: 2rem;
-  }
+
 </style>

@@ -15,7 +15,7 @@ export const GET: APIRoute = async (context) => {
     items: docs.map((doc) => ({
       title: doc.data.title,
       description: doc.data.description,
-      pubDate: doc.data.updatedDate,
+      pubDate: doc.data.publishedDate,
       link: docHref(doc.collection, doc.id),
     })),
     customData: '<language>ko-kr</language>',
